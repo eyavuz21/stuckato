@@ -1,5 +1,9 @@
 {
+  "cleanUrls": true,
   "crons": [
     { "path": "/api/reminders", "schedule": "30 6 * * *" }
+  ],
+  "redirects": [
+    { "source": "/demo", "destination": "/?demo=pupil", "permanent": false }
   ]
 }
