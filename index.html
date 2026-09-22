@@ -169,7 +169,7 @@ canvas.cardc{width:100%; max-width:420px; border-radius:16px; border:1px solid v
       <p>A short session every day, in your teacher's words. Tick what you worked on. Your teacher plans the next lesson from it.</p></div>
     <div class="row" style="margin-top:8px"><button class="btn block" id="landSignin">Sign in with email</button></div>
     <div class="row" style="margin-top:10px"><button class="btn quiet" id="landDemo">See how it works</button><button class="btn quiet" id="landLocal">Try it on this device</button></div>
-    <p class="note">Your teacher sets up the account and gives you a code. Join with the code and the week is waiting. A parent holds a young child's account; the child still does the practising themselves.</p>
+    <p class="note"><a href="/privacy">What we store and who can see it</a>. Your teacher sets up the account and gives you a code. Join with the code and the week is waiting. A parent holds a young child's account; the child still does the practising themselves.</p>
     <p class="note" id="landNote"></p>
   </section>
 
@@ -312,8 +312,32 @@ canvas.cardc{width:100%; max-width:420px; border-radius:16px; border:1px solid v
     if(mode==='none'){ el.innerHTML=''; return; }
     if(mode==='local'){ el.innerHTML=`<span>On this device only</span> <button class="btn sm quiet" id="leaveLocal">Sign in instead</button>`; $('#leaveLocal').onclick=()=>{ if(sb) signInDialog(); else alert('Sign-in needs the live site.'); }; return; }
     if(mode==='demo'){ el.innerHTML=`<button class="btn sm quiet" id="leaveDemo">Exit demo</button>`; $('#leaveDemo').onclick=()=>location.reload(); return; }
-    el.innerHTML=`<span>${h(me.name||me.email||'')} · ${me.role==='teacher'?'teacher':'pupil'}${me.studio?' · '+h(me.studio):''}</span>${me.code?` <span class="pill on">code ${h(me.code)}</span>`:''} <button class="btn sm quiet" id="signout">Sign out</button>`;
+    el.innerHTML=`<span>${h(me.name||me.email||'')} · ${me.role==='teacher'?'teacher':'pupil'}${me.studio?' · '+h(me.studio):''}</span>${me.code?` <span class="pill on">code ${h(me.code)}</span>`:''} <button class="btn sm quiet" id="signout">Sign out</button> <button class="btn sm danger" id="delacct">Delete my account</button>`;
     $('#signout').onclick=async()=>{ await sb.auth.signOut(); location.reload(); };
+    $('#delacct').onclick=deleteAccount;
+  }
+
+  // Apple requires an in-app account deletion for any app that creates accounts, and we promise parents
+  // on /for-parents that a child's data goes when they ask. Typed confirmation, because it cannot be undone.
+  async function deleteAccount(){
+    if(mode!=='cloud'||!sb){ alert('Deleting an account needs the live site.'); return; }
+    const typed=prompt('This deletes your account, your practice and your recordings. It cannot be undone.\n\nType DELETE to confirm.');
+    if(typed===null) return;
+    if(String(typed).trim().toUpperCase()!=='DELETE'){ alert('Not deleted. You need to type DELETE exactly.'); return; }
+    const btn=$('#delacct'); if(btn){ btn.disabled=true; btn.textContent='Deleting…'; }
+    try{
+      const {data:{session}}=await sb.auth.getSession();
+      const r=await fetch('/api/delete-account',{method:'POST',headers:{'content-type':'application/json',authorization:`Bearer ${session?.access_token||''}`},body:JSON.stringify({confirm:'DELETE'})});
+      const out=await r.json().catch(()=>({}));
+      if(!r.ok){ alert(out.message||'The account could not be deleted. Nothing has been removed. Email hello@stuckato.app and we will do it by hand.'); if(btn){ btn.disabled=false; btn.textContent='Delete my account'; } return; }
+      await sb.auth.signOut().catch(()=>{});
+      try{ localStorage.removeItem(LKEY); }catch(e){}
+      alert('Your account and everything in it have been deleted.');
+      location.href='/';
+    }catch(e){
+      alert('The account could not be deleted. Nothing has been removed. Email hello@stuckato.app and we will do it by hand.');
+      if(btn){ btn.disabled=false; btn.textContent='Delete my account'; }
+    }
   }
 
   // ------------------------------------------------------------ student helpers
