@@ -41,6 +41,12 @@ body:has(#v-landing.on) header.top{padding-bottom:0; margin-bottom:0; border-bot
 .btn.quiet{background:var(--card); color:var(--ink); border:2px solid var(--ink)}
 .btn.sm{padding:10px 14px; font-size:14.5px}
 .btn.danger{background:transparent; color:var(--danger); border:1px solid var(--line)}
+.acct{position:relative}
+.acct>summary{list-style:none; cursor:pointer; font-size:13px; font-weight:600; color:var(--muted); padding:6px 10px; border:1px solid var(--line); border-radius:999px}
+.acct>summary::-webkit-details-marker{display:none}
+.acct[open]>summary{color:var(--ink)}
+.acct>div{position:absolute; right:0; top:calc(100% + 6px); z-index:20; background:var(--card); border:1px solid var(--line); border-radius:14px; padding:12px; display:flex; flex-direction:column; gap:10px; align-items:stretch; min-width:210px; box-shadow:var(--shadow)}
+.acct>div a{font-size:13px; color:var(--muted); text-align:center}
 .btn[disabled]{opacity:.5; cursor:not-allowed}
 .eyebrow{font-size:13px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--muted)}
 .chips{display:flex; gap:8px; flex-wrap:wrap; margin:0 0 12px} .chip{display:inline-flex; align-items:center; gap:6px; background:var(--card); border:1.5px solid var(--line); border-radius:999px; padding:9px 15px; font-size:17px; font-weight:700; color:var(--ink)} .chip.amber{background:var(--amber); color:var(--amber-ink); border-color:var(--amber)} .chip b{color:var(--muted); font-weight:600}
@@ -312,9 +318,9 @@ canvas.cardc{width:100%; max-width:420px; border-radius:16px; border:1px solid v
     if(mode==='none'){ el.innerHTML=''; return; }
     if(mode==='local'){ el.innerHTML=`<span>On this device only</span> <button class="btn sm quiet" id="leaveLocal">Sign in instead</button>`; $('#leaveLocal').onclick=()=>{ if(sb) signInDialog(); else alert('Sign-in needs the live site.'); }; return; }
     if(mode==='demo'){ el.innerHTML=`<button class="btn sm quiet" id="leaveDemo">Exit demo</button>`; $('#leaveDemo').onclick=()=>location.reload(); return; }
-    el.innerHTML=`<span>${h(me.name||me.email||'')} · ${me.role==='teacher'?'teacher':'pupil'}${me.studio?' · '+h(me.studio):''}</span>${me.code?` <span class="pill on">code ${h(me.code)}</span>`:''} <button class="btn sm quiet" id="signout">Sign out</button> <button class="btn sm danger" id="delacct">Delete my account</button>`;
+    el.innerHTML=`<span>${h(me.name||me.email||'')} · ${me.role==='teacher'?'teacher':'pupil'}${me.studio?' · '+h(me.studio):''}</span>${me.code?` <span class="pill on">code ${h(me.code)}</span>`:''} <button class="btn sm quiet" id="signout">Sign out</button> <details class="acct"><summary>Account</summary><div><a href="/privacy">What we store</a><button class="btn sm danger" id="delacct">Delete my account</button></div></details>`;
     $('#signout').onclick=async()=>{ await sb.auth.signOut(); location.reload(); };
-    $('#delacct').onclick=deleteAccount;
+    const acct=el.querySelector('.acct'); if(acct) acct.ontoggle=()=>{ const b=$('#delacct'); if(b&&!b.onclick) b.onclick=deleteAccount; };
   }
 
   // Apple requires an in-app account deletion for any app that creates accounts, and we promise parents
