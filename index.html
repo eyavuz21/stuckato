@@ -30,7 +30,11 @@ label.l{display:block; font-size:13px; font-weight:800; letter-spacing:.06em; te
 .wrap{max-width:860px; margin:0 auto; padding:18px 18px 90px}
 header.top{display:flex; align-items:center; justify-content:space-between; gap:12px; padding:6px 0 14px; border-bottom:1px solid var(--line); margin-bottom:16px}
 .brand{display:block} .brand h1{margin:0; line-height:1}
-.slogan{font-size:15px; font-weight:600; letter-spacing:.04em; color:var(--muted); margin:0 0 12px}
+/* The landing sets the name and the slogan on consecutive ruled lines of the paper (35px stave,
+   rule at 34.5). The wordmark is 30px so the next rule is reachable, and the header drops its own
+   border there so nothing competes with the ruling. 0.7px lands the slogan baseline on 69.5. */
+body:has(#v-landing.on) header.top{padding-bottom:0; margin-bottom:0; border-bottom:0}
+.slogan{font-size:15px; font-weight:600; letter-spacing:.04em; color:var(--muted); margin:0.7px 0 12px}
 .auth{display:flex; gap:8px; align-items:center; flex-wrap:wrap; font-size:13px; color:var(--muted)}
 .btn{display:inline-flex; align-items:center; justify-content:center; gap:8px; border:none; border-radius:999px; padding:14px 22px; font-weight:700; background:var(--amber); color:var(--amber-ink); font-size:16px}
 .btn.block{width:100%; padding:18px 22px; font-size:19px}
@@ -154,7 +158,7 @@ canvas.cardc{width:100%; max-width:420px; border-radius:16px; border:1px solid v
 <div class="wrap">
   <div id="demoBar" hidden></div>
   <header class="top">
-    <div class="brand"><h1><img src="wordmark.svg?v=7" alt="Stuckato" style="height:40px;display:block"></h1></div>
+    <div class="brand"><h1><img src="wordmark.svg?v=9" alt="Stuckato" style="height:30px;display:block"></h1></div>
     <div class="auth" id="auth"></div>
   </header>
 
@@ -245,7 +249,7 @@ canvas.cardc{width:100%; max-width:420px; border-radius:16px; border:1px solid v
 <dialog id="dlg"><div class="in" id="dlgIn"></div></dialog>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-<script src="passage.js?v=1"></script>
+<script src="passage.js?v=9"></script>
 <script>
 (function(){
   'use strict';
