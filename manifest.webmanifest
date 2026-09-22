@@ -4,8 +4,8 @@
   "description": "Short bursts. Real progress. Couch to 5K for practising an instrument.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#000000",
-  "theme_color": "#000000",
+  "background_color": "#F5E4CA",
+  "theme_color": "#F5E4CA",
   "icons": [
     {
       "src": "/icon-192.png",

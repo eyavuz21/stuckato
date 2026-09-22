@@ -5,17 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Stuckato</title>
 <meta name="description" content="Short bursts. Real progress. Couch to 5K for practising an instrument, in a choir or in an orchestra. Your teacher sets the week; Stuckato gets you to practise every day.">
-<link rel="icon" type="image/svg+xml" href="icon-tile.svg?v=7"><link rel="apple-touch-icon" href="icon-192.png?v=7"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#000000">
+<link rel="icon" type="image/svg+xml" href="icon-tile.svg?v=8"><link rel="apple-touch-icon" href="icon-192.png?v=8"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#F5E4CA">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap">
 <style>
-/* One theme: black paper, beige ink (the logo's colours). */
+/* One theme: beige paper, black ink (the logo's colours, reversed 22 Sep 2026). */
 :root{
-  --paper:#000000; --stave:#17130C; --card:#100D08; --ink:#F5E4CA; --muted:#B3A48C; --line:#3A3327;
-  --amber:#F5E4CA; --amber-ink:#000000; --varnish:#F5E4CA; --sage:#D3C3A6; --gold:#F5E4CA; --danger:#F08A7A;
-  --tintA:#14110B; --tintB:#0E0C08; --tintC:#1A160E; --shadow:0 12px 30px rgba(0,0,0,.6);
-  --ok:#7CC48F; --warn:#E6B04D;
-  color-scheme: dark;
+  --paper:#F5E4CA; --stave:#E6D2B2; --card:#FBF1E0; --ink:#000000; --muted:#6F6350; --line:#D4BF9E;
+  --amber:#000000; --amber-ink:#F5E4CA; --varnish:#000000; --sage:#4A4436; --gold:#000000; --danger:#A8372A;
+  --tintA:#EFDCC0; --tintB:#F2E2CA; --tintC:#E9D5B6; --shadow:0 10px 26px rgba(74,52,16,.16);
+  --ok:#2E6B44; --warn:#8A5A12;
+  color-scheme: light;
 }
 *{box-sizing:border-box}
 html,body{margin:0}
@@ -102,7 +102,7 @@ details.defs summary{cursor:pointer; font-weight:700} details.defs dl{margin:8px
 .path{list-style:none; margin:8px 0 0; padding:0 0 0 16px; border-left:2px dashed var(--line)}
 .path li{position:relative; padding:6px 0 12px 18px}
 .path li::before{content:""; position:absolute; left:-24px; top:11px; width:14px; height:14px; border-radius:50%; background:var(--paper); border:2px solid var(--line)}
-.path li.done::before{background:var(--amber); border-color:var(--amber)} .path li.now::before{border-color:var(--amber); box-shadow:0 0 0 5px rgba(245,228,202,.18)} .path li.lesson::before{border-radius:3px; background:var(--varnish); border-color:var(--varnish)}
+.path li.done::before{background:var(--amber); border-color:var(--amber)} .path li.now::before{border-color:var(--amber); box-shadow:0 0 0 5px rgba(0,0,0,.14)} .path li.lesson::before{border-radius:3px; background:var(--varnish); border-color:var(--varnish)}
 .path .t{font-weight:600} .path .d{font-size:13px; color:var(--muted)}
 .check{list-style:none; margin:6px 0 0; padding:0}
 .check li{display:flex; gap:10px; align-items:flex-start; padding:6px 0; cursor:pointer}
@@ -141,10 +141,10 @@ dialog::backdrop{background:rgba(0,0,0,.65)} dialog .in{padding:22px} dialog h2{
 .script{font-family:"Plus Jakarta Sans", system-ui, sans-serif; font-size:19px; line-height:1.45; padding:14px 16px; background:var(--tintA); border-radius:14px; border:1px solid var(--line)}
 .mic{width:auto; padding:8px 12px; font-size:13px}
 .demo-bar{position:sticky; top:0; z-index:6; background:var(--varnish); color:var(--paper); padding:8px 12px; border-radius:12px; margin-bottom:12px; display:flex; gap:8px; align-items:center; flex-wrap:wrap; font-size:13.5px}
-.demo-bar .seg{display:inline-flex; border-radius:999px; overflow:hidden; border:1px solid rgba(0,0,0,.25)}
+.demo-bar .seg{display:inline-flex; border-radius:999px; overflow:hidden; border:1px solid rgba(245,228,202,.32)}
 .demo-bar .seg button{background:transparent; color:var(--paper); border:none; padding:6px 12px; font-weight:600; font-size:13px}
 .demo-bar .seg button.on{background:var(--paper); color:var(--ink)}
-.demo-bar .x{margin-left:auto; background:transparent; border:1px solid rgba(0,0,0,.35); color:var(--paper); border-radius:999px; padding:5px 10px; font-size:12.5px}
+.demo-bar .x{margin-left:auto; background:transparent; border:1px solid rgba(245,228,202,.4); color:var(--paper); border-radius:999px; padding:5px 10px; font-size:12.5px}
 canvas.cardc{width:100%; max-width:420px; border-radius:16px; border:1px solid var(--line); display:block; margin:10px auto}
 @media (prefers-reduced-motion: reduce){ .rec .blink{animation:none} }
 @media (prefers-reduced-motion: reduce){ .toast{transition:none} }
@@ -731,47 +731,47 @@ canvas.cardc{width:100%; max-width:420px; border-radius:16px; border:1px solid v
     const F=(wt,px)=>`${wt} ${px}px "Plus Jakarta Sans", system-ui, sans-serif`;
     const lines=(t,mw,font)=>{ ctx.font=font; const words=String(t).split(' '); const out=[]; let line=''; for(const wd of words){ const test=line?line+' '+wd:wd; if(ctx.measureText(test).width>mw&&line){ out.push(line); line=wd; } else line=test; } if(line) out.push(line); return out; };
     const wrap=(t,x,y,mw,lh,font,col)=>{ const ls=lines(t,mw,font); ctx.font=font; ctx.fillStyle=col; ls.forEach((l,i)=>ctx.fillText(l,x,y+i*lh)); return y+ls.length*lh; };
-    const box=(y,hh)=>{ ctx.fillStyle='#000000'; ctx.strokeStyle='#3A3327'; ctx.lineWidth=2; ctx.beginPath(); ctx.roundRect(40,y,W-80,hh,26); ctx.fill(); ctx.stroke(); };
-    const label=(t,y)=>{ ctx.fillStyle='#B3A48C'; ctx.font=F(800,18); ctx.fillText(t.toUpperCase(),70,y); };
+    const box=(y,hh)=>{ ctx.fillStyle='#F5E4CA'; ctx.strokeStyle='#D4BF9E'; ctx.lineWidth=2; ctx.beginPath(); ctx.roundRect(40,y,W-80,hh,26); ctx.fill(); ctx.stroke(); };
+    const label=(t,y)=>{ ctx.fillStyle='#6F6350'; ctx.font=F(800,18); ctx.fillText(t.toUpperCase(),70,y); };
     const tks=w?takesOff(w).slice().sort((a,b)=>(a.at||'').localeCompare(b.at||'')):[]; const pgLine=tks.length?(()=>{ const L=tks[tks.length-1], F=tks[0]; const tot=(w.takes||[]).find(t=>t.i===L.i)?.diff?.total||''; const dn=dayName; return `The passage: ${tot-L.off} of ${tot} notes matched ${tn}'s on ${dn(L.at)}`+(tks.length>1?`, up from ${tot-F.off} on ${dn(F.at)}.`:'.'); })():'';
     const pgLines=pgLine?lines(pgLine,W-140,F(600,20)):[]; const pgExtra=pgLines.length?14+pgLines.length*26:0;
     const top=490+pgExtra; const fb=w&&(w.line||w.encouragement); const list=w&&w.checklist?w.checklist.slice(0,4):[];
     let hh=42; if(fb) hh+=36+lines(fb,W-140,F(700,28)).length*38+40; if(list.length){ hh+=36; list.forEach(t=>hh+=lines(t,W-180,F(600,24)).length*30+8); } if(!fb&&!list.length) hh+=40; hh+=18;
     const goal=p.goalDate&&doc().weeks.length?{label:p.goalLabel||'Goal', date:p.goalDate, start:(doc().weeks[0].lessonDate||doc().weeks[0].createdAt)}:null;
     const H=top+hh+40+(goal?200:0); if(c.height!==H) c.height=H;
-    const gl=goalLight(); const WASH={g:['#0B1F13','#183A25','#7CC48F'],a:['#231A08','#4A3710','#E6B04D'],r:['#240E0B','#4A1D18','#F08A7A']}[gl?gl.k:'']||['#000000','#1A160E','#B3A48C'];
+    const gl=goalLight(); const WASH={g:['#E2F0E5','#C3DCCA','#2E6B44'],a:['#F7EAD0','#E7D2A6','#8A5A12'],r:['#F8E0DA','#EFC5BB','#A8372A']}[gl?gl.k:'']||['#000000','#E6D2B2','#6F6350'];
     ctx.fillStyle=WASH[0]; ctx.fillRect(0,0,W,H);
     ctx.strokeStyle=WASH[1]; ctx.lineWidth=2; for(let y=40;y<H;y+=42){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
-    ctx.fillStyle='#B3A48C'; ctx.font=F(600,18); ctx.fillText('Short bursts. Real progress.',70,H-14);
+    ctx.fillStyle='#6F6350'; ctx.font=F(600,18); ctx.fillText('Short bursts. Real progress.',70,H-14);
     // box 1: the dates
     const from=w?fmt(w.lessonDate||w.createdAt):fmt(today()); const to=w&&w.nextLesson?fmt(w.nextLesson):null;
-    box(40,120); ctx.fillStyle='#F5E4CA'; ctx.font=F(800,34); ctx.fillText('Stuckato.',70,92); ctx.font=F(700,26); ctx.fillText('From '+from+(to?' to '+to:''),70,136);
-    if(gl){ ctx.font=F(800,22); const tw=ctx.measureText(gl.word).width+36; ctx.fillStyle=WASH[2]; ctx.beginPath(); ctx.roundRect(W-70-tw,68,tw,40,20); ctx.fill(); ctx.fillStyle='#000000'; ctx.fillText(gl.word,W-70-tw+18,96); }
+    box(40,120); ctx.fillStyle='#000000'; ctx.font=F(800,34); ctx.fillText('Stuckato.',70,92); ctx.font=F(700,26); ctx.fillText('From '+from+(to?' to '+to:''),70,136);
+    if(gl){ ctx.font=F(800,22); const tw=ctx.measureText(gl.word).width+36; ctx.fillStyle=WASH[2]; ctx.beginPath(); ctx.roundRect(W-70-tw,68,tw,40,20); ctx.fill(); ctx.fillStyle='#F5E4CA'; ctx.fillText(gl.word,W-70-tw+18,96); }
     // box 2: the pupil's week
     let y=190; box(y,270+pgExtra); label((p.name||'My')+"'s week",y+42);
-    ctx.fillStyle='#F5E4CA'; ctx.font=F(800,52); ctx.fillText(w&&n===tot?'Week complete.':(n+' of '+tot+' days done.'),70,y+106);
+    ctx.fillStyle='#000000'; ctx.font=F(800,52); ctx.fillText(w&&n===tot?'Week complete.':(n+' of '+tot+' days done.'),70,y+106);
     const stats=[[String(n)+'/'+tot,'days practised'],[String(mins),'minutes practised'],[String(tokensView().avail),'points earned']];
-    stats.forEach((st,i)=>{ const x=70+i*236; ctx.fillStyle='#17130C'; ctx.beginPath(); ctx.roundRect(x,y+132,216,108,18); ctx.fill(); ctx.fillStyle='#F5E4CA'; ctx.font=F(800,44); ctx.fillText(st[0],x+20,y+188); ctx.fillStyle='#B3A48C'; ctx.font=F(600,18); ctx.fillText(st[1],x+20,y+222); });
-    if(pgLines.length){ ctx.fillStyle='#B3A48C'; ctx.font=F(600,20); pgLines.forEach((l,k)=>ctx.fillText(l,70,y+280+k*26)); }
+    stats.forEach((st,i)=>{ const x=70+i*236; ctx.fillStyle='#EDDCBE'; ctx.beginPath(); ctx.roundRect(x,y+132,216,108,18); ctx.fill(); ctx.fillStyle='#000000'; ctx.font=F(800,44); ctx.fillText(st[0],x+20,y+188); ctx.fillStyle='#6F6350'; ctx.font=F(600,18); ctx.fillText(st[1],x+20,y+222); });
+    if(pgLines.length){ ctx.fillStyle='#6F6350'; ctx.font=F(600,20); pgLines.forEach((l,k)=>ctx.fillText(l,70,y+280+k*26)); }
     // box 3: feedback from the last lesson, and what is wanted for the next one
     box(top,hh); y=top+42;
-    if(fb){ label('Feedback from the last lesson',y); y=wrap(fb,70,y+36,W-140,38,F(700,28),'#F5E4CA'); ctx.fillStyle='#B3A48C'; ctx.font=F(600,19); ctx.fillText(tn,70,y-4); y+=40; }
-    if(list.length){ label('For next lesson:',y); y+=36; list.forEach((t,k)=>{ const on=(w.ticks||[]).includes(k); ctx.fillStyle=on?'#F5E4CA':'#000000'; ctx.strokeStyle=on?'#F5E4CA':'#3A3327'; ctx.lineWidth=2; ctx.beginPath(); ctx.roundRect(70,y-20,24,24,6); ctx.fill(); ctx.stroke(); y=wrap(t,108,y,W-180,30,F(600,24),on?'#B3A48C':'#F5E4CA')+8; }); }
-    if(!fb&&!list.length){ ctx.fillStyle='#B3A48C'; ctx.font=F(600,22); ctx.fillText('Feedback appears here after the next lesson.',70,y+2); }
+    if(fb){ label('Feedback from the last lesson',y); y=wrap(fb,70,y+36,W-140,38,F(700,28),'#000000'); ctx.fillStyle='#6F6350'; ctx.font=F(600,19); ctx.fillText(tn,70,y-4); y+=40; }
+    if(list.length){ label('For next lesson:',y); y+=36; list.forEach((t,k)=>{ const on=(w.ticks||[]).includes(k); ctx.fillStyle=on?'#000000':'#F5E4CA'; ctx.strokeStyle=on?'#000000':'#D4BF9E'; ctx.lineWidth=2; ctx.beginPath(); ctx.roundRect(70,y-20,24,24,6); ctx.fill(); ctx.stroke(); y=wrap(t,108,y,W-180,30,F(600,24),on?'#6F6350':'#000000')+8; }); }
+    if(!fb&&!list.length){ ctx.fillStyle='#6F6350'; ctx.font=F(600,22); ctx.fillText('Feedback appears here after the next lesson.',70,y+2); }
     if(goal){ // box 4: the goal as the end of a piece: a note a week, filled when practised, the double bar line on the day
       const gy=top+hh+30; box(gy,170); label(goal.label+' · '+fmtL(goal.date),gy+42);
       const gw=goalWeeks(doc().weeks, goal.date); const N=gw.length; const X0=70, X1=W-70; const dx=Math.min(30,(X1-X0-30)/N); const sy=gy+70;
-      ctx.strokeStyle='#3A3327'; ctx.lineWidth=1.5; for(let k=0;k<5;k++){ ctx.beginPath(); ctx.moveTo(X0,sy+k*10); ctx.lineTo(X1,sy+k*10); ctx.stroke(); }
+      ctx.strokeStyle='#D4BF9E'; ctx.lineWidth=1.5; for(let k=0;k<5;k++){ ctx.beginPath(); ctx.moveTo(X0,sy+k*10); ctx.lineTo(X1,sy+k*10); ctx.stroke(); }
       for(let k=4;k<N;k+=4){ const x=X0+k*dx; ctx.beginPath(); ctx.moveTo(x,sy); ctx.lineTo(x,sy+40); ctx.stroke(); }
-      const xe=X0+N*dx+6; ctx.strokeStyle='#F5E4CA'; ctx.lineWidth=1.5; ctx.beginPath(); ctx.moveTo(xe,sy); ctx.lineTo(xe,sy+40); ctx.stroke(); ctx.lineWidth=4; ctx.beginPath(); ctx.moveTo(xe+6,sy); ctx.lineTo(xe+6,sy+40); ctx.stroke();
+      const xe=X0+N*dx+6; ctx.strokeStyle='#000000'; ctx.lineWidth=1.5; ctx.beginPath(); ctx.moveTo(xe,sy); ctx.lineTo(xe,sy+40); ctx.stroke(); ctx.lineWidth=4; ctx.beginPath(); ctx.moveTo(xe+6,sy); ctx.lineTo(xe+6,sy+40); ctx.stroke();
       const sc=dx<16?0.6:0.85;
       gw.forEach((g,k)=>{ const x=X0+k*dx+dx/2, yy=sy+30-((k*7)%5)*5; ctx.save(); ctx.translate(x,yy); ctx.scale(sc,sc);
-        if(g.now){ ctx.strokeStyle='#F5E4CA'; ctx.lineWidth=2.5; ctx.beginPath(); ctx.arc(0,0,15,0,7); ctx.stroke(); }
-        ctx.rotate(-22*Math.PI/180); ctx.beginPath(); ctx.ellipse(0,0,9,6.5,0,0,7); ctx.fillStyle=g.practised?'#F5E4CA':'#000000'; ctx.fill(); ctx.strokeStyle='#F5E4CA'; ctx.lineWidth=2; ctx.stroke(); ctx.rotate(22*Math.PI/180);
-        ctx.fillStyle='#F5E4CA'; ctx.fillRect(7,-34,2.2,34); ctx.restore(); });
-      ctx.fillStyle='#B3A48C'; ctx.font=F(600,15); ctx.fillText(fmtS(goal.start),X0,sy+62); ctx.textAlign='right'; ctx.fillStyle='#F5E4CA'; ctx.font=F(800,15); ctx.fillText(fmtS(goal.date),X1,sy+62); ctx.textAlign='left';
+        if(g.now){ ctx.strokeStyle='#000000'; ctx.lineWidth=2.5; ctx.beginPath(); ctx.arc(0,0,15,0,7); ctx.stroke(); }
+        ctx.rotate(-22*Math.PI/180); ctx.beginPath(); ctx.ellipse(0,0,9,6.5,0,0,7); ctx.fillStyle=g.practised?'#000000':'#F5E4CA'; ctx.fill(); ctx.strokeStyle='#000000'; ctx.lineWidth=2; ctx.stroke(); ctx.rotate(22*Math.PI/180);
+        ctx.fillStyle='#000000'; ctx.fillRect(7,-34,2.2,34); ctx.restore(); });
+      ctx.fillStyle='#6F6350'; ctx.font=F(600,15); ctx.fillText(fmtS(goal.start),X0,sy+62); ctx.textAlign='right'; ctx.fillStyle='#000000'; ctx.font=F(800,15); ctx.fillText(fmtS(goal.date),X1,sy+62); ctx.textAlign='left';
       const wk=doc().weeks, practised=wk.filter(x=>doneCount(x)>0).length, complete=wk.filter(x=>x.sessions&&doneCount(x)===x.sessions.length).length;
-      ctx.fillStyle='#F5E4CA'; ctx.font=F(700,22); ctx.fillText(`${practised} ${practised===1?'week':'weeks'} practised, ${complete} complete. A note a week to the double bar.`,70,gy+156);
+      ctx.fillStyle='#000000'; ctx.font=F(700,22); ctx.fillText(`${practised} ${practised===1?'week':'weeks'} practised, ${complete} complete. A note a week to the double bar.`,70,gy+156);
     }
   }
 
