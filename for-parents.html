@@ -59,7 +59,16 @@ td:last-child{color:var(--muted)}
 a{color:var(--ink); text-underline-offset:3px}
 footer{margin-top:46px; padding-top:18px; border-top:1px solid var(--line); color:var(--faint); font-size:.85rem}
 footer p+p{margin-top:6px}
-.cta{display:inline-flex; align-items:center; justify-content:center; background:var(--ink); color:var(--paper); text-decoration:none; font-weight:700; border-radius:999px; padding:14px 22px; margin-top:14px}
+.groups{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:14px; margin-top:16px}
+.group{border:1px solid var(--line); border-radius:18px; padding:20px; background:var(--card); border-top:5px solid var(--line)}
+.group.app{border-top-color:#2E6B44}
+.group.diary{border-top-color:#A8372A}
+.group h3{margin:8px 0 0}
+.group p{margin-top:10px}
+.group ul{margin-top:10px}
+.chip{display:inline-block; font-size:.66rem; font-weight:800; letter-spacing:.1em; text-transform:uppercase; padding:4px 10px; border-radius:999px; color:var(--paper)}
+.group.app .chip{background:#2E6B44}
+.group.diary .chip{background:#A8372A}
 </style>
 </head>
 <body>
@@ -95,32 +104,48 @@ footer p+p{margin-top:6px}
       short guided session for each day of the week, in her own words. Your child taps what they worked on when they
       finish. That is the whole thing: a few minutes a day, then a tick.
     </p>
-    <p>
-      Some pupils will not be on the app at all. They keep a simple practice diary instead, one number a day. Both
-      groups matter equally, and we cannot tell whether the app helps without both.
-    </p>
   </section>
 
   <section>
-    <h2>If your child is keeping the paper diary</h2>
+    <h2>Which group is your child in?</h2>
     <p>
-      This is only for the families Melisande has told are in the diary group. <strong>If your child is using the
-      app, there is nothing here for you to do</strong>, because the app records all of this already.
+      Melisande will tell you which one. Some pupils use the app and some keep a paper diary instead. Both groups
+      matter equally, and we cannot tell whether the app helps without both.
     </p>
-    <p>
-      Once a week, on the evening before the lesson, fill this in. It takes about a minute: the minutes practised
-      each day, and the same two questions the app asks.
-    </p>
-    <p><a class="cta" href="https://forms.gle/kxHhTE3YXAAXE7Xu8" target="_blank" rel="noopener">Open the weekly diary form</a></p>
-    <p style="margin-top:14px">
-      You will need the pupil code Melisande gave you, which looks like C-01. It is not your child's name, and no
-      names go into the form.
-    </p>
+
+    <div class="groups">
+      <div class="group app">
+        <span class="chip">On the app</span>
+        <h3>Nothing for you to fill in</h3>
+        <p>
+          Your child does a short guided session each day and taps what they worked on. The app records all of it
+          by itself.
+        </p>
+        <p><strong>You can skip straight to <a href="#what-we-record">what we record</a>.</strong></p>
+      </div>
+
+      <div class="group diary">
+        <span class="chip">On the paper diary</span>
+        <h3>One short form a week</h3>
+        <p>
+          Your child writes down the minutes they practised each day. Then, on the evening before each lesson,
+          Melisande sends you a form that takes about a minute: the minutes for each day, and these two questions.
+        </p>
+        <ul>
+          <li>How ready does your child feel for tomorrow's lesson? 1 to 5.</li>
+          <li>How much did they want to practise this week? 1 to 5.</li>
+        </ul>
+        <p>
+          Those are word for word the two the app asks its own group, which is the only reason the two groups can
+          be compared at all.
+        </p>
+      </div>
+    </div>
   </section>
 
 
   <section>
-    <h2>What we record</h2>
+    <h2 id="what-we-record">What we record</h2>
     <p>Everything below is either logged by the app as your child uses it, or entered by Melisande after a lesson. There is nothing else.</p>
     <div class="tablewrap">
       <table>
