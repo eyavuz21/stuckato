@@ -14,6 +14,15 @@ Stuckato has two sides. The **teacher** writes a thirty-second note after each l
 
 **Why not Yousician?** Yousician is for people without a teacher: it listens through the phone, lights each note green or red against its own library, and covers guitar, piano, bass, ukulele and voice. Stuckato is for the six days between lessons, run by the teacher. The week is her note, in her voice, for the actual piece; the teacher sees what happened; violin, cello, wind, brass and choirs are in; the point is turning up on Wednesday, not scoring notes. Where Stuckato does listen (the week's passage, below), it compares the pupil to the teacher's own playing, points at the bars that differ, and leaves the judgement to her. Nobody else has the teacher in the loop.
 
+## What's in v0.10 (23 September 2026)
+
+Needs `supabase/v0.10-partners-reviews-auditions.sql` run once in the Supabase SQL editor; until then partners and reviews stay hidden (the teacher sees a note). Everything else works without it.
+
+- **Practice partners.** The teacher pairs two pupils. Each sees the other's first name, minutes today, and, when both are 13 or over, "practising now". Match your partner's minutes on the same day (within a tenth, with the sound check agreeing) and you both get double points; three matched days in a row raise the pair's challenge by ten minutes, up to the grade limit. No messaging.
+- **Performance review and the end-of-term performance class.** The teacher opens one for everyone or a group. Pupils pick what they liked most and what could be better from ten categories, one point per classmate reviewed; each performer sees their tally once the teacher releases it. The live class is not recorded.
+- **Audition prep.** Switched on per pupil with who it is for, the excerpts, the panel and the date. Ten minutes of preparation in the teacher's voice (context, breathing, body, seeing the room, hearing the opening, "As soon as you're ready, please begin"), then one take (audio for everyone, video for 18 and over) into private storage, then the pupil's gut feeling 1 to 5. The teacher rates the same take and writes feedback; both see how often they agreed within a point.
+- **Habits.** A weekly promise (how many days), a when-and-where plan, a fresh start after a few days away, personal bests against your own past weeks only, and milestones at 1, 5, 10, 25, 50, 100, 200 and 365 sessions.
+
 ## What's in v0.9 (23 September 2026)
 
 - **Groups.** A teacher puts pupils in any groups (a school, a year, a section), several per pupil, in each profile. Messages, group weeks and breaks can go to a whole group. Pupils in no group are flagged on the teacher's page ("Not in a group. Check whether they should be"), with *Fine on their own* to clear the flag.

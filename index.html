@@ -513,7 +513,7 @@ canvas.cardc{width:100%; max-width:420px; border-radius:16px; border:1px solid v
       : (w.recording ? `<div class="card"><div class="label">Play-through sent · ${h(fmt(w.recording.at.slice(0,10)))}</div><p style="margin:0">${w.recording.heard?h(tn)+' has heard it.':'Waiting for '+h(tn)+' to listen.'}${w.recording.reply?` <b>${h(tn)} says:</b> “${h(w.recording.reply)}”`:''}</p></div>` : '');
     v.innerHTML=`
       <div class="chips"><span class="chip">${h(fmt(today()))}</span><span class="chip">Day <b>${Math.min(n+1,w.sessions.length)} of ${w.sessions.length}</b></span><span class="chip">${h(mins)} min <b>set by ${h(tn)}</b></span>${+p.selfMinutes>mins?`<span class="chip">you aim for <b>${h(p.selfMinutes)} min</b></span>`:''}${p.goalDate?`<span class="chip">${h(p.goalLabel||'Goal')} <b>${weeksBetween(today(),p.goalDate)} weeks</b>${goalLight()?' · '+lightHTML():''}</span>`:''}${w.group?`<span class="chip">${h(w.group.name||'Group')} week${p.part?' · '+h(p.part):''}</span>`:''}</div>
-      ${breakCard}<div class="box says"><div class="label">Lesson · ${h(fmt(w.lessonDate||w.createdAt))} · from ${h(tn)}</div><p style="margin:0"><b>What you did well:</b> ${h(w.line||w.encouragement||'Turn up every day and the lesson takes care of itself.')}</p>${(w.checklist||[]).length?`<p style="margin:8px 0 0"><b>What to work on:</b> ${h(w.checklist.join(' · '))}.</p>`:''}
+      ${breakCard}${habitsHTML(w)}<div id="socialBox"></div><div class="box says"><div class="label">Lesson · ${h(fmt(w.lessonDate||w.createdAt))} · from ${h(tn)}</div><p style="margin:0"><b>What you did well:</b> ${h(w.line||w.encouragement||'Turn up every day and the lesson takes care of itself.')}</p>${(w.checklist||[]).length?`<p style="margin:8px 0 0"><b>What to work on:</b> ${h(w.checklist.join(' · '))}.</p>`:''}
         ${openExtras().map(x=>`<div class="row" style="margin:4px 0 0;justify-content:space-between;flex-wrap:nowrap;align-items:flex-start"><p style="margin:0"><b>News from ${h(tn)}:</b> ${h(x.text)} (${h(fmt(x.at.slice(0,10)))})</p><button class="btn sm quiet" data-xdone="${x.id}" style="flex:none">Done</button></div>`).join('')}</div>
       <div class="card"><div class="label">${w.sessions.length} days, then ${h(tn)}</div>
         ${pendCard}${s?journeyMap(w, flags, 'top'):''}${todayCard}${passagePupilHTML(w, tn)}${pulseCard}${s?'':recCard}${s?journeyMap(w, flags, 'bottom'):journeyMap(w, flags, 'all')}${s?recCard:''}
@@ -534,6 +534,7 @@ canvas.cardc{width:100%; max-width:420px; border-radius:16px; border:1px solid v
       <div class="grid2" style="margin-top:4px"><button class="btn quiet" id="goGoal">Set or change the goal</button><button class="btn" id="goShare">Share the card</button></div>`;
     const os=$('#ownStart'); if(os) os.onclick=()=>ready(()=>startOwn(i));
     const bs=$('#breakStart'); if(bs) bs.onclick=()=>ready(()=>startOwn(-1,true));
+    wireHabits(w); renderSocial();
     wireScales(); const ps=$('#pulseSave'); if(ps) ps.onclick=()=>{ const r=scaleVal('puReady'), q=scaleVal('puWant'); if(!r||!q){ toast('Tap a number on both.'); return; } w.pulse={ready:r, want:q, at:new Date().toISOString()}; saveCurrent(); toast('Thanks. Good luck tomorrow.'); renderToday(); };
     const fp=$('#finishPend'); if(fp) fp.onclick=()=>{ si=pend.i; sess=w.sessions[pend.i]; showDone(); };
     wireRecording(w, tn); wirePassagePupil(w, tn);
@@ -549,6 +550,175 @@ canvas.cardc{width:100%; max-width:420px; border-radius:16px; border:1px solid v
     $('#barStart').onclick=()=>{ if(s) startSession(i); else if(recordingDue(w)&&$('#recCard')) $('#recCard').scrollIntoView({behavior:'smooth',block:'center'}); else window.scrollTo({top:0,behavior:'smooth'}); };
     if(showIt!==false) show('trail');
   }
+
+  // ------------------------------------------------------------ v0.10: partners, reviews, audition prep, habits
+  // Partners and reviews live in their own tables (supabase/v0.10-partners-reviews-auditions.sql). Until that SQL has
+  // been run the calls fail and these cards stay hidden; in demo mode they run on this device.
+  const CATS=['tone','intonation','rhythm','dynamics','phrasing','expression','memory','stage presence','posture','ensemble'];
+  const cloudOn=()=>mode==='cloud'&&!!sb;
+  const DKEY='stuckato.demo.social.v1';
+  const demoSocial=()=>{ let o=null; try{ o=JSON.parse(localStorage.getItem(DKEY)||'null'); }catch(e){} return o||{pairs:[], reviews:[], picks:[]}; };
+  const demoSave=o=>{ try{ localStorage.setItem(DKEY, JSON.stringify(o)); }catch(e){} };
+  const myId=()=>current?.user_id||sbUser?.id||'local';
+  function minutesOn(d, day){ let m=0; for(const w of (d.weeks||[])) for(const x of (w.done||[])) if((x.at||'').slice(0,10)===day) m+=(+x.minutes||0); for(const x of (d.breakLog||[])) if(x.note&&(x.at||'').slice(0,10)===day) m+=(+x.minutes||0); return m; }
+  async function rpc(fn, args){ try{ const {data,error}=await sb.rpc(fn, args||{}); return error?{error}:{data}; }catch(e){ return {error:e}; } }
+  async function tbl(q){ try{ const {data,error}=await q; return error?{error}:{data}; }catch(e){ return {error:e}; } }
+
+  // partners: what a pupil sees of their partner (first name, minutes, practising now)
+  async function myPartners(){
+    if(cloudOn()){ const r=await rpc('practicigo_my_partners'); return r.error?null:(r.data||[]); }
+    if(mode!=='demo') return null; const o=demoSocial(); const me0=myId(); const t=today(), y=addDays(today(),-1);
+    return o.pairs.filter(p=>p.a===me0||p.b===me0).map(p=>{ const other=students.find(s=>s.user_id===(p.a===me0?p.b:p.a)); if(!other) return null; const od=other.data;
+      return {pair_id:p.id, partner:other.user_id, name:(od.profile?.name||'Your partner').split(' ')[0], minutes_today:minutesOn(od,t), minutes_yesterday:minutesOn(od,y),
+        practising_now:!!(doc().profile?.over13&&od.profile?.over13&&!od.profile?.presenceOff&&od.activeUntil&&od.activeUntil>new Date().toISOString()), challenge_minutes:p.challenge||null}; }).filter(Boolean); }
+  async function setChallenge(pid, mins){ if(cloudOn()) return rpc('practicigo_set_challenge',{pid, mins}); const o=demoSocial(); const p=o.pairs.find(x=>x.id===pid); if(p){ p.challenge=mins; demoSave(o); } }
+  // double points: both practised today and within a tenth of each other; my side needs the sound check to agree
+  function matched(mine, theirs){ return mine>0&&theirs>0&&Math.min(mine,theirs)>=0.9*Math.max(mine,theirs); }
+  function heardOk(d, day){ const xs=[...(d.weeks||[]).flatMap(w=>w.done||[]), ...(d.breakLog||[])].filter(x=>(x.at||'').slice(0,10)===day); return xs.some(x=>!x.checked||(x.heardSec||0)>=0.5*60*(+x.minutes||0)); }
+  async function settlePairs(list){ // award the day's partner bonus once, and step the challenge up after three matched days in a row
+    const d=doc(), t=today(), mine=minutesOn(d,t); let changed=false; d.pairDays=d.pairDays||{};
+    for(const p of list){ if(!matched(mine,p.minutes_today)||!heardOk(d,t)) continue; const days=d.pairDays[p.pair_id]=d.pairDays[p.pair_id]||[];
+      if(!days.includes(t)){ days.push(t); const tk=d.tokens||(d.tokens={earned:0,redeemed:0}); tk.earned=(tk.earned||0)+1; changed=true; toast('You and '+p.name+' matched today: double points.');
+        const run=[0,1,2].every(k=>days.includes(addDays(t,-k)));
+        if(run){ const lim=levelMinutes(d.profile.level); const base=p.challenge_minutes||Math.max(mine,p.minutes_today); const next=Math.min(Math.max(base+10, base), Math.max(lim, base));
+          if(next>base){ await setChallenge(p.pair_id, next); p.challenge_minutes=next; toast('Three days matched. New challenge: '+next+' minutes each.'); } } } }
+    if(changed) saveCurrent(); }
+  function partnerHTML(list){ if(!list||!list.length) return '';
+    return `<div class="card"><div class="label">Practice partner${list.length>1?'s':''}</div>${list.map(p=>{ const mine=minutesOn(doc(),today()); const both=matched(mine,p.minutes_today);
+      return `<div class="flag"><span><b>${h(p.name)}</b> ${p.practising_now?'<span class="pill on">practising now</span> ':''}${p.minutes_today?`practised ${h(p.minutes_today)} min today.`:'hasn\'t practised yet today.'}${p.challenge_minutes?` · challenge ${h(p.challenge_minutes)} min each`:''}</span>${both?'<span class="pill on">matched: double</span>':''}</div>`; }).join('')}
+      <div class="note">Practise for the same time as your partner today and you both get double points. Three matched days in a row and the challenge goes up.</div></div>`; }
+
+  // reviews and the end-of-term performance class
+  async function reviewsForMe(){
+    if(cloudOn()){ const r=await tbl(sb.from('practicigo_reviews').select('*').order('created_at',{ascending:false})); if(r.error) return null;
+      const picks=await tbl(sb.from('practicigo_review_picks').select('*')); return {reviews:r.data||[], picks:picks.data||[]}; }
+    if(mode!=='demo') return null; const o=demoSocial(); const me0=myId(); const mine=students.find(s=>s.user_id===me0);
+    const inR=(r,sd)=>!r.group_name||groupsOf(sd).includes(r.group_name);
+    return {reviews:o.reviews.filter(r=>inR(r, mine?.data||doc())), picks:o.picks.filter(k=>k.reviewer===me0||(k.performer===me0&&(o.reviews.find(r=>r.id===k.review_id)||{}).released))}; }
+  async function performersFor(r){ if(cloudOn()){ const x=await rpc('practicigo_review_performers',{rid:r.id}); return x.error?[]:(x.data||[]); }
+    return students.filter(s=>s.user_id!==myId()&&(!r.group_name||groupsOf(s.data).includes(r.group_name))).map(s=>({performer:s.user_id, name:(s.data.profile?.name||'Pupil').split(' ')[0]})); }
+  async function addPick(rid, performer, liked, improve){
+    if(cloudOn()){ const r=await tbl(sb.from('practicigo_review_picks').insert({review_id:rid, performer, liked, improve})); return !r.error; }
+    const o=demoSocial(); if(o.picks.some(k=>k.review_id===rid&&k.reviewer===myId()&&k.performer===performer)) return false; o.picks.push({id:uid(), review_id:rid, reviewer:myId(), performer, liked, improve, created_at:new Date().toISOString()}); demoSave(o); return true; }
+  async function reviewHTML(data){ if(!data||!data.reviews.length) return '';
+    const me0=myId(); const open=data.reviews.filter(r=>!r.released); const out=[];
+    for(const r of open){ const perf=await performersFor(r); const done=new Set(data.picks.filter(k=>k.review_id===r.id&&k.reviewer===me0).map(k=>k.performer)); const left=perf.filter(p=>!done.has(p.performer));
+      out.push(`<div class="card"><div class="label">${r.kind==='class'?'Performance class':'Performance review'} · ${h(r.title)}${r.held_on?' · '+h(fmt(r.held_on)):''}</div>
+        ${left.length?`<p style="margin:0 0 8px">After each performance, pick what you liked most and what could be better. One point for each classmate you review.</p>${left.map(p=>`<div class="daybox" data-rv="${h(r.id)}" data-pf="${h(p.performer)}"><p style="margin:0 0 6px"><b>${h(p.name)}</b></p><div class="grid2"><div><label class="l">What I liked most</label><select class="rvL"><option value="">Pick one</option>${CATS.map(c=>`<option>${c}</option>`).join('')}</select></div><div><label class="l">Could be better</label><select class="rvI"><option value="">Pick one</option>${CATS.map(c=>`<option>${c}</option>`).join('')}</select></div></div><button class="btn sm rvGo" style="margin-top:8px">Send</button></div>`).join('')}`:`<p class="note" style="margin:0">You've reviewed everyone. Your picks reach them when ${h(doc().teacherName||'your teacher')} releases the review.</p>`}</div>`); }
+    const mineReleased=data.picks.filter(k=>k.performer===me0); if(mineReleased.length){ const tally=(key)=>{ const t={}; mineReleased.forEach(k=>t[k[key]]=(t[k[key]]||0)+1); return Object.entries(t).sort((a,b)=>b[1]-a[1]).map(([c,n])=>`${h(c)} (${n})`).join(', '); };
+      out.push(`<div class="box says"><div class="label">What your classmates said</div><p style="margin:0"><b>Liked most:</b> ${tally('liked')}</p><p style="margin:6px 0 0"><b>Could be better:</b> ${tally('improve')}</p></div>`); }
+    return out.join(''); }
+  function wireReviews(){ $$('[data-rv] .rvGo').forEach(b=>b.onclick=async()=>{ const box=b.closest('[data-rv]'); const L=box.querySelector('.rvL').value, I=box.querySelector('.rvI').value; if(!L||!I){ toast('Pick both.'); return; }
+    b.disabled=true; const ok=await addPick(box.dataset.rv, box.dataset.pf, L, I); if(ok){ const tk=doc().tokens||(doc().tokens={earned:0,redeemed:0}); tk.earned=(tk.earned||0)+1; saveCurrent(); toast('Sent. One point.'); } else toast('Could not send that one.'); renderSocial(); }); }
+
+  // audition prep: the ten-minute routine in the teacher's voice, then a take, then the gut feeling
+  function auditionScript(a, tn){ const who=a.forWho||'the panel', ex=a.excerpts||'your excerpts';
+    return [
+      {name:'The context', min:1.5, text:`This is your audition for ${who}. You'll play ${ex}.${a.panel?' The panel is '+a.panel+'.':''} You have prepared for this. For the next ten minutes, we get ready together.`},
+      {name:'Breathe', min:2, text:'Sit or stand tall. Breathe in slowly for four, and out for six. Again. Let your shoulders drop on every out-breath. Keep going, in for four, out for six.'},
+      {name:'Your body', min:1.5, text:'Notice your hands. Open and close them slowly. Roll your shoulders back. Loosen your jaw. Feel your feet on the floor.'},
+      {name:'See the room', min:2, text:`Imagine walking into the room. The door, the light, the panel at the table. You walk in calmly, set up, and look up. Imagine you're on stage. ${a.panel?'The panel smiles. ':''}You are ready.`},
+      {name:'Hear the opening', min:2, text:'Now hear the first bars in your head, at your tempo, with your sound. The first note is the only note that matters. Hear it clearly.'},
+      {name:'Begin', min:1, text:'Take one more slow breath. As soon as you\'re ready, please begin.'}]; }
+  let audTimer=null;
+  function runAudition(){ const d=doc(), a=d.profile.audition||{}, tn=d.teacherName||'your teacher'; const steps=auditionScript(a, tn); let k=0, left=0;
+    const ov=document.createElement('div'); ov.id='audOv'; ov.style.cssText='position:fixed;inset:0;z-index:60;background:var(--paper,#F5E4CA);overflow:auto;padding:calc(env(safe-area-inset-top,0px) + 20px) 20px 30px';
+    document.body.appendChild(ov); const close=()=>{ clearInterval(audTimer); try{ speechSynthesis.cancel(); player.pause(); }catch(e){} ov.remove(); renderToday(); };
+    const step=()=>{ const s=steps[k]; left=Math.round(s.min*60); ov.innerHTML=`<div style="max-width:560px;margin:0 auto"><div class="eyebrow">Audition prep · ${k+1} of ${steps.length}</div><h2 class="big">${h(s.name)}</h2><p class="quote">“${h(s.text)}”</p><p class="note" id="audClock"></p><div class="row"><button class="btn quiet" id="audSkip">Next</button><button class="btn quiet" id="audQuit">Stop</button></div></div>`;
+      speak(s.text, (a.audio||[])[k]); $('#audSkip').onclick=()=>next(); $('#audQuit').onclick=close; tickA(); };
+    const tickA=()=>{ const c=$('#audClock'); if(c) c.textContent=`${Math.floor(left/60)}:${String(left%60).padStart(2,'0')}`; };
+    const next=()=>{ k++; if(k>=steps.length){ clearInterval(audTimer); record(); return; } step(); };
+    const record=async()=>{ const video=!!d.profile.adult&&a.video!==false; let stream;
+      try{ stream=await navigator.mediaDevices.getUserMedia(video?{audio:true,video:{facingMode:'user'}}:{audio:true}); }catch(e){ toast('The microphone is needed to record a take.'); close(); return; }
+      const mt=video?(['video/webm;codecs=vp8,opus','video/webm','video/mp4'].find(m=>window.MediaRecorder&&MediaRecorder.isTypeSupported(m))||''):(pickMime()||'');
+      const r=new MediaRecorder(stream, mt?{mimeType:mt}:undefined); const chunks=[]; r.ondataavailable=e=>e.data.size&&chunks.push(e.data); const t0=Date.now();
+      ov.innerHTML=`<div style="max-width:560px;margin:0 auto"><div class="eyebrow">Recording${video?' (video)':''}</div><h2 class="big">Play when you're ready.</h2>${video?'<video id="audPrev" muted playsinline autoplay style="width:100%;border-radius:12px"></video>':''}<p class="note">Up to ten minutes. Stop when you have finished.</p><button class="btn block" id="audStop">Stop</button></div>`;
+      if(video){ const v=$('#audPrev'); v.srcObject=stream; }
+      r.start(1000); const cap=setTimeout(()=>r.state!=='inactive'&&r.stop(), 10*60*1000);
+      $('#audStop').onclick=()=>{ clearTimeout(cap); r.stop(); };
+      r.onstop=async()=>{ stream.getTracks().forEach(t=>t.stop()); const blob=new Blob(chunks,{type:(mt||'audio/webm').split(';')[0]}); const secs=Math.round((Date.now()-t0)/1000);
+        const take={id:uid(), at:new Date().toISOString(), seconds:secs, kind:video?'video':'audio', gut:null, words:''};
+        ov.innerHTML=`<div style="max-width:560px;margin:0 auto"><div class="eyebrow">Straight after</div><h2 class="big">What's your gut feeling?</h2><p>How did that go, from 1 (not well) to 5 (my best)? Then a word or two.</p>${scale('audGut')}<input id="audWords" placeholder="e.g. nervous start, strong finish" style="margin:10px 0"><button class="btn block" id="audSave">Save the take</button><p class="note" id="audSt"></p></div>`;
+        wireScales();
+        $('#audSave').onclick=async()=>{ const g=scaleVal('audGut'); if(!g){ toast('Tap a number first.'); return; } take.gut=g; take.words=$('#audWords').value.trim(); $('#audSt').textContent='Saving…';
+          try{ if(cloudOn()&&me?.studio_id&&sbUser){ const path=`${me.studio_id}/${sbUser.id}/audition-${take.id}.${video?'webm':audioExt(blob)}`; const {error}=await sb.storage.from('stuckato-private').upload(path, blob, {contentType:blob.type, upsert:true}); if(error) throw error; take.path=path; }
+               else if(blob.size<1.5*1024*1024){ take.data=`data:${blob.type};base64,${await toB64(blob)}`; } }catch(e){ take.failed=true; }
+          d.auditionTakes=d.auditionTakes||[]; d.auditionTakes.push(take); saveCurrent(); toast(take.failed?'Saved your rating; the recording did not upload.':'Saved. '+tn+' will listen.'); close(); }; }; };
+    step(); clearInterval(audTimer); audTimer=setInterval(()=>{ left--; tickA(); if(left<=0) next(); },1000); }
+  function agreement(takes){ const r=takes.filter(t=>t.gut&&t.tRating); if(!r.length) return null; const close=r.filter(t=>Math.abs(t.gut-t.tRating)<=1).length; return {n:r.length, close}; }
+  function auditionHTML(){ const d=doc(), a=d.profile.audition; if(!a||!a.on) return ''; const tn=d.teacherName||'your teacher'; const takes=(d.auditionTakes||[]).slice().reverse(); const ag=agreement(d.auditionTakes||[]);
+    return `<div class="card" style="border-color:var(--ink)"><div class="label" style="color:var(--ink)">Audition prep${a.date?' · '+h(fmt(a.date)):''}</div><p style="margin:0 0 8px"><b>${h(a.forWho||'Your audition')}</b>${a.excerpts?' · '+h(a.excerpts):''}</p>
+      <p style="margin:0 0 10px">Ten minutes of preparation in ${h(tn)}'s voice, then one take, then your gut feeling. Learning to judge your own playing is part of the audition.</p>
+      <button class="btn block" id="audStart">Start the ten-minute preparation</button>
+      ${takes.length?`<div class="label" style="margin-top:12px">Your takes</div>${takes.slice(0,5).map(t=>`<div class="daybox"><p style="margin:0">${h(fmt(t.at.slice(0,10)))} · ${t.kind} · you said ${h(t.gut)}/5${t.words?' ('+h(t.words)+')':''}${t.tRating?` · ${h(tn)} said ${h(t.tRating)}/5`:''}</p>${t.tNote?`<p class="quote" style="margin:6px 0 0">“${h(t.tNote)}”</p>`:''}</div>`).join('')}`:''}
+      ${ag?`<p class="note">You and ${h(tn)} agreed within a point on ${ag.close} of ${ag.n} takes.</p>`:''}</div>`; }
+
+  // habits: when and where, the weekly promise, a fresh start, personal bests, milestones
+  function weekMinutes(w){ return (w.done||[]).filter(evidenced).reduce((a,x)=>a+(+x.minutes||0),0); }
+  function habitsHTML(w){ const d=doc(), p=d.profile, out=[]; if(!w) return '';
+    if(!w.promise&&nextIndex(w)>=0) out.push(`<div class="card"><div class="label">This week's promise</div><p style="margin:0 0 8px">How many days will you practise before the next lesson?</p><div class="feel five" id="promiseRow">${[3,4,5,6,7].map(n=>`<button type="button" data-pr="${n}">${n}</button>`).join('')}</div><div class="note" style="margin:6px 0 0">${h(d.teacherName||'Your teacher')} sees it. Promises you make yourself are the ones you keep.</div></div>`);
+    else if(w.promise){ const n=evCount(w); out.push(`<div class="chips"><span class="chip">Promise: <b>${h(w.promise)} days</b> · ${n>=w.promise?'kept':n+' so far'}</span>${p.plan&&(p.plan.when||p.plan.where)?`<span class="chip">Your plan: <b>${h([p.plan.when,p.plan.where].filter(Boolean).join(', '))}</b></span>`:''}</div>`); }
+    const all=[...(d.weeks||[]).flatMap(k=>(k.done||[]).filter(evidenced).map(x=>x.at||'')), ...(d.breakLog||[]).filter(x=>x.note).map(x=>x.at||'')].sort(); const last=all.pop();
+    if(last&&Math.round((new Date(today())-new Date(last.slice(0,10)))/86400000)>=4&&nextIndex(w)>=0) out.push(`<div class="card"><div class="label">A fresh start</div><p style="margin:0">It's been a few days. That's fine: today is day one of a new run. One short session and you're back.</p></div>`);
+    const past=(d.weeks||[]).slice(0,-1); if(past.length){ const best=Math.max(...past.map(weekMinutes)); const now=weekMinutes(w); if(now>best&&best>0) out.push(`<div class="chips"><span class="chip">Personal best: <b>${now} minutes</b> this week, beating ${best}</span></div>`); }
+    return out.join(''); }
+  function wireHabits(w){ $$('#promiseRow [data-pr]').forEach(b=>b.onclick=()=>{ w.promise=+b.dataset.pr; w.promiseAt=new Date().toISOString(); saveCurrent(); toast('Promise made: '+w.promise+' days.'); renderTrail(false); }); }
+  const MILESTONES=[1,5,10,25,50,100,200,365];
+  function checkMilestone(){ const d=doc(); const n=(d.weeks||[]).reduce((a,w)=>a+evCount(w),0)+(d.breakLog||[]).filter(x=>x.note).length; d.milestones=d.milestones||[];
+    const hit=MILESTONES.find(m=>n>=m&&!d.milestones.includes(m)); if(!hit) return; d.milestones.push(...MILESTONES.filter(m=>n>=m&&!d.milestones.includes(m))); saveCurrent();
+    modal({label:'Milestone', title:hit===1?'Your first session.':`${hit} sessions.`, text:hit===1?'The hardest one is done. Short bursts from here.':`That's ${hit} times you turned up and practised. ${d.teacherName||'Your teacher'} can see it too.`, buttons:[{label:'Keep going'}]}); }
+
+  async function renderSocial(){ const box=$('#socialBox'); if(!box||!current) return; const parts=[];
+    const pl=await myPartners(); if(pl&&pl.length){ await settlePairs(pl); parts.push(partnerHTML(pl)); }
+    const rv=await reviewsForMe(); parts.push(await reviewHTML(rv));
+    parts.push(auditionHTML()); if(!$('#socialBox')) return; box.innerHTML=parts.join(''); wireReviews(); const as=$('#audStart'); if(as) as.onclick=()=>ready(runAudition); }
+
+  // teacher: pairs and reviews
+  async function renderTeacherSocial(){ const box=$('#tSocial'); if(!box||!students.length) return; const names=s=>h(s.data.profile?.name||'Pupil');
+    let pairs=null, reviews=null, picks=[];
+    if(cloudOn()){ const p=await tbl(sb.from('practicigo_partners').select('*')); pairs=p.error?null:p.data; const r=await tbl(sb.from('practicigo_reviews').select('*').order('created_at',{ascending:false})); reviews=r.error?null:r.data; if(reviews){ const k=await tbl(sb.from('practicigo_review_picks').select('*')); picks=k.data||[]; } }
+    else if(mode==='demo'){ const o=demoSocial(); pairs=o.pairs.map(x=>({id:x.id,a:x.a,b:x.b,challenge_minutes:x.challenge})); reviews=o.reviews; picks=o.picks; }
+    if(pairs===null&&reviews===null){ box.innerHTML=cloudOn()?`<div class="card"><div class="label">Partners and performance reviews</div><p class="note" style="margin:0">Switch these on by running supabase/v0.10-partners-reviews-auditions.sql once in the Supabase SQL editor.</p></div>`:''; return; }
+    const nm=id=>{ const s=students.find(x=>x.user_id===id); return s?names(s):'Pupil'; }; const opts=students.map(s=>`<option value="${h(s.user_id)}">${names(s)}</option>`).join('');
+    box.innerHTML=`${pairs!==null?`<div class="card"><div class="label">Practice partners</div>${pairs.map(p=>`<div class="flag"><span>${nm(p.a)} and ${nm(p.b)}${p.challenge_minutes?' · challenge '+h(p.challenge_minutes)+' min':''}</span><button class="btn sm quiet" data-unpair="${h(p.id)}">Unpair</button></div>`).join('')||'<p class="note" style="margin:0 0 8px">No pairs yet.</p>'}
+        <div class="row" style="margin-top:8px"><select id="pairA">${opts}</select><select id="pairB">${opts}</select><button class="btn sm" id="pairGo">Pair them</button></div>
+        <div class="note">Partners see each other's minutes, never messages. Matching minutes on the same day earns both double points; three matched days raise the challenge.</div></div>`:''}
+      ${reviews!==null?`<div class="card"><div class="label">Performance review</div>${reviews.map(r=>{ const n=picks.filter(k=>k.review_id===r.id).length; return `<div class="flag"><span><b>${h(r.title)}</b> · ${r.kind==='class'?'performance class':'review'}${r.group_name?' · '+h(r.group_name):' · everyone'}${r.held_on?' · '+h(fmt(r.held_on)):''} · ${n} ${n===1?'pick':'picks'}</span>${r.released?'<span class="pill on">released</span>':`<button class="btn sm" data-release="${h(r.id)}">Release</button>`}</div>`; }).join('')||'<p class="note" style="margin:0 0 8px">None yet.</p>'}
+        <div class="grid2"><div><label class="l" for="rvTitle">Title</label><input id="rvTitle" placeholder="End-of-term performance class"></div><div><label class="l" for="rvDate">Date</label><input type="date" id="rvDate" value="${today()}"></div>
+          <div><label class="l" for="rvKind">Kind</label><select id="rvKind"><option value="class">Performance class</option><option value="review">Performance review</option></select></div><div><label class="l" for="rvGroup">Who</label><select id="rvGroup"><option value="">Everyone</option>${allGroups().map(g=>`<option>${h(g)}</option>`).join('')}</select></div></div>
+        <button class="btn sm" id="rvGo" style="margin-top:8px">Open it</button>
+        <div class="note">Pupils pick what they liked most and what could be better from ten categories, one point per classmate reviewed. They see their own picks only when you release the review. The live class itself is not recorded.</div></div>`:''}`;
+    const pg=$('#pairGo'); if(pg) pg.onclick=async()=>{ const a=$('#pairA').value, b=$('#pairB').value; if(a===b){ toast('Pick two different pupils.'); return; }
+      if(cloudOn()){ const r=await rpc('practicigo_pair',{x:a,y:b}); if(r.error){ toast(r.error.message||'Could not pair.'); return; } } else { const o=demoSocial(); if(!o.pairs.some(p=>(p.a===a&&p.b===b)||(p.a===b&&p.b===a))) o.pairs.push({id:uid(),a,b,challenge:null}); demoSave(o); }
+      toast('Paired.'); renderTeacherSocial(); };
+    $$('[data-unpair]').forEach(b=>b.onclick=async()=>{ if(cloudOn()) await rpc('practicigo_unpair',{pid:b.dataset.unpair}); else { const o=demoSocial(); o.pairs=o.pairs.filter(p=>p.id!==b.dataset.unpair); demoSave(o); } renderTeacherSocial(); });
+    const rg=$('#rvGo'); if(rg) rg.onclick=async()=>{ const title=$('#rvTitle').value.trim()||'Performance class'; const row={title, kind:$('#rvKind').value, group_name:$('#rvGroup').value||null, held_on:$('#rvDate').value||null};
+      if(cloudOn()){ const r=await tbl(sb.from('practicigo_reviews').insert({...row, studio_id:me.studio_id})); if(r.error){ toast(r.error.message||'Could not open it.'); return; } } else { const o=demoSocial(); o.reviews.unshift({id:uid(), ...row, released:false, created_at:new Date().toISOString()}); demoSave(o); }
+      toast('Open. Pupils see it on their trail.'); renderTeacherSocial(); };
+    $$('[data-release]').forEach(b=>b.onclick=async()=>{ if(cloudOn()) await tbl(sb.from('practicigo_reviews').update({released:true}).eq('id',b.dataset.release)); else { const o=demoSocial(); const r=o.reviews.find(x=>x.id===b.dataset.release); if(r) r.released=true; demoSave(o); } toast('Released.'); renderTeacherSocial(); }); }
+
+  // teacher: audition takes on the pupil page
+  async function takeUrl(t){ if(t.data) return t.data; if(t.path&&cloudOn()){ try{ const {data}=await sb.storage.from('stuckato-private').createSignedUrl(t.path, 3600); return data?.signedUrl||''; }catch(e){} } return ''; }
+  function renderTeacherAud(){ const box=$('#tAud'); if(!box||!current) return; const d=current.data, p=d.profile, a=p.audition||{}; const takes=(d.auditionTakes||[]).slice().reverse(); const ag=agreement(d.auditionTakes||[]);
+    box.innerHTML=`<div class="card"><h3>Audition prep</h3>
+      <label class="switch" style="font-size:15px;color:var(--ink)"><input type="checkbox" id="aOn" ${a.on?'checked':''}> Switch on for ${h(p.name||'this pupil')}</label>
+      <div class="grid2" style="margin-top:8px"><div><label class="l" for="aWho">Who the audition is for</label><input id="aWho" value="${h(a.forWho||'')}" placeholder="e.g. National Youth Orchestra"></div><div><label class="l" for="aDate">Date</label><input type="date" id="aDate" value="${h(a.date||'')}"></div>
+        <div><label class="l" for="aEx">Excerpts</label><input id="aEx" value="${h(a.excerpts||'')}" placeholder="e.g. Brahms 2, opening; Don Juan"></div><div><label class="l" for="aPanel">The panel</label><input id="aPanel" value="${h(a.panel||'')}" placeholder="e.g. three section leaders"></div></div>
+      <label class="switch" style="font-size:15px;color:var(--ink);margin-top:8px"><input type="checkbox" id="aAdult" ${p.adult?'checked':''}> 18 or over (video takes allowed; audio for everyone)</label>
+      <label class="switch" style="font-size:15px;color:var(--ink)"><input type="checkbox" id="a13" ${p.over13?'checked':''}> 13 or over (may see a partner practising now)</label>
+      <button class="btn sm" id="aSave" style="margin-top:8px">Save</button><span class="status" id="aSt" style="margin-left:8px"></span>
+      ${takes.length?`<div class="label" style="margin-top:12px">Takes</div>${takes.map(t=>`<div class="daybox" data-take="${h(t.id)}"><p style="margin:0">${h(fmt(t.at.slice(0,10)))} ${h(timeOf(t.at))} · ${t.kind} · ${Math.max(1,Math.round((t.seconds||0)/60))} min · gut feeling <b>${h(t.gut)}/5</b>${t.words?' ('+h(t.words)+')':''}</p>
+        ${(t.path||t.data)?`<button class="btn sm quiet tPlay">Play</button><div class="tMedia"></div>`:'<p class="note" style="margin:4px 0 0">Recording not uploaded.</p>'}
+        <div class="row" style="margin-top:6px"><span class="l" style="margin:0">Your rating</span>${[1,2,3,4,5].map(n=>`<button type="button" class="btn sm ${t.tRating===n?'':'quiet'} tR" data-n="${n}">${n}</button>`).join('')}</div>
+        <div class="row" style="margin-top:6px"><input class="tNote" placeholder="Feedback on this take" value="${h(t.tNote||'')}" style="flex:1"><button class="btn sm tSave">Send</button></div></div>`).join('')}${ag?`<p class="note">Agreement: within a point on ${ag.close} of ${ag.n} takes.</p>`:''}`:'<p class="note">Takes appear here after the pupil records them. Only you and the pupil can open them.</p>'}</div>`;
+    $('#aSave').onclick=()=>{ p.audition={...a, on:$('#aOn').checked, forWho:$('#aWho').value.trim(), date:$('#aDate').value, excerpts:$('#aEx').value.trim(), panel:$('#aPanel').value.trim()}; p.adult=$('#aAdult').checked; p.over13=$('#a13').checked||p.adult;
+      saveCurrent(); $('#aSt').textContent='Saved.'; if(p.audition.on&&mode==='cloud'&&me?.voice_ready&&cfg?.voice) voiceAudition(p.audition); };
+    $$('[data-take]').forEach(box2=>{ const t=(d.auditionTakes||[]).find(x=>x.id===box2.dataset.take); if(!t) return;
+      const pl=box2.querySelector('.tPlay'); if(pl) pl.onclick=async()=>{ const u=await takeUrl(t); if(!u){ toast('Could not open it.'); return; } box2.querySelector('.tMedia').innerHTML=t.kind==='video'?`<video controls playsinline src="${h(u)}" style="width:100%;margin-top:6px"></video>`:`<audio controls src="${h(u)}" style="width:100%;margin-top:6px"></audio>`; };
+      box2.querySelectorAll('.tR').forEach(b=>b.onclick=()=>{ t.tRating=+b.dataset.n; saveCurrent(); renderTeacherAud(); });
+      box2.querySelector('.tSave').onclick=()=>{ t.tNote=box2.querySelector('.tNote').value.trim(); saveCurrent(); toast('Sent.'); renderTeacherAud(); }; }); }
+  async function voiceAudition(a){ // the routine in the teacher's own voice, synthesised once when she switches it on
+    const steps=auditionScript(a, me?.name||''); a.audio=[]; for(let k=0;k<steps.length;k++){ try{ const r=await fetch('/api/speak',{method:'POST',headers:{'content-type':'application/json',...(await authHeaders())},body:JSON.stringify({text:steps[k].text, path:`${me.studio_id}/audition/${uid()}-${k}.mp3`})}); const j=await r.json(); a.audio[k]=r.ok&&j.url?j.url:null; }catch(e){ a.audio[k]=null; } } saveCurrent(); }
 
   // ------------------------------------------------------------ session runner
   let si=0, stepI=0, left=0, total=0, timer=null, paused=false, sess=null;
@@ -584,10 +754,10 @@ canvas.cardc{width:100%; max-width:420px; border-radius:16px; border:1px solid v
   function ownTick(){ const sec=Math.floor((Date.now()-sessStart)/1000); $('#ownClock').textContent=`${Math.floor(sec/60)}:${String(sec%60).padStart(2,'0')}`; const aim=planMinutes(sess)*60; $('#ownArc').style.strokeDashoffset=ARC*Math.max(0,1-sec/aim); }
   const aimMinutes=s=>Math.max(planMinutes(s), +doc().profile.selfMinutes||0);
   let breakExtra=false; // own-time practice on a break day after the week's sessions are all done
-  function startOwn(i, extra){ const w=week(); breakExtra=!!extra; si=extra?-1:i; sess=extra?{title:'Keep going over the break', steps:[]}:w.sessions[i]; sessStart=Date.now(); $('#ownTitle').textContent=sess.title; $('#ownAim').textContent=`aim ${aimMinutes(sess)} min`; ownTick(); clearInterval(ownTimer); ownTimer=setInterval(ownTick,1000); hearStart(); show('own'); }
+  function startOwn(i, extra){ const w=week(); breakExtra=!!extra; si=extra?-1:i; sess=extra?{title:'Keep going over the break', steps:[]}:w.sessions[i]; sessStart=Date.now(); $('#ownTitle').textContent=sess.title; $('#ownAim').textContent=`aim ${aimMinutes(sess)} min`; ownTick(); clearInterval(ownTimer); ownTimer=setInterval(ownTick,1000); hearStart(); markActive(true); show('own'); }
   $('#ownFinish').onclick=()=>{ clearInterval(ownTimer); const mins=elapsedMinutes(), target=aimMinutes(sess); const go=t=>breakExtra?finishBreak(t):finish(true,t); if(mins<target) shortReason(mins,target,r=>go({minutes:mins,target,short:true,reason:r})); else go({minutes:mins,target,short:false}); };
   function finishBreak(t){ // a break-day practice: logged on its own, with the sentence, for two tokens
-    const hr=hearStop(); const d=doc(); d.breakLog=d.breakLog||[]; const rec={id:uid(), at:new Date().toISOString(), startedAt:new Date(sessStart||Date.now()).toISOString(), ...t, ...hr}; d.breakLog.push(rec); saveCurrent();
+    const hr=hearStop(); const d=doc(); delete d.activeUntil; d.breakLog=d.breakLog||[]; const rec={id:uid(), at:new Date().toISOString(), startedAt:new Date(sessStart||Date.now()).toISOString(), ...t, ...hr}; d.breakLog.push(rec); saveCurrent();
     modal({label:'Over the break', title:`${rec.minutes} minutes.`, text:'Write what you worked on and what changed. The two tokens come with the sentence.', body:'<textarea id="brNote" placeholder="e.g. The scale is even now; the shift in bar 12 still slips." style="margin-bottom:8px"></textarea>',
       buttons:[{label:'Save',onClick:()=>{ const txt=($('#brNote').value||'').trim(); if(txt.length<20){ toast('A sentence, please: at least a few words.'); return false; } rec.note=txt; const tk=d.tokens||(d.tokens={earned:0,redeemed:0}); tk.earned=(tk.earned||0)+2; rec.earned=2; saveCurrent(); toast('Saved. Two tokens.'); renderToday(); }}]}); }
   const ARC=276.5;
@@ -612,10 +782,11 @@ canvas.cardc{width:100%; max-width:420px; border-radius:16px; border:1px solid v
     clearInterval(timer); try{ speechSynthesis.cancel(); player.pause(); }catch(e){}
     const f=$('#fermata'); let gone=false; const go=()=>{ if(gone) return; gone=true; f.classList.remove('on'); f.onclick=null; cb(); };
     f.classList.add('on'); f.onclick=go; setTimeout(go, 6000); }
-  function startSession(i){ const w=week(); si=i; sess=w.sessions[i]; stepI=0; paused=false; breakExtra=false; hearStart(); sessStart=Date.now(); $('#pause').textContent='Pause'; $('#sessTitle').textContent=sess.title; $('#speak').checked=true; stepInit(); run(); show('session'); }
+  function markActive(on){ const d=doc(); if(on) d.activeUntil=new Date(Date.now()+75*60000).toISOString(); else delete d.activeUntil; saveCurrent(); }
+  function startSession(i){ const w=week(); si=i; sess=w.sessions[i]; stepI=0; paused=false; breakExtra=false; hearStart(); markActive(true); sessStart=Date.now(); $('#pause').textContent='Pause'; $('#sessTitle').textContent=sess.title; $('#speak').checked=true; stepInit(); run(); show('session'); }
   function finish(ownTime, t){ // t: {minutes,target,short,reason} from the clock; the day is recorded even when it was short
     clearInterval(timer); clearInterval(ownTimer); try{ speechSynthesis.cancel(); player.pause(); }catch(e){}
-    const hr=hearStop();
+    const hr=hearStop(); delete doc().activeUntil;
     const w=week(); w.done=w.done||[]; const rec={i:si, at:new Date().toISOString(), startedAt:new Date(sessStart||Date.now()).toISOString(), feel:'', worked:[], own:!!ownTime, ...(t||{}), ...hr};
     const ex=w.done.find(x=>x.i===si); if(ex){ Object.assign(ex, {startedAt:rec.startedAt, minutes:rec.minutes, target:rec.target, short:rec.short, reason:rec.reason, heardSec:rec.heardSec, checked:rec.checked}); } else w.done.push(rec);
     saveCurrent(); showDone();
@@ -639,7 +810,7 @@ canvas.cardc{width:100%; max-width:420px; border-radius:16px; border:1px solid v
   $('#pause').onclick=e=>{ paused=!paused; e.target.textContent=paused?'Resume':'Pause'; if(paused){ try{ speechSynthesis.pause(); player.pause(); }catch(x){} } else { try{ speechSynthesis.resume(); if(player.src&&player.currentTime>0&&!player.ended) player.play().catch(()=>{}); }catch(x){} } };
   $('#skip').onclick=()=>nextStep();
   $('#quit').onclick=()=>{ clearInterval(timer); try{ speechSynthesis.cancel(); player.pause(); }catch(e){}
-    const secs=(Date.now()-sessStart)/1000; if(secs<60){ hearStop(); renderToday(); return; }
+    const secs=(Date.now()-sessStart)/1000; if(secs<60){ hearStop(); markActive(false); renderToday(); return; }
     const mins=elapsedMinutes(), target=planMinutes(sess); shortReason(mins,target,r=>finish(false,{minutes:mins,target,short:true,reason:r})); };
   $$('#feel button').forEach(b=>b.onclick=()=>{ $$('#feel button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); const w=week(); const d=(w.done||[]).find(x=>x.i===si); if(d) d.feel=b.dataset.f; saveCurrent();
     const t=$('#tailor'); t.hidden=false;
@@ -654,6 +825,7 @@ canvas.cardc{width:100%; max-width:420px; border-radius:16px; border:1px solid v
     const onBreak=!!breakInfo();
     if(!d.earned){ const t=doc().tokens||(doc().tokens={earned:0,redeemed:0}); t.earned=(t.earned||0)+(onBreak?2:1); d.earned=true; if(onBreak) d.breakBonus=true; }
     const bonus=maybeWeekBonus(w); saveCurrent(); if(first) notifyTeacher(d, w);
+    if(first) setTimeout(checkMilestone, 900);
     toast(bonus?'Week complete: two bonus tokens.':first?(onBreak?'Saved. Two tokens: it counts double over the break.':'Saved. Token earned.'):'Saved.'); renderJourney(true); };
 
   // ------------------------------------------------------------ journey
@@ -871,6 +1043,11 @@ canvas.cardc{width:100%; max-width:420px; border-radius:16px; border:1px solid v
         <div class="grid2"><div><label class="l" for="gLabel">What it is</label><input id="gLabel" placeholder="e.g. Grade 3 exam, school concert" value="${h(p.goalLabel||'')}"></div><div><label class="l" for="gDate">Roughly when</label><input type="date" id="gDate" value="${h(p.goalDate||'')}"></div></div>
         <label class="l" for="gPart">Your part or section, if you sing or play in a group</label><input id="gPart" placeholder="e.g. Alto, Second violin, Cello" value="${h(p.part||'')}">
         <button class="btn sm" id="gSave" style="margin-top:10px">Save</button></div>
+      <div class="card"><h3>When and where</h3>
+        <p style="margin:0 0 8px">Pick a time and a place and practising stops being a decision you make every day.</p>
+        <div class="grid2"><div><label class="l" for="plWhen">When</label><select id="plWhen">${['','Before school','After school','Before dinner','After dinner','Before bed','At the weekend in the morning'].map(o=>`<option ${p.plan?.when===o?'selected':''}>${o}</option>`).join('')}</select></div>
+          <div><label class="l" for="plWhere">Where</label><input id="plWhere" value="${h(p.plan?.where||'')}" placeholder="e.g. in my room, music stand by the window"></div></div>
+        <button class="btn sm" id="plSave" style="margin-top:8px">Save my plan</button></div>
       <div class="card"><h3>Your daily target</h3>
         <p style="margin:0 0 8px">${h(doc().teacherName||'Your teacher')} set <b>${h(p.minutes||levelMinutes(p.level))} minutes</b> a day. Want to do more? Set your own. ${h(doc().teacherName||'Your teacher')} sees when you change it.</p>
         <div class="row"><input type="number" id="gSelf" min="${h(p.minutes||levelMinutes(p.level))}" max="180" step="5" value="${h(p.selfMinutes||p.minutes||levelMinutes(p.level))}" style="width:7em"><span>minutes a day</span><button class="btn sm" id="gSelfSave">Set</button></div></div>
@@ -881,6 +1058,7 @@ canvas.cardc{width:100%; max-width:420px; border-radius:16px; border:1px solid v
         <div class="note">${mode==='cloud'?'On an iPhone, add Stuckato to your Home Screen first (Share, then "Add to Home Screen"), then turn notifications on from there.':'Notifications need the live site with an account.'}</div></div>`;
     $('#backG').onclick=()=>renderTrail(true);
     $('#gSave').onclick=()=>{ p.goalLabel=$('#gLabel').value.trim(); p.goalDate=$('#gDate').value; p.part=$('#gPart').value.trim(); saveCurrent(); toast('Saved.'); renderTrail(true); };
+    $('#plSave').onclick=()=>{ p.plan={when:$('#plWhen').value, where:$('#plWhere').value.trim()}; saveCurrent(); toast('Plan saved. It shows on your trail.'); };
     $('#gSelfSave').onclick=()=>{ const base=+(p.minutes||levelMinutes(p.level)); let v=Math.round(+$('#gSelf').value||base); if(v<base) v=base; const was=+(p.selfMinutes||base); if(v===was){ toast('That is already your target.'); return; } logTarget(doc(),'pupil',was,v); p.selfMinutes=v>base?v:null; saveCurrent(); toast('Your target: '+v+' minutes a day.'); renderGoal(true); };
     $$('#remRow input').forEach(r=>r.onchange=()=>{ p.reminder=r.value; saveCurrent(); toast(r.value==='off'?'No morning messages.':'Saved.'); });
     $('#pushOn').onclick=enablePush; $('#remTest').onclick=sendTestReminder;
@@ -1016,7 +1194,7 @@ canvas.cardc{width:100%; max-width:420px; border-radius:16px; border:1px solid v
         <div>
           <div class="card" id="groupCard" style="cursor:pointer"><div class="label">After a rehearsal</div><p style="margin:0">Write one week for the whole group, or for each section separately. For choirs, orchestras and ensembles. Tap to open.</p></div>
           ${students.length?messageFormHTML():''}
-          ${groupsCard}${breakForm}
+          ${groupsCard}${breakForm}<div id="tSocial"></div>
         </div>
       </div>
       ${mode==='cloud'?`<div class="box ${me?.voice_ready?'b':'c'}" id="voiceCard" style="cursor:pointer"><div class="label">Your voice</div><div class="quote">${me?.voice_ready?'Recorded.':'Not recorded yet.'}</div><div class="note">${me?.voice_ready?'New weeks are spoken in it. Tap to re-record or remove.':'Record thirty seconds and pupils hear their sessions in your voice. Tap to set it up.'}</div></div>`:''}`;
@@ -1027,6 +1205,7 @@ canvas.cardc{width:100%; max-width:420px; border-radius:16px; border:1px solid v
     $$('[data-gok]').forEach(b=>b.onclick=async e=>{ e.stopPropagation(); const st=students.find(s=>s.user_id===b.dataset.gok); if(!st) return; st.data.profile.groupsOk=true; try{ await saveStudent(st); }catch(err){} renderTeacher(); });
     $$('[data-gopen]').forEach(b=>b.onclick=e=>{ e.stopPropagation(); current=students.find(s=>s.user_id===b.dataset.gopen); renderTStudent(); show('tstudent'); const g=$('#pGroups'); if(g){ g.scrollIntoView({block:'center'}); g.focus(); } });
     $$('#bkTo2 input').forEach(i=>i.onchange=()=>{ if(i.value!=='*'&&i.checked) $('#bkTo2 input[value="*"]').checked=false; });
+    renderTeacherSocial();
     const bk=$('#bkSet'); if(bk) bk.onclick=async()=>{ const from=$('#bkFrom').value, to=$('#bkTo').value; if(!from||!to||to<=from){ toast('Pick a start and an end.'); return; }
       const sel=$$('#bkTo2 input:checked').map(x=>x.value); const tg=(!sel.length||sel.includes('*'))?students.slice():students.filter(s=>groupsOf(s.data).some(g=>sel.includes('group:'+g)));
       const goal=+$('#bkGoal').value||null, reward=$('#bkReward').value.trim();
@@ -1041,7 +1220,7 @@ canvas.cardc{width:100%; max-width:420px; border-radius:16px; border:1px solid v
       <button class="btn sm quiet" id="backT">← Pupils</button>
       <div class="eyebrow" style="margin-top:10px">Pupil</div><h2 class="big">${h(p.name||'Pupil')}</h2>
       ${(flags.filter(f=>!f.resolved).length||(w&&stillDiffersLine(w)))?`<div class="box" style="border-color:var(--danger)"><h3 style="color:var(--danger)">Flagged for the next lesson</h3>${flags.filter(f=>!f.resolved).map(f=>`<div class="flag"><span>${h(f.text)} <span class="note" style="margin:0">· ${h(fmt(f.at.slice(0,10)))}</span></span><button class="btn sm quiet" data-res="${f.id}">Done</button></div>`).join('')}${w&&stillDiffersLine(w)?`<div class="flag"><span>${h(stillDiffersLine(w))}</span></div>`:''}</div>`:''}
-      ${w?`<div class="card"><div class="label">This week</div>${staveWeek(w)}<div class="note" style="margin:0">${doneCount(w)} of ${w.sessions.length} days done · felt: ${(w.done||[]).map(x=>x.feel).filter(Boolean).join(', ')||'nothing logged yet'} · next lesson ${h(fmt(w.nextLesson))}</div>
+      ${w?`<div class="card"><div class="label">This week</div>${staveWeek(w)}<div class="note" style="margin:0">${w.promise?`promised ${h(w.promise)} days · `:''}${(d.milestones||[]).length?`${h(Math.max(...d.milestones))} sessions all told · `:''}${doneCount(w)} of ${w.sessions.length} days done · felt: ${(w.done||[]).map(x=>x.feel).filter(Boolean).join(', ')||'nothing logged yet'} · next lesson ${h(fmt(w.nextLesson))}</div>
         ${workTally(w).length?`<div class="label" style="margin-top:12px">Worked on most this week</div><ul class="ticks" style="margin-top:4px">${workTally(w).map(([it,c])=>`<li style="cursor:default"><span style="flex:1">${h(it)}</span><span class="pill on">${c} ${c===1?'day':'days'}</span></li>`).join('')}</ul>`:'<div class="note">What the pupil ticks after each session appears here, most-worked first, so you can plan the lesson.</div>'}
         <div class="label" style="margin-top:12px">What they wrote, day by day</div>
         ${(w.done||[]).length?(w.done||[]).slice().sort((a,b)=>a.i-b.i).map(x=>`<div class="daybox"><p style="margin:0"><b>Day ${x.i+1}${w.sessions[x.i]?' · '+h(w.sessions[x.i].title):''}</b> · ${h(fmt((x.at||'').slice(0,10)))}${x.at?' '+h(timeOf(x.at)):''}${x.feel?' · felt '+h(x.feel.toLowerCase()):''}${x.own?' · own time':''}${x.minutes?` · ${h(x.minutes)} of ${h(x.target||'?')} min`:''}${heardLine(x)}${(x.worked||[]).length?' · '+h(x.worked.join(', ')):''}</p>
@@ -1084,6 +1263,7 @@ canvas.cardc{width:100%; max-width:420px; border-radius:16px; border:1px solid v
             <div><label class="l">Typically prepared for lessons, 1 to 5</label>${scale('bPrep', d.baseline?.prepared)}</div>
             <div><label class="l">Typical progress between lessons, 1 to 5</label>${scale('bProg', d.baseline?.progress)}</div></div></div>
         </div><button class="btn sm" id="pSave" style="margin-top:10px">Save profile</button></div>
+      <div id="tAud"></div>
       <div class="card"><h3>Add a task this week</h3>
         <div class="row"><input id="xText" placeholder="e.g. Listen to the Bach three times before Thursday" style="flex:1"><button type="button" class="btn quiet mic" data-dictate="xText">Dictate</button><button class="btn sm" id="xAdd">Add</button></div>
         ${(d.extras||[]).filter(x=>!x.done).length?`<div style="margin-top:8px">${(d.extras||[]).filter(x=>!x.done).map(x=>`<div class="flag"><span>${h(x.text)} <span class="note" style="margin:0">· ${h(fmt(x.at.slice(0,10)))}</span></span><button class="btn sm quiet" data-xrm="${x.id}">Remove</button></div>`).join('')}</div>`:''}
@@ -1116,6 +1296,7 @@ canvas.cardc{width:100%; max-width:420px; border-radius:16px; border:1px solid v
     $('#gen').onclick=generateWeek; wireScales();
     $$('[data-dictate]').forEach(b=>b.onclick=()=>dictate(b.dataset.dictate,b));
     if(w) wirePassageTeacher(w, d, p);
+    renderTeacherAud();
     if(preview) renderPreview();
   }
   async function generateWeek(){
