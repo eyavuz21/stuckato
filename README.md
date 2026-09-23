@@ -14,6 +14,14 @@ Stuckato has two sides. The **teacher** writes a thirty-second note after each l
 
 **Why not Yousician?** Yousician is for people without a teacher: it listens through the phone, lights each note green or red against its own library, and covers guitar, piano, bass, ukulele and voice. Stuckato is for the six days between lessons, run by the teacher. The week is her note, in her voice, for the actual piece; the teacher sees what happened; violin, cello, wind, brass and choirs are in; the point is turning up on Wednesday, not scoring notes. Where Stuckato does listen (the week's passage, below), it compares the pupil to the teacher's own playing, points at the bars that differ, and leaves the judgement to her. Nobody else has the teacher in the loop.
 
+## What's in v0.9 (23 September 2026)
+
+- **Groups.** A teacher puts pupils in any groups (a school, a year, a section), several per pupil, in each profile. Messages, group weeks and breaks can go to a whole group. Pupils in no group are flagged on the teacher's page ("Not in a group. Check whether they should be"), with *Fine on their own* to clear the flag.
+- **The sound check.** During a session the phone counts the seconds an instrument is sounding, and the teacher sees "heard playing 18 of 20 min" for each day. Nothing is recorded or sent; the teacher's spoken captions are not counted. No microphone, and the day says "not checked".
+- **Grade limits.** Grades 1 to 2 up to 30 minutes a day, 3 to 4 up to 45, 5 and above up to 60. Profiles on the old bands keep them until the teacher picks a new one.
+- **Your own target.** A pupil can raise their daily target in Goal; every change, by pupil or teacher, is logged on the teacher's pupil page.
+- **The break.** Over half term, a holiday, or any gap of two weeks or more between lessons, every practice day earns two tokens, and practising on most days wins a bigger reward the teacher names. The pupil's trail shows the break, the teacher's last "what you did well" line, and a *Keep going over the break* clock once the week's sessions are done.
+
 ## What's in v0.8 (19 September 2026)
 
 - **The week's passage.** On the pupil page the teacher records the few bars that matter this week, up to a minute, once, the way she wants them to sound. The pupil's trail gets a card with her clip (*Play*, *Play slowly* at 60% with the pitch kept) and *Record mine*: the same bars, thirty seconds at most. On the phone, Stuckato turns both clips into note lists (pitch tracking in the browser, `passage.js`, no server), lines them up, and says "Stuckato thinks 13 of 14 notes matched Melisande's. Have a listen at 0:05." Each spot is a chip: *Hers*, *Loop hers* (three times), *Mine*. Send it and the take goes to the teacher.
