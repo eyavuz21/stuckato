@@ -278,8 +278,26 @@ canvas.cardc{width:100%; max-width:420px; border-radius:16px; border:1px solid v
   let current=null; // selected student (teacher) or self (student): {user_id, data}
   let pushTimer=null;
 
-  const LEVELS=[['beginner','Beginner',20],['grade1-3','Grades 1 to 3',25],['grade4-6','Grades 4 to 6',40],['grade7-8','Grades 7 to 8, diploma',60],['returning','Returning adult',25],['advanced','Advanced, conservatoire',75]];
-  function levelMinutes(level){ const l=LEVELS.find(x=>x[0]===level||x[1].toLowerCase()===String(level||'').toLowerCase()); return l?l[2]:20; }
+  const LEVELS=[['beginner','Beginner',20],['grade1-2','Grades 1 to 2',30],['grade3-4','Grades 3 to 4',45],['grade5+','Grade 5 and above, diploma',60],['returning','Returning adult',25],['advanced','Advanced, conservatoire',60]];
+  // the bands before 23 Sep 2026, kept so a saved profile keeps its level until the teacher picks a new band
+  const OLD_LEVELS={'grade1-3':['Grades 1 to 3 (old band)',30],'grade4-6':['Grades 4 to 6 (old band)',45],'grade7-8':['Grades 7 to 8 (old band)',60]};
+  function levelMinutes(level){ if(OLD_LEVELS[level]) return OLD_LEVELS[level][1]; const l=LEVELS.find(x=>x[0]===level||x[1].toLowerCase()===String(level||'').toLowerCase()); return l?l[2]:20; }
+  const levelLabel=k=>OLD_LEVELS[k]?OLD_LEVELS[k][0]:(LEVELS.find(x=>x[0]===k)||[,k||''])[1];
+  // groups: any number per pupil, set by the teacher (school, year, section, anything)
+  const groupsOf=d=>((d&&d.profile&&d.profile.groups)||[]).map(g=>String(g).trim()).filter(Boolean);
+  const allGroups=()=>[...new Set(students.flatMap(s=>groupsOf(s.data)))].sort((a,b)=>a.localeCompare(b));
+  // a long break between lessons: set by the teacher, or any gap of 14 days or more
+  function breakInfo(d){ d=d||doc(); const w=d.weeks&&d.weeks.length?d.weeks[d.weeks.length-1]:null; const t=today();
+    let b=d.break&&d.break.from&&d.break.to&&t>=d.break.from&&t<=d.break.to?Object.assign({set:true},d.break):null;
+    if(!b&&w&&w.nextLesson){ const from=w.lessonDate||(w.createdAt||'').slice(0,10); if(from&&Math.round((new Date(w.nextLesson)-new Date(from))/86400000)>=14&&t>from&&t<w.nextLesson) b={from, to:w.nextLesson, set:false}; }
+    if(!b) return null; const days=Math.max(1,Math.round((new Date(b.to)-new Date(b.from))/86400000));
+    const goal=b.goal||Math.max(3,Math.round(days*0.6));
+    const inRange=x=>x&&x.slice(0,10)>=b.from&&x.slice(0,10)<=b.to;
+    const dates=new Set([...(d.weeks||[]).flatMap(k=>(k.done||[]).filter(evidenced).map(x=>(x.at||'').slice(0,10))), ...(d.breakLog||[]).filter(x=>x.note).map(x=>(x.at||'').slice(0,10))].filter(inRange));
+    return Object.assign(b,{days, goal, practised:dates.size, left:Math.max(0,Math.round((new Date(b.to)-new Date(t))/86400000)), reward:b.reward||d.profile?.reward||''}); }
+  function lastPraise(d){ d=d||doc(); const ws=(d.weeks||[]).slice().reverse(); for(const w of ws){ if(w.recording&&w.recording.reply) return w.recording.reply; if(w.line) return w.line; } return ''; }
+  // daily target: the teacher sets it; anyone can raise their own, and every change is logged for the teacher
+  function logTarget(d, by, from, to){ if(from===to) return; d.profile.targetLog=d.profile.targetLog||[]; d.profile.targetLog.push({at:new Date().toISOString(), by, name:by==='teacher'?(me?.name||'Teacher'):(d.profile.name||'Pupil'), from, to}); }
   function blankDoc(name){ return {profile:{name:name||'', instrument:'violin', part:'', level:'beginner', goalLabel:'', goalDate:'', sessionsPerWeek:7, minutes:20, reminder:'push'}, notes:[], weeks:[], flags:[], extras:[], tokens:{earned:0, redeemed:0}, teacherName:''}; }
   function loadLocal(){ try{ let s=localStorage.getItem(LKEY); if(!s){ for(const k of LKEY_OLDS){ s=localStorage.getItem(k); if(s){ localStorage.setItem(LKEY,s); localStorage.removeItem(k); break; } } } if(s) return JSON.parse(s); }catch(e){} return null; }
   function saveLocal(o){ try{ localStorage.setItem(LKEY, JSON.stringify(o)); }catch(e){} }
@@ -473,12 +491,20 @@ canvas.cardc{width:100%; max-width:420px; border-radius:16px; border:1px solid v
       $('#goGoal').onclick=()=>renderGoal(true);
       bar.innerHTML=''; if(showIt!==false) show('trail'); return;
     }
-    const i=nextIndex(w); const n=doneCount(w); const s=i>=0?w.sessions[i]:null; const d=new Set((w.done||[]).map(x=>x.i));
+    const i=nextIndex(w); const n=doneCount(w); const s=i>=0?w.sessions[i]:null; const d=new Set((w.done||[]).map(x=>x.i)); const br=breakInfo();
+    const praise=lastPraise();
+    const breakCard=br?`<div class="card" style="border-color:var(--ink);background:var(--card)"><div class="label" style="color:var(--ink)">The break · ${h(fmt(br.from))} to ${h(fmt(br.to))} · ${br.left} ${br.left===1?'day':'days'} to go</div>
+        <p style="margin:0 0 8px"><b>Every day you practise over the break counts double.</b> Practise on ${br.goal} of the ${br.days} days and ${br.reward?'win '+h(br.reward):'win the bigger reward from '+h(tn)}.</p>
+        ${praise?`<p style="margin:0 0 8px">Before the break, ${h(tn)} said: “${h(praise)}” Keep that going.</p>`:''}
+        <p style="margin:0 0 8px">A break is when most players slip back. Short bursts now and you walk into the next lesson ahead of where you left it.</p>
+        <div class="tokens">${Array.from({length:br.goal},(_,k)=>`<i class="tok ${k<br.practised?'on':''}"></i>`).join('')}</div>
+        <p class="note" style="margin:6px 0 0">${br.practised>=br.goal?'Goal reached. Tell '+h(tn)+'.':br.practised+' of '+br.goal+' days so far.'}</p></div>`:'';
     const lastDone=(w.done||[]).slice(-1)[0]; const mins=p.minutes||levelMinutes(p.level); const tk=tokensView(); const flags=doc().flags||[];
     const todayCard = s ? `<div class="card" style="border-color:var(--ink)"><div class="label" style="color:var(--ink)">Today · day ${i+1} of ${w.sessions.length} · ${h(fmt(today()))}</div><p><b>${h(s.title)}</b>. ${h(s.intro)}</p><p>${h(s.steps.map(x=>x.name).join(' · '))}</p>
         ${lastDone?`<p class="note" style="margin:0 0 10px">Last time, ${h(fmt(lastDone.at.slice(0,10)))}: it felt ${h((lastDone.feel||'').toLowerCase())}${(lastDone.worked||[]).length?`; you worked on ${h(lastDone.worked.join(', '))}`:''}.</p>`:''}
         <button class="btn block" id="start">Start the guided session · ${s.steps.reduce((a,x)=>a+(+x.minutes||0),0)} min</button><button class="btn block quiet" id="ownStart" style="margin-top:8px">Practise on my own · start the clock</button></div>`
-      : `<div class="card" style="border-color:var(--ink)"><div class="label">${w.recording?'Week complete':'All days done'}</div><p style="margin:0">${w.recording?`All ${w.sessions.length} days done and the play-through sent. Next lesson ${h(fmt(w.nextLesson))}. Rest.`:`All ${w.sessions.length} days done. One thing left before ${h(tn)} hears you on ${h(fmt(w.nextLesson))}: the play-through, below.`}</p></div>`;
+      : `<div class="card" style="border-color:var(--ink)"><div class="label">${w.recording?'Week complete':'All days done'}</div><p style="margin:0">${w.recording?`All ${w.sessions.length} days done and the play-through sent. Next lesson ${h(fmt(w.nextLesson))}.${br?'':' Rest.'}`:`All ${w.sessions.length} days done. One thing left before ${h(tn)} hears you on ${h(fmt(w.nextLesson))}: the play-through, below.`}</p>
+        ${br&&!(doc().breakLog||[]).some(x=>x.note&&(x.at||'').slice(0,10)===today())&&!(w.done||[]).some(x=>(x.at||'').slice(0,10)===today())?`<button class="btn block" id="breakStart" style="margin-top:10px">Keep going over the break · start the clock</button>`:''}</div>`;
     const dueSoon=w.nextLesson&&(w.nextLesson===addDays(today(),1)||w.nextLesson===today()); const pulseCard=(dueSoon&&!w.pulse)?`<div class="card" style="border-color:var(--ink)"><div class="label">Before ${h(tn)} sees you</div><p style="margin:0 0 4px">How ready do you feel for the lesson?</p>${scale('puReady')}<p style="margin:0 0 4px">How much did you want to practise this week?</p>${scale('puWant')}<button class="btn block sm" id="pulseSave">Save</button><div class="note" style="margin:6px 0 0">Ten seconds, once a week. ${h(tn)} sees the numbers, not a judgement.</div></div>`:'';
     const pend=pendingDone(w);
     const pendCard = pend ? `<div class="card" style="border-color:var(--danger)"><div class="label" style="color:var(--danger)">Day ${pend.i+1} isn't finished</div><p style="margin:0 0 10px">You practised${pend.at?' on '+h(fmt(pend.at.slice(0,10))):''} but didn't write what changed. No token until you do.</p><button class="btn block" id="finishPend">Write the sentence</button></div>` : '';
@@ -486,8 +512,8 @@ canvas.cardc{width:100%; max-width:420px; border-radius:16px; border:1px solid v
         <div class="row"><button class="btn" id="recBtn">Record</button><button class="btn quiet" id="recPlay" hidden>Listen back</button><button class="btn" id="recSend" hidden>Send to ${h(tn)}</button></div><p class="note" id="recStatus" style="margin:8px 0 0">Up to five minutes. Phone on a chair, a metre away.</p><audio id="recAudio" controls hidden style="width:100%;margin-top:8px"></audio></div>`
       : (w.recording ? `<div class="card"><div class="label">Play-through sent · ${h(fmt(w.recording.at.slice(0,10)))}</div><p style="margin:0">${w.recording.heard?h(tn)+' has heard it.':'Waiting for '+h(tn)+' to listen.'}${w.recording.reply?` <b>${h(tn)} says:</b> “${h(w.recording.reply)}”`:''}</p></div>` : '');
     v.innerHTML=`
-      <div class="chips"><span class="chip">${h(fmt(today()))}</span><span class="chip">Day <b>${Math.min(n+1,w.sessions.length)} of ${w.sessions.length}</b></span><span class="chip">${h(mins)} min <b>set by ${h(tn)}</b></span>${p.goalDate?`<span class="chip">${h(p.goalLabel||'Goal')} <b>${weeksBetween(today(),p.goalDate)} weeks</b>${goalLight()?' · '+lightHTML():''}</span>`:''}${w.group?`<span class="chip">${h(w.group.name||'Group')} week${p.part?' · '+h(p.part):''}</span>`:''}</div>
-      <div class="box says"><div class="label">Lesson · ${h(fmt(w.lessonDate||w.createdAt))} · from ${h(tn)}</div><p style="margin:0"><b>What you did well:</b> ${h(w.line||w.encouragement||'Turn up every day and the lesson takes care of itself.')}</p>${(w.checklist||[]).length?`<p style="margin:8px 0 0"><b>What to work on:</b> ${h(w.checklist.join(' · '))}.</p>`:''}
+      <div class="chips"><span class="chip">${h(fmt(today()))}</span><span class="chip">Day <b>${Math.min(n+1,w.sessions.length)} of ${w.sessions.length}</b></span><span class="chip">${h(mins)} min <b>set by ${h(tn)}</b></span>${+p.selfMinutes>mins?`<span class="chip">you aim for <b>${h(p.selfMinutes)} min</b></span>`:''}${p.goalDate?`<span class="chip">${h(p.goalLabel||'Goal')} <b>${weeksBetween(today(),p.goalDate)} weeks</b>${goalLight()?' · '+lightHTML():''}</span>`:''}${w.group?`<span class="chip">${h(w.group.name||'Group')} week${p.part?' · '+h(p.part):''}</span>`:''}</div>
+      ${breakCard}<div class="box says"><div class="label">Lesson · ${h(fmt(w.lessonDate||w.createdAt))} · from ${h(tn)}</div><p style="margin:0"><b>What you did well:</b> ${h(w.line||w.encouragement||'Turn up every day and the lesson takes care of itself.')}</p>${(w.checklist||[]).length?`<p style="margin:8px 0 0"><b>What to work on:</b> ${h(w.checklist.join(' · '))}.</p>`:''}
         ${openExtras().map(x=>`<div class="row" style="margin:4px 0 0;justify-content:space-between;flex-wrap:nowrap;align-items:flex-start"><p style="margin:0"><b>News from ${h(tn)}:</b> ${h(x.text)} (${h(fmt(x.at.slice(0,10)))})</p><button class="btn sm quiet" data-xdone="${x.id}" style="flex:none">Done</button></div>`).join('')}</div>
       <div class="card"><div class="label">${w.sessions.length} days, then ${h(tn)}</div>
         ${pendCard}${s?journeyMap(w, flags, 'top'):''}${todayCard}${passagePupilHTML(w, tn)}${pulseCard}${s?'':recCard}${s?journeyMap(w, flags, 'bottom'):journeyMap(w, flags, 'all')}${s?recCard:''}
@@ -507,6 +533,7 @@ canvas.cardc{width:100%; max-width:420px; border-radius:16px; border:1px solid v
         <div class="note">${h(tn)} sees these before the lesson starts.</div></div>
       <div class="grid2" style="margin-top:4px"><button class="btn quiet" id="goGoal">Set or change the goal</button><button class="btn" id="goShare">Share the card</button></div>`;
     const os=$('#ownStart'); if(os) os.onclick=()=>ready(()=>startOwn(i));
+    const bs=$('#breakStart'); if(bs) bs.onclick=()=>ready(()=>startOwn(-1,true));
     wireScales(); const ps=$('#pulseSave'); if(ps) ps.onclick=()=>{ const r=scaleVal('puReady'), q=scaleVal('puWant'); if(!r||!q){ toast('Tap a number on both.'); return; } w.pulse={ready:r, want:q, at:new Date().toISOString()}; saveCurrent(); toast('Thanks. Good luck tomorrow.'); renderToday(); };
     const fp=$('#finishPend'); if(fp) fp.onclick=()=>{ si=pend.i; sess=w.sessions[pend.i]; showDone(); };
     wireRecording(w, tn); wirePassagePupil(w, tn);
@@ -534,15 +561,35 @@ canvas.cardc{width:100%; max-width:420px; border-radius:16px; border:1px solid v
     const bt=$('#modalBtns'); bt.innerHTML=''; (o.buttons||[]).forEach(b=>{ const el=document.createElement('button'); el.className='btn '+(b.cls||''); el.textContent=b.label; el.onclick=()=>{ if(b.onClick&&b.onClick()===false) return; m.classList.remove('on'); }; bt.appendChild(el); });
     m.classList.add('on'); }
   function ready(cb){ // the quiet-room prompt, before every session
-    modal({label:'Before you start', title:'Find a quiet room.', text:'Please make sure you are in a quiet room, free from distractions. Phone on silent, music stand up, instrument out.', buttons:[{label:'Not now',cls:'quiet'},{label:'I\'m ready',onClick:cb}]}); }
+    modal({label:'Before you start', title:'Find a quiet room.', text:'Please make sure you are in a quiet room, free from distractions. Phone on silent, music stand up, instrument out. Stuckato listens while you practise, only to count the minutes you play. Nothing is recorded or sent.', buttons:[{label:'Not now',cls:'quiet'},{label:'I\'m ready',onClick:cb}]}); }
+  const heard={stream:null, ctx:null, timer:null, sec:0, floor:null, on:false, gen:0};
+  async function hearStart(){ hearStop(); heard.sec=0; heard.floor=null; const gen=++heard.gen;
+    try{ const st=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true, noiseSuppression:false, autoGainControl:false}});
+      if(gen!==heard.gen){ st.getTracks().forEach(t=>t.stop()); return; } // the session ended while the permission prompt was open
+      const C=window.AudioContext||window.webkitAudioContext; const ctx=new C(); const an=ctx.createAnalyser(); an.fftSize=2048; ctx.createMediaStreamSource(st).connect(an);
+      const buf=new Float32Array(an.fftSize); heard.stream=st; heard.ctx=ctx; heard.on=true;
+      heard.timer=setInterval(()=>{ if(paused) return; an.getFloatTimeDomainData(buf); let e=0; for(let k=0;k<buf.length;k++) e+=buf[k]*buf[k]; const rms=Math.sqrt(e/buf.length);
+        heard.floor=heard.floor==null?rms:(rms<heard.floor?rms:heard.floor*1.003+1e-7); // quietest level so far, drifting up slowly
+        const voice=!player.paused||(window.speechSynthesis&&speechSynthesis.speaking); // the teacher's captions are not the pupil playing
+        if(!voice&&rms>Math.max(0.012, heard.floor*4)) heard.sec+=0.5; }, 500);
+    }catch(e){ heard.on=false; } }
+  function hearStop(){ heard.gen++; clearInterval(heard.timer); heard.timer=null; const r={heardSec:Math.round(heard.sec), checked:!!heard.on};
+    try{ if(heard.stream) heard.stream.getTracks().forEach(t=>t.stop()); if(heard.ctx) heard.ctx.close(); }catch(e){} heard.stream=null; heard.ctx=null; heard.on=false; return r; }
+  const heardLine=x=>x.checked?` · heard playing ${Math.round((x.heardSec||0)/60)} of ${h(x.minutes||'?')} min`:((x.at||'')>='2026-09-24'?' · not checked (no microphone)':'');
   function shortReason(mins, target, cb){ // a short session: what got in the way? The teacher sees the answer.
     let reason=''; const body=`<div class="feel" id="reasons">${REASONS.map(r=>`<button type="button" data-r="${h(r)}">${h(r)}</button>`).join('')}<button type="button" class="wide" data-r="other">Something else</button></div><input id="reasonOther" placeholder="In a few words" style="display:none;margin-bottom:8px">`;
     modal({label:'Shorter than planned', title:`${mins} of ${target} minutes.`, text:'That still counts. What got in the way? Your teacher sees this, and it helps them set the right week.', body,
       buttons:[{label:'Save',onClick:()=>{ const o=$('#reasonOther'); const r=reason==='other'?(o.value.trim()||'Something else'):reason; if(!r){ toast('Pick a reason first.'); return false; } cb(r); }}]});
     $$('#reasons button').forEach(b=>b.onclick=()=>{ $$('#reasons button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); reason=b.dataset.r; const o=$('#reasonOther'); o.style.display=reason==='other'?'block':'none'; if(reason==='other') o.focus(); }); }
   function ownTick(){ const sec=Math.floor((Date.now()-sessStart)/1000); $('#ownClock').textContent=`${Math.floor(sec/60)}:${String(sec%60).padStart(2,'0')}`; const aim=planMinutes(sess)*60; $('#ownArc').style.strokeDashoffset=ARC*Math.max(0,1-sec/aim); }
-  function startOwn(i){ const w=week(); si=i; sess=w.sessions[i]; sessStart=Date.now(); $('#ownTitle').textContent=sess.title; $('#ownAim').textContent=`aim ${planMinutes(sess)} min`; ownTick(); clearInterval(ownTimer); ownTimer=setInterval(ownTick,1000); show('own'); }
-  $('#ownFinish').onclick=()=>{ clearInterval(ownTimer); const mins=elapsedMinutes(), target=planMinutes(sess); if(mins<target) shortReason(mins,target,r=>finish(true,{minutes:mins,target,short:true,reason:r})); else finish(true,{minutes:mins,target,short:false}); };
+  const aimMinutes=s=>Math.max(planMinutes(s), +doc().profile.selfMinutes||0);
+  let breakExtra=false; // own-time practice on a break day after the week's sessions are all done
+  function startOwn(i, extra){ const w=week(); breakExtra=!!extra; si=extra?-1:i; sess=extra?{title:'Keep going over the break', steps:[]}:w.sessions[i]; sessStart=Date.now(); $('#ownTitle').textContent=sess.title; $('#ownAim').textContent=`aim ${aimMinutes(sess)} min`; ownTick(); clearInterval(ownTimer); ownTimer=setInterval(ownTick,1000); hearStart(); show('own'); }
+  $('#ownFinish').onclick=()=>{ clearInterval(ownTimer); const mins=elapsedMinutes(), target=aimMinutes(sess); const go=t=>breakExtra?finishBreak(t):finish(true,t); if(mins<target) shortReason(mins,target,r=>go({minutes:mins,target,short:true,reason:r})); else go({minutes:mins,target,short:false}); };
+  function finishBreak(t){ // a break-day practice: logged on its own, with the sentence, for two tokens
+    const hr=hearStop(); const d=doc(); d.breakLog=d.breakLog||[]; const rec={id:uid(), at:new Date().toISOString(), startedAt:new Date(sessStart||Date.now()).toISOString(), ...t, ...hr}; d.breakLog.push(rec); saveCurrent();
+    modal({label:'Over the break', title:`${rec.minutes} minutes.`, text:'Write what you worked on and what changed. The two tokens come with the sentence.', body:'<textarea id="brNote" placeholder="e.g. The scale is even now; the shift in bar 12 still slips." style="margin-bottom:8px"></textarea>',
+      buttons:[{label:'Save',onClick:()=>{ const txt=($('#brNote').value||'').trim(); if(txt.length<20){ toast('A sentence, please: at least a few words.'); return false; } rec.note=txt; const tk=d.tokens||(d.tokens={earned:0,redeemed:0}); tk.earned=(tk.earned||0)+2; rec.earned=2; saveCurrent(); toast('Saved. Two tokens.'); renderToday(); }}]}); }
   const ARC=276.5;
   const player=new Audio();
   function speak(text, url){
@@ -565,11 +612,12 @@ canvas.cardc{width:100%; max-width:420px; border-radius:16px; border:1px solid v
     clearInterval(timer); try{ speechSynthesis.cancel(); player.pause(); }catch(e){}
     const f=$('#fermata'); let gone=false; const go=()=>{ if(gone) return; gone=true; f.classList.remove('on'); f.onclick=null; cb(); };
     f.classList.add('on'); f.onclick=go; setTimeout(go, 6000); }
-  function startSession(i){ const w=week(); si=i; sess=w.sessions[i]; stepI=0; paused=false; sessStart=Date.now(); $('#pause').textContent='Pause'; $('#sessTitle').textContent=sess.title; $('#speak').checked=true; stepInit(); run(); show('session'); }
+  function startSession(i){ const w=week(); si=i; sess=w.sessions[i]; stepI=0; paused=false; breakExtra=false; hearStart(); sessStart=Date.now(); $('#pause').textContent='Pause'; $('#sessTitle').textContent=sess.title; $('#speak').checked=true; stepInit(); run(); show('session'); }
   function finish(ownTime, t){ // t: {minutes,target,short,reason} from the clock; the day is recorded even when it was short
     clearInterval(timer); clearInterval(ownTimer); try{ speechSynthesis.cancel(); player.pause(); }catch(e){}
-    const w=week(); w.done=w.done||[]; const rec={i:si, at:new Date().toISOString(), startedAt:new Date(sessStart||Date.now()).toISOString(), feel:'', worked:[], own:!!ownTime, ...(t||{})};
-    const ex=w.done.find(x=>x.i===si); if(ex){ Object.assign(ex, {startedAt:rec.startedAt, minutes:rec.minutes, target:rec.target, short:rec.short, reason:rec.reason}); } else w.done.push(rec);
+    const hr=hearStop();
+    const w=week(); w.done=w.done||[]; const rec={i:si, at:new Date().toISOString(), startedAt:new Date(sessStart||Date.now()).toISOString(), feel:'', worked:[], own:!!ownTime, ...(t||{}), ...hr};
+    const ex=w.done.find(x=>x.i===si); if(ex){ Object.assign(ex, {startedAt:rec.startedAt, minutes:rec.minutes, target:rec.target, short:rec.short, reason:rec.reason, heardSec:rec.heardSec, checked:rec.checked}); } else w.done.push(rec);
     saveCurrent(); showDone();
   }
   function showDone(){ // the Done screen for session si: what you did, your sentence, how it felt. The token comes with the sentence.
@@ -591,7 +639,7 @@ canvas.cardc{width:100%; max-width:420px; border-radius:16px; border:1px solid v
   $('#pause').onclick=e=>{ paused=!paused; e.target.textContent=paused?'Resume':'Pause'; if(paused){ try{ speechSynthesis.pause(); player.pause(); }catch(x){} } else { try{ speechSynthesis.resume(); if(player.src&&player.currentTime>0&&!player.ended) player.play().catch(()=>{}); }catch(x){} } };
   $('#skip').onclick=()=>nextStep();
   $('#quit').onclick=()=>{ clearInterval(timer); try{ speechSynthesis.cancel(); player.pause(); }catch(e){}
-    const secs=(Date.now()-sessStart)/1000; if(secs<60){ renderToday(); return; }
+    const secs=(Date.now()-sessStart)/1000; if(secs<60){ hearStop(); renderToday(); return; }
     const mins=elapsedMinutes(), target=planMinutes(sess); shortReason(mins,target,r=>finish(false,{minutes:mins,target,short:true,reason:r})); };
   $$('#feel button').forEach(b=>b.onclick=()=>{ $$('#feel button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); const w=week(); const d=(w.done||[]).find(x=>x.i===si); if(d) d.feel=b.dataset.f; saveCurrent();
     const t=$('#tailor'); t.hidden=false;
@@ -603,9 +651,10 @@ canvas.cardc{width:100%; max-width:420px; border-radius:16px; border:1px solid v
   $('#donePassage').onclick=()=>{ const w=week(); const d=(w.done||[]).find(x=>x.i===si); if(d&&!d.note){ toast('Write the sentence first.'); return; } renderJourney(true); const c=$('#pgCard'); if(c) c.scrollIntoView({behavior:'smooth',block:'center'}); };
   $('#doneBack').onclick=()=>{ const w=week(); const d=(w.done||[]).find(x=>x.i===si); const txt=$('#refl').value.trim(); if(!d||txt.length<20){ updateReflBtn(); return; }
     const first=!d.note; d.note=txt; d.noteVia=$('#refl').dataset.via||'typed'; d.noteAt=new Date().toISOString();
-    if(!d.earned){ const t=doc().tokens||(doc().tokens={earned:0,redeemed:0}); t.earned=(t.earned||0)+1; d.earned=true; }
+    const onBreak=!!breakInfo();
+    if(!d.earned){ const t=doc().tokens||(doc().tokens={earned:0,redeemed:0}); t.earned=(t.earned||0)+(onBreak?2:1); d.earned=true; if(onBreak) d.breakBonus=true; }
     const bonus=maybeWeekBonus(w); saveCurrent(); if(first) notifyTeacher(d, w);
-    toast(bonus?'Week complete: two bonus tokens.':first?'Saved. Token earned.':'Saved.'); renderJourney(true); };
+    toast(bonus?'Week complete: two bonus tokens.':first?(onBreak?'Saved. Two tokens: it counts double over the break.':'Saved. Token earned.'):'Saved.'); renderJourney(true); };
 
   // ------------------------------------------------------------ journey
   let recBlob=null, recCap=null, recStartedAt=0;
@@ -822,6 +871,9 @@ canvas.cardc{width:100%; max-width:420px; border-radius:16px; border:1px solid v
         <div class="grid2"><div><label class="l" for="gLabel">What it is</label><input id="gLabel" placeholder="e.g. Grade 3 exam, school concert" value="${h(p.goalLabel||'')}"></div><div><label class="l" for="gDate">Roughly when</label><input type="date" id="gDate" value="${h(p.goalDate||'')}"></div></div>
         <label class="l" for="gPart">Your part or section, if you sing or play in a group</label><input id="gPart" placeholder="e.g. Alto, Second violin, Cello" value="${h(p.part||'')}">
         <button class="btn sm" id="gSave" style="margin-top:10px">Save</button></div>
+      <div class="card"><h3>Your daily target</h3>
+        <p style="margin:0 0 8px">${h(doc().teacherName||'Your teacher')} set <b>${h(p.minutes||levelMinutes(p.level))} minutes</b> a day. Want to do more? Set your own. ${h(doc().teacherName||'Your teacher')} sees when you change it.</p>
+        <div class="row"><input type="number" id="gSelf" min="${h(p.minutes||levelMinutes(p.level))}" max="180" step="5" value="${h(p.selfMinutes||p.minutes||levelMinutes(p.level))}" style="width:7em"><span>minutes a day</span><button class="btn sm" id="gSelfSave">Set</button></div></div>
       <div class="card"><h3>The morning message</h3>
         <p>On the mornings a session is due, ${h(doc().teacherName||'your teacher')} sends one short note: what you did last time, what is on today, and how long. Never twice in a day, never once the week is done.</p>
         <div class="row" id="remRow"><label class="switch" style="font-size:14px;color:var(--ink)"><input type="radio" name="rem" value="push" ${(p.reminder||'push')==='push'?'checked':''}> Notification on this phone</label><label class="switch" style="font-size:14px;color:var(--ink)"><input type="radio" name="rem" value="email" ${p.reminder==='email'?'checked':''}> Email${doc().contactEmail?' ('+h(doc().contactEmail)+')':''}</label><label class="switch" style="font-size:14px;color:var(--ink)"><input type="radio" name="rem" value="off" ${p.reminder==='off'?'checked':''}> Off</label></div>
@@ -829,6 +881,7 @@ canvas.cardc{width:100%; max-width:420px; border-radius:16px; border:1px solid v
         <div class="note">${mode==='cloud'?'On an iPhone, add Stuckato to your Home Screen first (Share, then "Add to Home Screen"), then turn notifications on from there.':'Notifications need the live site with an account.'}</div></div>`;
     $('#backG').onclick=()=>renderTrail(true);
     $('#gSave').onclick=()=>{ p.goalLabel=$('#gLabel').value.trim(); p.goalDate=$('#gDate').value; p.part=$('#gPart').value.trim(); saveCurrent(); toast('Saved.'); renderTrail(true); };
+    $('#gSelfSave').onclick=()=>{ const base=+(p.minutes||levelMinutes(p.level)); let v=Math.round(+$('#gSelf').value||base); if(v<base) v=base; const was=+(p.selfMinutes||base); if(v===was){ toast('That is already your target.'); return; } logTarget(doc(),'pupil',was,v); p.selfMinutes=v>base?v:null; saveCurrent(); toast('Your target: '+v+' minutes a day.'); renderGoal(true); };
     $$('#remRow input').forEach(r=>r.onchange=()=>{ p.reminder=r.value; saveCurrent(); toast(r.value==='off'?'No morning messages.':'Saved.'); });
     $('#pushOn').onclick=enablePush; $('#remTest').onclick=sendTestReminder;
     if(showIt!==false) show('goal');
@@ -939,9 +992,20 @@ canvas.cardc{width:100%; max-width:420px; border-radius:16px; border:1px solid v
   function renderTeacher(){
     const v=$('#v-teacher');
     const list=students.map(s=>{ const d=s.data; const w=d.weeks&&d.weeks.length?d.weeks[d.weeks.length-1]:null; const flags=(d.flags||[]).filter(f=>!f.resolved).length;
-      return `<div class="student" data-sid="${h(s.user_id)}"><div><div class="n">${h(d.profile?.name||'Pupil')}</div><div class="m">${h(d.profile?.instrument||'')} · ${h(d.profile?.level||'')}${d.profile?.minutes?` · ${d.profile.minutes} min a day`:''}${w?` · this week ${doneCount(w)}/${w.sessions.length}`:' · no week set'}${(()=>{ const at=(w?.done||[]).map(x=>x.at||'').sort().pop(); return at&&at.slice(0,10)===today()?` · <b>finished today ${h(timeOf(at))}</b>`:''; })()}${w&&pendingDone(w)?' · <b>sentence missing</b>':''}${w&&w.recording&&!w.recording.heard?' · <b>play-through to hear</b>':''}${goalLight(d)?` · ${lightHTML(d)}`:''}${flags?` · <b style="color:var(--danger)">${flags} flagged</b>`:''}</div></div><span class="pill">open</span></div>`; }).join('');
-    const parts=partsOf();
-    v.innerHTML=`<h2 class="big">${students.length?'Your pupils.':'No pupils yet.'}</h2>
+      return `<div class="student" data-sid="${h(s.user_id)}"><div><div class="n">${h(d.profile?.name||'Pupil')}</div><div class="m">${h(d.profile?.instrument||'')} · ${h(levelLabel(d.profile?.level))}${groupsOf(d).length?' · '+h(groupsOf(d).join(', ')):''}${d.profile?.minutes?` · ${d.profile.minutes} min a day`:''}${w?` · this week ${doneCount(w)}/${w.sessions.length}`:' · no week set'}${(()=>{ const at=(w?.done||[]).map(x=>x.at||'').sort().pop(); return at&&at.slice(0,10)===today()?` · <b>finished today ${h(timeOf(at))}</b>`:''; })()}${w&&pendingDone(w)?' · <b>sentence missing</b>':''}${w&&w.recording&&!w.recording.heard?' · <b>play-through to hear</b>':''}${goalLight(d)?` · ${lightHTML(d)}`:''}${flags?` · <b style="color:var(--danger)">${flags} flagged</b>`:''}</div></div><span class="pill">open</span></div>`; }).join('');
+    const parts=partsOf(); const groups=allGroups();
+    const unplaced=students.filter(s=>!groupsOf(s.data).length&&!s.data.profile?.groupsOk);
+    const unplacedCard=(students.length&&groups.length&&unplaced.length)?`<div class="box" style="border-color:var(--danger)"><div class="label" style="color:var(--danger)">Not in a group</div><p style="margin:0 0 8px">${unplaced.length===1?'This pupil is':'These pupils are'} in no group. Check whether they should be.</p>
+        ${unplaced.map(s=>`<div class="flag"><span>${h(s.data.profile?.name||'Pupil')}</span><span class="row" style="gap:6px;flex-wrap:nowrap"><button class="btn sm quiet" data-gopen="${h(s.user_id)}">Add to a group</button><button class="btn sm quiet" data-gok="${h(s.user_id)}">Fine on their own</button></span></div>`).join('')}</div>`:'';
+    const groupsCard=students.length?`<div class="card"><div class="label">Groups</div>${groups.length?groups.map(g=>{ const m=students.filter(s=>groupsOf(s.data).includes(g)); return `<div class="flag"><span><b>${h(g)}</b> · ${m.length} · ${h(m.map(s=>s.data.profile?.name||'Pupil').join(', '))}</span></div>`; }).join(''):'<p class="note" style="margin:0">No groups yet.</p>'}
+        <div class="note">Put pupils in any groups you like, by school, year, section or anything else, in each pupil's profile. A pupil can be in several. Messages, weeks and breaks can then go to a whole group.</div></div>`:'';
+    const breakForm=students.length?`<div class="card"><div class="label">A break between lessons</div><p style="margin:0 0 8px">Half term, holidays, a long gap. Over a break every practice day earns two tokens, and practising on most days wins a bigger reward.</p>
+        <div class="grid2"><div><label class="l" for="bkFrom">From</label><input type="date" id="bkFrom" value="${today()}"></div><div><label class="l" for="bkTo">To</label><input type="date" id="bkTo" value="${addDays(today(),14)}"></div>
+          <div><label class="l" for="bkGoal">Practice days to win</label><input type="number" id="bkGoal" min="1" max="60" placeholder="about 6 in 10"></div><div><label class="l" for="bkReward">The bigger reward</label><input id="bkReward" placeholder="e.g. cinema tickets, new strings"></div></div>
+        <div class="row" id="bkTo2" style="margin-top:8px"><label class="switch"><input type="checkbox" value="*" checked> Everyone</label>${groups.map(g=>`<label class="switch"><input type="checkbox" value="group:${h(g)}"> ${h(g)}</label>`).join('')}</div>
+        <div class="row" style="margin-top:10px"><button class="btn sm" id="bkSet">Set the break</button><span class="status" id="bkStatus" style="margin:0"></span></div>
+        <div class="note">Pupils see the break on their trail with your last "what you did well" line. Any gap of two weeks or more between lessons counts as a break even if you set nothing.</div></div>`:'';
+    v.innerHTML=`<h2 class="big">${students.length?'Your pupils.':'No pupils yet.'}</h2>${unplacedCard}
       <div class="grid2" style="align-items:start">
         <div>
           ${me?.code?`<div class="card"><div class="label">Code to give pupils</div><div class="quote" style="letter-spacing:.2em">${h(me.code)}</div><div class="note">They sign in, choose "I'm a pupil", enter it, and they're in your studio.</div></div>`:''}
@@ -952,13 +1016,22 @@ canvas.cardc{width:100%; max-width:420px; border-radius:16px; border:1px solid v
         <div>
           <div class="card" id="groupCard" style="cursor:pointer"><div class="label">After a rehearsal</div><p style="margin:0">Write one week for the whole group, or for each section separately. For choirs, orchestras and ensembles. Tap to open.</p></div>
           ${students.length?messageFormHTML():''}
+          ${groupsCard}${breakForm}
         </div>
       </div>
       ${mode==='cloud'?`<div class="box ${me?.voice_ready?'b':'c'}" id="voiceCard" style="cursor:pointer"><div class="label">Your voice</div><div class="quote">${me?.voice_ready?'Recorded.':'Not recorded yet.'}</div><div class="note">${me?.voice_ready?'New weeks are spoken in it. Tap to re-record or remove.':'Record thirty seconds and pupils hear their sessions in your voice. Tap to set it up.'}</div></div>`:''}`;
     $$('[data-sid]').forEach(el=>el.onclick=()=>{ current=students.find(s=>s.user_id===el.dataset.sid); renderTStudent(); show('tstudent'); });
     const cb=$('#csvBtn'); if(cb) cb.onclick=downloadCSV;
     const vc=$('#voiceCard'); if(vc) vc.onclick=renderVoice;
-    const gc=$('#groupCard'); if(gc) gc.onclick=renderGroup; wireMessageForm(); 
+    const gc=$('#groupCard'); if(gc) gc.onclick=renderGroup; wireMessageForm();
+    $$('[data-gok]').forEach(b=>b.onclick=async e=>{ e.stopPropagation(); const st=students.find(s=>s.user_id===b.dataset.gok); if(!st) return; st.data.profile.groupsOk=true; try{ await saveStudent(st); }catch(err){} renderTeacher(); });
+    $$('[data-gopen]').forEach(b=>b.onclick=e=>{ e.stopPropagation(); current=students.find(s=>s.user_id===b.dataset.gopen); renderTStudent(); show('tstudent'); const g=$('#pGroups'); if(g){ g.scrollIntoView({block:'center'}); g.focus(); } });
+    $$('#bkTo2 input').forEach(i=>i.onchange=()=>{ if(i.value!=='*'&&i.checked) $('#bkTo2 input[value="*"]').checked=false; });
+    const bk=$('#bkSet'); if(bk) bk.onclick=async()=>{ const from=$('#bkFrom').value, to=$('#bkTo').value; if(!from||!to||to<=from){ toast('Pick a start and an end.'); return; }
+      const sel=$$('#bkTo2 input:checked').map(x=>x.value); const tg=(!sel.length||sel.includes('*'))?students.slice():students.filter(s=>groupsOf(s.data).some(g=>sel.includes('group:'+g)));
+      const goal=+$('#bkGoal').value||null, reward=$('#bkReward').value.trim();
+      for(const st of tg){ st.data.break={from, to, goal, reward, by:me?.name||'', at:new Date().toISOString()}; try{ await saveStudent(st); }catch(err){} }
+      $('#bkStatus').textContent='Set for '+tg.length+(tg.length===1?' pupil.':' pupils.'); toast('Break set.'); };
     show('teacher');
   }
   let preview=null;
@@ -971,7 +1044,7 @@ canvas.cardc{width:100%; max-width:420px; border-radius:16px; border:1px solid v
       ${w?`<div class="card"><div class="label">This week</div>${staveWeek(w)}<div class="note" style="margin:0">${doneCount(w)} of ${w.sessions.length} days done · felt: ${(w.done||[]).map(x=>x.feel).filter(Boolean).join(', ')||'nothing logged yet'} · next lesson ${h(fmt(w.nextLesson))}</div>
         ${workTally(w).length?`<div class="label" style="margin-top:12px">Worked on most this week</div><ul class="ticks" style="margin-top:4px">${workTally(w).map(([it,c])=>`<li style="cursor:default"><span style="flex:1">${h(it)}</span><span class="pill on">${c} ${c===1?'day':'days'}</span></li>`).join('')}</ul>`:'<div class="note">What the pupil ticks after each session appears here, most-worked first, so you can plan the lesson.</div>'}
         <div class="label" style="margin-top:12px">What they wrote, day by day</div>
-        ${(w.done||[]).length?(w.done||[]).slice().sort((a,b)=>a.i-b.i).map(x=>`<div class="daybox"><p style="margin:0"><b>Day ${x.i+1}${w.sessions[x.i]?' · '+h(w.sessions[x.i].title):''}</b> · ${h(fmt((x.at||'').slice(0,10)))}${x.at?' '+h(timeOf(x.at)):''}${x.feel?' · felt '+h(x.feel.toLowerCase()):''}${x.own?' · own time':''}${x.minutes?` · ${h(x.minutes)} of ${h(x.target||'?')} min`:''}${(x.worked||[]).length?' · '+h(x.worked.join(', ')):''}</p>
+        ${(w.done||[]).length?(w.done||[]).slice().sort((a,b)=>a.i-b.i).map(x=>`<div class="daybox"><p style="margin:0"><b>Day ${x.i+1}${w.sessions[x.i]?' · '+h(w.sessions[x.i].title):''}</b> · ${h(fmt((x.at||'').slice(0,10)))}${x.at?' '+h(timeOf(x.at)):''}${x.feel?' · felt '+h(x.feel.toLowerCase()):''}${x.own?' · own time':''}${x.minutes?` · ${h(x.minutes)} of ${h(x.target||'?')} min`:''}${heardLine(x)}${(x.worked||[]).length?' · '+h(x.worked.join(', ')):''}</p>
           ${x.short?`<p class="note" style="margin:6px 0 0;color:var(--danger)">Stopped early: ${h(x.reason||'no reason given')}. Started ${h(timeOf(x.startedAt||x.at))}, finished ${h(timeOf(x.at))}.</p>`:''}
           ${x.note?`<p class="quote" style="margin:8px 0">“${h(x.note)}”${x.noteVia==='voice'?' <span class="note" style="margin:0">(spoken)</span>':''}</p>
           <div class="row"><button class="btn sm ${x.check==='ok'?'':'quiet'}" data-chk="ok" data-i="${x.i}">Sounds right${x.check==='ok'?' ✓':''}</button><button class="btn sm quiet" data-chk="query" data-i="${x.i}">Ask them</button><button class="btn sm ${x.check==='no'?'':'quiet'}" data-chk="no" data-i="${x.i}"${x.check==='no'?' style="background:var(--danger);color:#fff"':''}>Doesn't add up</button></div>
@@ -984,20 +1057,22 @@ canvas.cardc{width:100%; max-width:420px; border-radius:16px; border:1px solid v
           <div class="row" style="margin-top:8px"><input id="recReply" placeholder="One line back, e.g. Lovely tone. The second phrase rushes." value="${h(w.recording.reply||'')}" style="flex:1"><button class="btn sm" id="recReplySend">Send</button></div>
           <div class="note">Your line goes to their Today screen now and is ready as next week's "What you did well".</div></div>`
           :`<div class="note">${recordingDue(w)?'Due now; nothing sent yet. The week\'s bonus waits for it.':'The day before the lesson the pupil records one play-through of the piece. It appears here, and the week\'s two bonus tokens wait for it.'}</div>`}
+        ${breakInfo(d)?(()=>{ const b=breakInfo(d); return `<div class="label" style="margin-top:12px">The break</div><div class="note" style="margin:0">${h(fmt(b.from))} to ${h(fmt(b.to))}${b.set?'':' (the gap between lessons)'} · practised ${b.practised} of ${b.goal} days to win${b.reward?' '+h(b.reward):' the bigger reward'}${b.practised>=b.goal?' · <b>goal reached</b>':''}${(d.breakLog||[]).filter(x=>x.note).length?' · '+(d.breakLog||[]).filter(x=>x.note).map(x=>`${h(fmt(x.at.slice(0,10)))} ${h(x.minutes)} min${heardLine(x)}: “${h(x.note)}”`).join(' · '):''}</div>`; })():''}
         ${passageTeacherHTML(w, d, p)}
         ${d.weeks.length>1?`<div class="label" style="margin-top:12px">The last ${Math.min(5,d.weeks.length)} weeks</div>${staveMonth(d.weeks)}`:''}${p.goalDate?`<div class="note">${h(p.goalLabel||'Goal')} · ${h(fmtL(p.goalDate))} · ${weeksBetween(today(),p.goalDate)} weeks to go${goalLight(d)?' · '+lightHTML(d):''}</div>`:''}
         <div class="note">Tokens: ${(d.tokens?.earned||0)-(d.tokens?.redeemed||0)} available. ${((d.tokens?.earned||0)-(d.tokens?.redeemed||0))>=6?'<button class="btn sm" id="award">Mark reward given'+(p.reward?' ('+h(p.reward)+')':'')+'</button>':''}</div></div>`:''}
       <div class="card"><h3>Profile</h3>
         <div class="grid2">
           <div><label class="l" for="pInst">Instrument</label><input id="pInst" value="${h(p.instrument||'violin')}"></div>
-          <div><label class="l" for="pLevel">Level</label><select id="pLevel">${LEVELS.map(([k,lab])=>`<option value="${k}" ${(p.level===k||(!LEVELS.some(x=>x[0]===p.level)&&k==='beginner'))?'selected':''}>${lab}</option>`).join('')}</select></div>
+          <div><label class="l" for="pLevel">Level</label><select id="pLevel">${OLD_LEVELS[p.level]?`<option value="${h(p.level)}" selected>${h(OLD_LEVELS[p.level][0])}</option>`:''}${LEVELS.map(([k,lab])=>`<option value="${k}" ${(p.level===k||(!LEVELS.some(x=>x[0]===p.level)&&!OLD_LEVELS[p.level]&&k==='beginner'))?'selected':''}>${lab}</option>`).join('')}</select></div>
+          <div style="grid-column:1/-1"><label class="l" for="pGroups">Groups, separated by commas</label><input id="pGroups" list="pGroupList" value="${h(groupsOf(d).join(', '))}" placeholder="e.g. St Mary's, Year 8, Grade 5 violins"><datalist id="pGroupList">${allGroups().map(g=>`<option value="${h(g)}">`).join('')}</datalist><div class="note" style="margin:4px 0 0">${allGroups().length?'Your groups: '+h(allGroups().join(', '))+'. ':''}Any group you like: a school, a year, a section. A pupil can be in several.</div></div>
           <div><label class="l" for="pPart">Part or section (groups)</label><input id="pPart" value="${h(p.part||'')}" placeholder="Alto, Second violin…"></div>
           <div><label class="l" for="pGoal">Goal</label><input id="pGoal" value="${h(p.goalLabel||'')}" placeholder="Grade 3 exam"></div>
           <div><label class="l" for="pGoalDate">Goal date (rough)</label><input type="date" id="pGoalDate" value="${h(p.goalDate||'')}"></div>
           <div><label class="l" for="pSpw">Days a week</label><input type="number" id="pSpw" min="3" max="7" value="${h(p.sessionsPerWeek||7)}"><div class="note" style="margin:4px 0 0">Seven: one short session every day.</div></div>
           <div style="grid-column:1/-1"><label class="l" for="pStages">Stages to the goal, one per line: name, weeks (optional)</label><textarea id="pStages" placeholder="Foundations, 8&#10;Pieces, 8&#10;Polish, 4&#10;Mock, 1&#10;Exam, 1">${h((p.stages||[]).map(x=>x.name+', '+x.weeks).join('\n'))}</textarea><div class="note" style="margin:4px 0 0">Optional. Leave empty and the pupil sees only the weeks to the date. Fill it in and the stages appear on their trail, in your name.</div></div>
           <div style="grid-column:1/-1"><label class="l" for="pReward">The reward at six tokens (a full week or two)</label><input id="pReward" value="${h(p.reward||'')}" placeholder="e.g. a hot chocolate after Thursday's lesson, a new set of strings, a sheet-music voucher"><div class="note" style="margin:4px 0 0">Named by you, a parent or the school. Small, occasional, from a real person. The pupil sees it on their Journey.</div></div>
-          <div><label class="l" for="pMin">Minutes a day (you set this)</label><input type="number" id="pMin" min="10" max="120" step="5" value="${h(p.minutes||levelMinutes(p.level))}"><div class="note" style="margin:4px 0 0">Suggested for the level: ${levelMinutes(p.level)}. Change it and it sticks.</div></div>
+          <div><label class="l" for="pMin">Minutes a day (you set this)</label><input type="number" id="pMin" min="10" max="120" step="5" value="${h(p.minutes||levelMinutes(p.level))}"><div class="note" style="margin:4px 0 0">Suggested for the level: ${levelMinutes(p.level)} (grades 1 to 2 up to 30, 3 to 4 up to 45, 5 and above up to 60). Change it and it sticks.${+p.selfMinutes?' '+h(p.name||'The pupil')+' has set their own target: '+h(p.selfMinutes)+' min.':''}</div>${(p.targetLog||[]).length?`<div class="note" style="margin:6px 0 0"><b>Target changes:</b> ${(p.targetLog||[]).slice(-5).reverse().map(x=>`${h(x.name)} (${h(x.by)}) ${h(x.from)} to ${h(x.to)} min, ${h(fmt(x.at.slice(0,10)))}`).join(' · ')}</div>`:''}</div>
           <div><label class="l">When they finish</label><label class="switch" style="font-size:15px;color:var(--ink)"><input type="checkbox" id="pNotify" ${p.notifyFinish?'checked':''}> Tell me when they finish a session</label><div class="note" style="margin:4px 0 0">An email the moment they write their sentence. Either way, "finished today" shows in your pupil list.</div></div>
           <div style="grid-column:1/-1"><div class="label" style="margin-top:6px">Before the pilot (baseline, fill in once)</div><div class="grid2">
             <div><label class="l" for="bW1Days">Diary week 1: days practised</label><input type="number" id="bW1Days" min="0" max="7" value="${h(d.baseline?.w1Days??'')}"></div>
@@ -1028,10 +1103,10 @@ canvas.cardc{width:100%; max-width:420px; border-radius:16px; border:1px solid v
     $('#pLevel').onchange=()=>{ $('#pMin').value=levelMinutes($('#pLevel').value); };
     $('#xAdd').onclick=()=>{ const t=$('#xText').value.trim(); if(!t) return; d.extras=d.extras||[]; d.extras.push({id:uid(), text:t, at:new Date().toISOString(), done:false, by:me?.name||''}); saveCurrent(); renderTStudent(); toast('Added to their week.'); };
     $$('[data-xrm]').forEach(b=>b.onclick=()=>{ d.extras=(d.extras||[]).filter(x=>x.id!==b.dataset.xrm); saveCurrent(); renderTStudent(); });
-    $('#pSave').onclick=()=>{ p.instrument=$('#pInst').value.trim()||'violin'; p.part=$('#pPart').value.trim(); p.level=$('#pLevel').value||'beginner'; p.goalLabel=$('#pGoal').value.trim(); p.goalDate=$('#pGoalDate').value; p.sessionsPerWeek=+$('#pSpw').value||7; p.minutes=+$('#pMin').value||levelMinutes(p.level); p.notifyFinish=$('#pNotify').checked; p.reward=$('#pReward').value.trim(); const nv=id=>$('#'+id).value===''?null:+$('#'+id).value; d.baseline={w1Days:nv('bW1Days'), w1Minutes:nv('bW1Min'), w2Days:nv('bW2Days'), w2Minutes:nv('bW2Min'), attendedOf4:$('#bAtt').value===''?null:+$('#bAtt').value, prepared:scaleVal('bPrep'), progress:scaleVal('bProg'), at:d.baseline?.at||new Date().toISOString()}; p.stages=$('#pStages').value.split('\n').map(l=>l.trim()).filter(Boolean).map(l=>{ const m=l.match(/^(.*?)[,:·]?\s*(\d+)?\s*(weeks?)?$/i); return {name:(m&&m[1]||l).replace(/[,:·]\s*$/,'').trim(), weeks:+(m&&m[2])||1}; }).filter(x=>x.name); saveCurrent(); toast('Profile saved.'); };
+    $('#pSave').onclick=()=>{ p.instrument=$('#pInst').value.trim()||'violin'; p.part=$('#pPart').value.trim(); p.level=$('#pLevel').value||'beginner'; p.goalLabel=$('#pGoal').value.trim(); p.goalDate=$('#pGoalDate').value; p.sessionsPerWeek=+$('#pSpw').value||7; { const was=+(p.minutes||0), nw=+$('#pMin').value||levelMinutes(p.level); if(was&&was!==nw) logTarget(d,'teacher',was,nw); p.minutes=nw; } { const gs=$('#pGroups').value.split(',').map(x=>x.trim()).filter(Boolean); p.groups=[...new Set(gs)]; if(gs.length) p.groupsOk=false; } p.notifyFinish=$('#pNotify').checked; p.reward=$('#pReward').value.trim(); const nv=id=>$('#'+id).value===''?null:+$('#'+id).value; d.baseline={w1Days:nv('bW1Days'), w1Minutes:nv('bW1Min'), w2Days:nv('bW2Days'), w2Minutes:nv('bW2Min'), attendedOf4:$('#bAtt').value===''?null:+$('#bAtt').value, prepared:scaleVal('bPrep'), progress:scaleVal('bProg'), at:d.baseline?.at||new Date().toISOString()}; p.stages=$('#pStages').value.split('\n').map(l=>l.trim()).filter(Boolean).map(l=>{ const m=l.match(/^(.*?)[,:·]?\s*(\d+)?\s*(weeks?)?$/i); return {name:(m&&m[1]||l).replace(/[,:·]\s*$/,'').trim(), weeks:+(m&&m[2])||1}; }).filter(x=>x.name); saveCurrent(); toast('Profile saved.'); };
     $$('[data-res]').forEach(b=>b.onclick=()=>{ const f=flags.find(x=>x.id===b.dataset.res); if(f) f.resolved=true; saveCurrent(); renderTStudent(); });
     $$('[data-chk]').forEach(b=>b.onclick=()=>{ const x=(w?.done||[]).find(y=>y.i===+b.dataset.i); if(!x) return; const k=b.dataset.chk; const t=d.tokens||(d.tokens={earned:0,redeemed:0});
-      if(k==='no'){ if(x.earned){ t.earned=Math.max(0,(t.earned||0)-1); x.earned=false; } x.check='no'; }
+      if(k==='no'){ if(x.earned){ t.earned=Math.max(0,(t.earned||0)-(x.breakBonus?2:1)); x.earned=false; x.breakBonus=false; } x.check='no'; }
       else if(k==='ok'){ if(!x.earned){ t.earned=(t.earned||0)+1; x.earned=true; } x.check='ok'; maybeWeekBonusFor(d,w); }
       else { const q=prompt('Ask '+(p.name||'them')+' about day '+(x.i+1)+':'); if(!q||!q.trim()) return; d.extras=d.extras||[]; d.extras.push({id:uid(), text:'About day '+(x.i+1)+': '+q.trim(), at:new Date().toISOString(), done:false, by:me?.name||''}); x.check='query'; }
       saveCurrent(); renderTStudent(); });
@@ -1096,12 +1171,12 @@ canvas.cardc{width:100%; max-width:420px; border-radius:16px; border:1px solid v
   // ------------------------------------------------------------ group: one note for the whole choir or orchestra
   let gpreview=null;
   function partsOf(){ return [...new Set(students.map(s=>(s.data.profile?.part||'').trim()).filter(Boolean))]; }
-  function groupTargets(){ const sel=$$('#gParts input:checked').map(x=>x.value); if(!sel.length||sel.includes('*')) return students.slice(); return students.filter(s=>sel.includes((s.data.profile?.part||'').trim())); }
+  function groupTargets(){ const sel=$$('#gParts input:checked').map(x=>x.value); if(!sel.length||sel.includes('*')) return students.slice(); return students.filter(s=>sel.includes((s.data.profile?.part||'').trim())||groupsOf(s.data).some(g=>sel.includes('group:'+g))); }
   function renderGroup(){
     const v=$('#v-group'); const parts=partsOf(); const gname=me?.studio||'the group';
     if(!students.length){ v.innerHTML=`<button class="btn sm quiet" onclick="renderTeacher()">← Pupils</button><div class="eyebrow" style="margin-top:10px">Group</div><h2 class="big">Nobody here yet.</h2><div class="card">Give members your code${me?.code?' (<b>'+h(me.code)+'</b>)':''}. Once they have joined, one note here becomes a week for every one of them, each for their own part.</div>`; show('group'); return; }
     v.innerHTML=`<button class="btn sm quiet" id="backG2">← Pupils</button><div class="eyebrow" style="margin-top:10px">After a rehearsal</div><h2 class="big">One note, everyone's week.</h2>
-      <div class="card"><h3>Who this is for</h3><div class="row" id="gParts"><label class="switch"><input type="checkbox" value="*" checked> Everyone</label>${parts.map(p=>`<label class="switch"><input type="checkbox" value="${h(p)}"> ${h(p)}</label>`).join('')}</div>
+      <div class="card"><h3>Who this is for</h3><div class="row" id="gParts"><label class="switch"><input type="checkbox" value="*" checked> Everyone</label>${allGroups().map(g=>`<label class="switch"><input type="checkbox" value="group:${h(g)}"> ${h(g)}</label>`).join('')}${parts.map(p=>`<label class="switch"><input type="checkbox" value="${h(p)}"> ${h(p)}</label>`).join('')}</div>
         <div class="note">${parts.length?'Untick Everyone to pick parts. Members set their part in Goal; you can set it in their profile.':'No parts set yet. Members can set theirs under Goal, or you can in each profile, and then you can send work to one section at a time.'}</div></div>
       <div class="card"><h3>After today's rehearsal</h3>
         <div class="grid2"><div><label class="l" for="gDate2">Rehearsal date</label><input type="date" id="gDate2" value="${today()}"></div><div><label class="l" for="gNext2">Next rehearsal</label><input type="date" id="gNext2" value="${addDays(today(),7)}"></div></div>
@@ -1122,13 +1197,13 @@ canvas.cardc{width:100%; max-width:420px; border-radius:16px; border:1px solid v
   }
   function messageFormHTML(){ const parts=partsOf();
     return `<div class="card"><div class="label">Send a message</div>
-        <div class="row" id="mTo"><label class="switch"><input type="checkbox" value="*" checked> Everyone</label>${parts.map(pt=>`<label class="switch"><input type="checkbox" value="part:${h(pt)}"> ${h(pt)}</label>`).join('')}</div>
+        <div class="row" id="mTo"><label class="switch"><input type="checkbox" value="*" checked> Everyone</label>${allGroups().map(g=>`<label class="switch"><input type="checkbox" value="group:${h(g)}"> ${h(g)}</label>`).join('')}${parts.map(pt=>`<label class="switch"><input type="checkbox" value="part:${h(pt)}"> ${h(pt)}</label>`).join('')}</div>
         <div class="row" id="mToP" style="margin-top:6px">${students.map(st=>`<label class="switch"><input type="checkbox" value="pupil:${h(st.user_id)}"> ${h(st.data.profile?.name||'Pupil')}</label>`).join('')}</div>
         <textarea id="mText" placeholder="e.g. Listen to the recording of movement 3 before Thursday" style="margin-top:8px"></textarea>
         <div class="row" style="margin-top:10px"><button class="btn sm" id="mSend">Send</button><span class="status" id="mStatus" style="margin:0"></span></div>
-        <div class="note">Untick Everyone to pick parts or pupils. It lands on their trail as news from you and they tick it off; their sessions are not changed.</div></div>`; }
+        <div class="note">Untick Everyone to pick groups, parts or pupils. It lands on their trail as news from you and they tick it off; their sessions are not changed.</div></div>`; }
   function wireMessageForm(){
-    const targets=()=>{ const sel=$$('#mTo input:checked, #mToP input:checked').map(x=>x.value); if(!sel.length||sel.includes('*')) return students.slice(); return students.filter(st=>sel.includes('pupil:'+st.user_id)||sel.includes('part:'+(st.data.profile?.part||'').trim())); };
+    const targets=()=>{ const sel=$$('#mTo input:checked, #mToP input:checked').map(x=>x.value); if(!sel.length||sel.includes('*')) return students.slice(); return students.filter(st=>sel.includes('pupil:'+st.user_id)||sel.includes('part:'+(st.data.profile?.part||'').trim())||groupsOf(st.data).some(g=>sel.includes('group:'+g))); };
     $$('#mTo input, #mToP input').forEach(i=>i.onchange=()=>{ if(i.value!=='*'&&i.checked) $('#mTo input[value="*"]').checked=false; $('#mStatus').textContent=targets().length+' will get it'; });
     const b=$('#mSend'); if(b) b.onclick=async()=>{ const t=$('#mText').value.trim(); if(!t){ toast('Write the message first.'); return; } const tg=targets(); for(const st of tg){ st.data.extras=st.data.extras||[]; st.data.extras.push({id:uid(), text:t, at:new Date().toISOString(), done:false, by:me?.name||'', group:tg.length>1}); try{ await saveStudent(st); }catch(e){} } $('#mText').value=''; toast('Sent to '+tg.length+(tg.length===1?' pupil.':' pupils.')); $('#mStatus').textContent=''; };
   }
