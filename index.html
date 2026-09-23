@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Stuckato</title>
 <meta name="description" content="Short bursts. Real progress. Couch to 5K for practising an instrument, in a choir or in an orchestra. Your teacher sets the week; Stuckato gets you to practise every day.">
-<link rel="icon" type="image/svg+xml" href="icon-tile.svg?v=9"><link rel="apple-touch-icon" href="icon-192.png?v=9"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#F5E4CA">
+<link rel="icon" type="image/svg+xml" href="icon-tile.svg?v=10"><link rel="apple-touch-icon" href="icon-192.png?v=10"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#F5E4CA">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap">
 <style>
@@ -164,7 +164,7 @@ canvas.cardc{width:100%; max-width:420px; border-radius:16px; border:1px solid v
 <div class="wrap">
   <div id="demoBar" hidden></div>
   <header class="top">
-    <div class="brand"><h1><img src="wordmark.svg?v=9" alt="Stuckato" style="height:30px;display:block"></h1></div>
+    <div class="brand"><h1><img src="wordmark.svg?v=10" alt="Stuckato" style="height:30px;display:block"></h1></div>
     <div class="auth" id="auth"></div>
   </header>
 
@@ -255,7 +255,7 @@ canvas.cardc{width:100%; max-width:420px; border-radius:16px; border:1px solid v
 <dialog id="dlg"><div class="in" id="dlgIn"></div></dialog>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-<script src="passage.js?v=9"></script>
+<script src="passage.js?v=10"></script>
 <script>
 (function(){
   'use strict';
@@ -980,6 +980,7 @@ canvas.cardc{width:100%; max-width:420px; border-radius:16px; border:1px solid v
     $('#dlBtn').onclick=()=>{ const c=$('#cardc'); c.toBlob(blob=>{ const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='stuckato-week.png'; a.click(); },'image/png'); };
     if(showIt!==false) show('share');
   }
+  const WM_IMG=new Image(); WM_IMG.src='wordmark.svg?v=10'; // the wordmark on the shared card
   function drawCard(c){
     const ctx=c.getContext('2d'); const W=c.width; const p=doc().profile; const w=week(); const tn=doc().teacherName||'your teacher';
     const n=w?doneCount(w):0, tot=w?w.sessions.length:7; const mins=w?(w.done||[]).reduce((a,d)=>a+(w.sessions[d.i]?w.sessions[d.i].steps.reduce((x,y)=>x+(+y.minutes||0),0):0),0):0;
@@ -1000,7 +1001,7 @@ canvas.cardc{width:100%; max-width:420px; border-radius:16px; border:1px solid v
     ctx.fillStyle='#6F6350'; ctx.font=F(600,18); ctx.fillText('Short bursts. Real progress.',70,H-14);
     // box 1: the dates
     const from=w?fmt(w.lessonDate||w.createdAt):fmt(today()); const to=w&&w.nextLesson?fmt(w.nextLesson):null;
-    box(40,120); ctx.fillStyle='#000000'; ctx.font=F(800,34); ctx.fillText('Stuckato.',70,92); ctx.font=F(700,26); ctx.fillText('From '+from+(to?' to '+to:''),70,136);
+    box(40,120); ctx.fillStyle='#000000'; if(WM_IMG.complete&&WM_IMG.naturalWidth){ const wh=44, ww=wh*WM_IMG.naturalWidth/WM_IMG.naturalHeight; ctx.drawImage(WM_IMG,70,52,ww,wh); } else { ctx.font=F(800,34); ctx.fillText('Stuckato.',70,92); } ctx.font=F(700,26); ctx.fillText('From '+from+(to?' to '+to:''),70,136);
     if(gl){ ctx.font=F(800,22); const tw=ctx.measureText(gl.word).width+36; ctx.fillStyle=WASH[2]; ctx.beginPath(); ctx.roundRect(W-70-tw,68,tw,40,20); ctx.fill(); ctx.fillStyle='#F5E4CA'; ctx.fillText(gl.word,W-70-tw+18,96); }
     // box 2: the pupil's week
     let y=190; box(y,270+pgExtra); label((p.name||'My')+"'s week",y+42);

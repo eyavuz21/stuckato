@@ -113,7 +113,7 @@ Two kinds of account: teacher and pupil. There is no parent login. A young pupil
 - `sw.js`, `manifest.webmanifest`, `icon-192.png`, `icon-512.png`: the installable app and its notifications
 - `api/config.js`: public Supabase config for the page, plus which features are configured
 - `supabase/schema.sql`: studios, members, one JSON document per pupil that the pupil and their teacher can both read and write, row-level security, the RPCs. Every database object is prefixed `practicigo_` (renamed from `melodigo_` on 16 September 2026 by `supabase/migrate-practicigo.sql`; the audio bucket keeps its id `melodigo-audio` because stored caption and recording URLs embed it).
-- `logo.svg` (lockup with slogan), `wordmark.svg`, `mark.svg` (the crotchet), `icon-tile.svg`: outlines, no font needed
+- `logo.svg` (lockup with slogan), `wordmark.svg`, `mark.svg` (the sforzando s), `icon-tile.svg`: outlines, no font needed
 
 ## Deploying
 
