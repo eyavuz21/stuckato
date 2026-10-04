@@ -14,6 +14,16 @@ Stuckato has two sides. The **teacher** writes a thirty-second note after each l
 
 **Why not Yousician?** Yousician is for people without a teacher: it listens through the phone, lights each note green or red against its own library, and covers guitar, piano, bass, ukulele and voice. Stuckato is for the six days between lessons, run by the teacher. The week is her note, in her voice, for the actual piece; the teacher sees what happened; violin, cello, wind, brass and choirs are in; the point is turning up on Wednesday, not scoring notes. Where Stuckato does listen (the week's passage, below), it compares the pupil to the teacher's own playing, points at the bars that differ, and leaves the judgement to her. Nobody else has the teacher in the loop.
 
+## What's in v0.11 (4 October 2026): backing tracks
+
+Off for every pupil until the teacher switches it on in the pupil's page (pilot pupils stay as they were); add `?backing=1` to the URL to try it on any device. Pupils' tracks need the v0.10 SQL (the private bucket); the exam accompaniment also needs `supabase/v0.11-backing.sql` run once.
+
+- **Add a backing.** The pupil records up to a minute (or uses the week's passage take they just made). Stuckato finds the key from the notes it hears and puts chords under it that follow the player: where the chords change and which chords they are are chosen together, every change costs a little, a dominant going home is rewarded, and a chord never runs across a pause, so it waits when they stop. Piano, strings, guitar or a warm pad, with a volume slider. If the key is unclear it asks, with its best guess picked.
+- **Play along.** Headphones in, pick a style (piano ballad, strings, acoustic, lo-fi beat), a tempo (slider or tap) and a key (suggested from this week's passage), one bar of clicks, then the backing plays while they record. The recording is taken in the same audio clock as the backing, corrected for the phone's own delay; a Line up slider (remembered per phone, or measured with four clicks) fixes what is left.
+- **Play with the accompaniment.** The teacher records or uploads the real piano part of a piece and can set how many times this week. The pupil plays along with it in headphones at 75%, 90% or full speed; the pitch stays the same (WSOLA time-stretch on the device).
+- **Kept tracks** (up to five a week; a teacher's star keeps one past that) go in the week as the raw recording plus a small recipe (style, key, chords, tempo, offset, volume), so the mix is rebuilt whenever it plays. They live in the private bucket, or IndexedDB on the device in demo and local mode. The teacher plays them, stars them and sends one line back; the share card says how many were made. Download renders a WAV on the device: direct for 13 and over, behind the account email for younger pupils. Making music never adds practice minutes.
+- Instruments are bundled samples (Salamander Grand Piano; cello, violin and acoustic guitar from tonejs-instruments, both CC BY 3.0), 690 KB in all, fetched on first use and cached by the service worker; pad, drums and clicks are synthesised. Account deletion now also removes the person's files in the private bucket.
+
 ## What's in v0.10 (23 September 2026)
 
 Needs `supabase/v0.10-partners-reviews-auditions.sql` run once in the Supabase SQL editor; until then partners and reviews stay hidden (the teacher sees a note). Everything else works without it.
@@ -110,6 +120,8 @@ Two kinds of account: teacher and pupil. There is no parent login. A young pupil
 - `api/transcribe.js`: spoken notes to text (ElevenLabs Scribe) for browsers without built-in dictation
 - `api/reminders.js`: the morning message. GET from the cron (Authorization: Bearer CRON_SECRET) sends to every pupil due; POST from a signed-in pupil sends their own message now. Uses the Supabase service-role key server-side to read every pupil row
 - `passage.js`: the week's passage, pure functions with no DOM: resample to 16 kHz, McLeod pitch tracking (normalised square difference), frames to notes with repeated-note splitting, Needleman-Wunsch alignment of the two note lists, and the comparison that yields the spots. Runs in the browser on the recording device; imported under Node by the tests
+- `backing.js`: backing tracks, pure functions with no DOM: key finding (Krumhansl-Kessler), chords that follow the player (a semi-Markov Viterbi over note onsets), looped progressions, voicing, the arrangement for each style, `lineUp` (delay by envelope cross-correlation), WSOLA time-stretch and the WAV encoder. Imported under Node by the tests
+- `backing-audio.js`: the sound: sample playback, synthesised pad and drums, preview, the offline render for downloads, recording in the same clock as the backing, and the phone-delay estimate. `samples/` holds the instruments
 - `sw.js`, `manifest.webmanifest`, `icon-192.png`, `icon-512.png`: the installable app and its notifications
 - `api/config.js`: public Supabase config for the page, plus which features are configured
 - `supabase/schema.sql`: studios, members, one JSON document per pupil that the pupil and their teacher can both read and write, row-level security, the RPCs. Every database object is prefixed `practicigo_` (renamed from `melodigo_` on 16 September 2026 by `supabase/migrate-practicigo.sql`; the audio bucket keeps its id `melodigo-audio` because stored caption and recording URLs embed it).
@@ -135,7 +147,7 @@ Supabase: run `supabase/schema.sql` in the SQL editor once; under Authentication
 
 Open `index.html` in a browser and choose "Try it on this device". Accounts and the generated weeks need the deployed functions; the file version writes a plain placeholder week so the loop can still be walked through.
 
-`npm test` runs the unit tests for `passage.js` (Node 22 or later, no dependencies).
+`npm test` runs the unit tests for `passage.js` and `backing.js` (Node 22 or later, no dependencies).
 
 ## Roadmap
 
