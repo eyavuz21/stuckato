@@ -442,8 +442,8 @@ canvas.cardc{width:100%; max-width:420px; border-radius:16px; border:1px solid v
     // part: 'all' (one map), 'top' (the lesson box down to today's card), 'bottom' (from today's card to the next lesson box)
     part=part||'all'; const N=w.sessions.length, RH=84, W=360; const d=new Set((w.done||[]).map(x=>x.i)); const ev=new Set((w.done||[]).filter(evidenced).map(x=>x.i)); const nx=nextIndex(w); const tn=doc().teacherName||'your teacher';
     const from=part==='bottom'?nx+1:0, to=part==='top'?nx:N; const ks=[]; for(let k=from;k<to;k++) ks.push(k);
-    const top=part==='bottom'?30:74, H=top+ks.length*RH+(part==='top'?40:78); const sx=k=>k%2?240:120, sy=(k)=>top+(k-from)*RH+14;
-    const pts=[part==='bottom'?[180,0]:[180,44],...ks.map(k=>[sx(k),sy(k)]),part==='top'?[180,H]:[180,H-56]];
+    const top=part==='bottom'?30:74, H=top+ks.length*RH+(part==='top'?40:92); const sx=k=>k%2?240:120, sy=(k)=>top+(k-from)*RH+14;
+    const pts=[part==='bottom'?[180,0]:[180,44],...ks.map(k=>[sx(k),sy(k)]),part==='top'?[180,H]:[180,H-70]];
     let path=`M ${pts[0][0]} ${pts[0][1]}`; for(let i=1;i<pts.length;i++){ const [ax,ay]=pts[i-1],[bx,by]=pts[i]; const m=(ay+by)/2; path+=` C ${ax} ${m}, ${bx} ${m}, ${bx} ${by}`; }
     const start=w.lessonDate||w.createdAt; const dayOf=k=>addDays(start,k+1);
     const note=(x,y,filled,ring,sc)=>`<g transform="translate(${x} ${y}) scale(${sc})">${ring?'<circle r="19" fill="none" stroke="var(--amber)" stroke-width="3"/>':''}<ellipse rx="10" ry="7" transform="rotate(-22)" fill="${filled?'var(--varnish)':'var(--card)'}" stroke="var(--varnish)" stroke-width="2"/><rect x="8" y="-38" width="2.5" height="38" fill="var(--varnish)"/></g>`;
@@ -460,8 +460,8 @@ canvas.cardc{width:100%; max-width:420px; border-radius:16px; border:1px solid v
       out+=coin(left?x-30:x+30, y-26, ev.has(k), '+1');
     });
     const full=!!w.bonus;
-    if(part!=='top'){ out+=`<rect x="40" y="${H-76}" width="280" height="44" rx="14" fill="var(--varnish)"/><text x="180" y="${H-49}" text-anchor="middle" class="t" style="fill:var(--card)">Next lesson with ${h(tn)} · ${h(fmt(w.nextLesson))}</text>`;
-      out+=coin(300,H-88,full,'+2')+`<text x="180" y="${H-12}" text-anchor="middle" class="s">${full?'Week complete: two extra tokens.':'A token a day, once you write what changed. Every day plus the play-through: two more.'}</text>`; }
+    if(part!=='top'){ out+=`<rect x="40" y="${H-90}" width="280" height="44" rx="14" fill="var(--varnish)"/><text x="180" y="${H-63}" text-anchor="middle" class="t" style="fill:var(--card)">Next lesson with ${h(tn)} · ${h(fmt(w.nextLesson))}</text>`;
+      out+=coin(300,H-102,full,'+2')+(full?`<text x="180" y="${H-20}" text-anchor="middle" class="s">Week complete: two extra tokens.</text>`:`<text x="180" y="${H-26}" text-anchor="middle" class="s">A token a day, once you write what changed.</text><text x="180" y="${H-8}" text-anchor="middle" class="s">Every day plus the play-through: two more.</text>`); }
     return out+'</svg>';
   }
   function roadHTML(p){ // the road to the goal: a note a week to the double bar, then the stages (the teacher's, or a suggested shape)
