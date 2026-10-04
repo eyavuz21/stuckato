@@ -202,5 +202,18 @@
     return buf;
   }
 
-  return { NAMES, keyName, chordName, chordPcs, detectKey, diatonic, followChords, loopChords, transpose, voice, bassOf, arrange, instruments, STYLES, STYLE_LABEL, envelope, lineUp, stretch, wavEncode };
+  // a YouTube link the teacher pastes: {id, start} or null. Accepts watch, youtu.be, embed, shorts, live and music links, and a t= start.
+  function youtubeLink(s) {
+    s = String(s || '').trim(); if (!s) return null; let u; try { u = new URL(/^https?:\/\//i.test(s) ? s : 'https://' + s); } catch (e) { return null; }
+    const host = u.hostname.replace(/^(www|m|music)\./, ''); let id = null;
+    if (host === 'youtu.be') id = u.pathname.split('/')[1];
+    else if (host === 'youtube.com' || host === 'youtube-nocookie.com') { const parts = u.pathname.split('/').filter(Boolean);
+      if (parts[0] === 'watch') id = u.searchParams.get('v'); else if (['embed', 'shorts', 'live', 'v'].includes(parts[0])) id = parts[1]; }
+    if (!id || !/^[A-Za-z0-9_-]{11}$/.test(id)) return null;
+    const t = u.searchParams.get('t') || u.searchParams.get('start') || ''; let start = 0;
+    const m = /^(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s?)?$/.exec(t); if (t && m) start = (+m[1] || 0) * 3600 + (+m[2] || 0) * 60 + (+m[3] || 0);
+    return { id, start };
+  }
+
+  return { NAMES, keyName, youtubeLink, chordName, chordPcs, detectKey, diatonic, followChords, loopChords, transpose, voice, bassOf, arrange, instruments, STYLES, STYLE_LABEL, envelope, lineUp, stretch, wavEncode };
 });

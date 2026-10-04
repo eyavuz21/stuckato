@@ -257,7 +257,7 @@ canvas.cardc{width:100%; max-width:420px; border-radius:16px; border:1px solid v
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script src="passage.js?v=10"></script>
-<script src="backing.js?v=11"></script>
+<script src="backing.js?v=12"></script>
 <script src="backing-audio.js?v=11"></script>
 <script>
 (function(){
@@ -738,7 +738,7 @@ canvas.cardc{width:100%; max-width:420px; border-radius:16px; border:1px solid v
     const id='bk-'+name; await IDB.put(id, blob); return {idb:id}; }
   async function bkBlob(t){ if(!t) return null; if(t.idb){ try{ return await IDB.get(t.idb)||null; }catch(e){ return null; } } const u=await takeUrl(t); if(!u) return null; try{ const r=await fetch(u); return r.ok?await r.blob():null; }catch(e){ return null; } }
   async function bkRemove(t){ try{ if(t.idb) await IDB.del(t.idb); else if(t.path&&cloudOn()) await sb.storage.from('stuckato-private').remove([t.path]); }catch(e){} }
-  const bkLabel=t=>t.mode==='accomp'?`with the accompaniment${t.recipe.rate&&t.recipe.rate!==1?' at '+Math.round(t.recipe.rate*100)+'%':''} · ${t.seconds} s`:`${Backing.STYLE_LABEL[t.recipe.style]||'Backing'} · ${Backing.keyName(t.recipe.key)}${t.mode==='along'?' · played along':''} · ${t.seconds} s`;
+  const bkLabel=t=>t.mode==='youtube'?`with the piano on YouTube${t.recipe.rate&&t.recipe.rate!==1?' at '+Math.round(t.recipe.rate*100)+'%':''}${t.kind==='video'?' · video':''} · ${t.seconds} s`:t.mode==='accomp'?`with the accompaniment${t.recipe.rate&&t.recipe.rate!==1?' at '+Math.round(t.recipe.rate*100)+'%':''} · ${t.seconds} s`:`${Backing.STYLE_LABEL[t.recipe.style]||'Backing'} · ${Backing.keyName(t.recipe.key)}${t.mode==='along'?' · played along':''} · ${t.seconds} s`;
   const bkNudge=()=>{ try{ return Math.max(-0.3,Math.min(0.3,+localStorage.getItem('stuckato.backing.nudge')||0)); }catch(e){ return 0; } };
   const bkSaveNudge=v=>{ try{ localStorage.setItem('stuckato.backing.nudge', String(v)); }catch(e){} };
   const bkNudgeText=n=>Math.abs(n)<0.005?'No change':`Your playing moved ${Math.round(Math.abs(n)*1000)} ms ${n>0?'earlier':'later'}`;
@@ -749,34 +749,42 @@ canvas.cardc{width:100%; max-width:420px; border-radius:16px; border:1px solid v
     const typed=prompt(em?'A grown-up saves this file. Grown-up: type the account email to carry on.':'A grown-up saves this file. Grown-up: type PARENT to carry on.'); if(typed===null) return false;
     const ok=em?typed.trim().toLowerCase()===em:typed.trim().toUpperCase()==='PARENT'; if(!ok) alert('That did not match, so nothing was saved.'); return ok; }
   async function bkDownload(what, name){ toast('Making the file…');
-    try{ const blob=await BackingAudio.render(what); const file=new File([blob], name, {type:'audio/wav'});
+    try{ await bkSaveFile(await BackingAudio.render(what), name); }
+    catch(e){ toast('Could not make the file: '+(e.message||e)); } }
+  async function bkSaveFile(blob, name){ const file=new File([blob], name, {type:blob.type||'audio/wav'});
       const phone=window.matchMedia&&matchMedia('(pointer:coarse)').matches; // phones get the share sheet (WhatsApp, Files); computers just download
       if(phone&&navigator.canShare&&navigator.canShare({files:[file]})){ try{ await navigator.share({files:[file], title:'My track'}); return; }catch(e){ if(e&&e.name==='AbortError') return; } }
       const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; document.body.appendChild(a); a.click(); a.remove(); toast('Saved.'); }
-    catch(e){ toast('Could not make the file: '+(e.message||e)); } }
   async function bkWhatOf(t, w){ // a kept track, ready to play or download: the take, its recipe, and the accompaniment at the speed it was played
     const blob=await bkBlob(t); if(!blob) throw new Error('Could not open the recording.'); const take=await BackingAudio.mono(await BackingAudio.decode(blob)); let accomp=null;
+    if(t.mode==='youtube') return {take, recipe:{offset:0}, accomp:null};
     if(t.mode==='accomp'){ const ac=[w.accomp, ...(w.accompOld||[])].find(x=>x&&x.id===t.recipe.accompId); if(!ac) throw new Error('The accompaniment for this take is no longer here.'); const ab=await bkBlob(ac); if(!ab) throw new Error('Could not open the accompaniment.'); accomp=await BackingAudio.stretched(await BackingAudio.mono(await BackingAudio.decode(ab)), t.recipe.rate||1); }
     return {take, recipe:t.recipe, accomp}; }
   let bkPlaying=null;
   async function bkToggle(btn, t, w){
+    if(t.kind==='video'){ bkShowVideo(t); return; }
     if(bkPlaying){ const was=bkPlaying; bkPlaying=null; was.p.stop(); was.btn.textContent='Play'; if(was.btn===btn) return; }
     btn.textContent='Loading…'; btn.disabled=true;
     try{ const what=await bkWhatOf(t,w); const p=await BackingAudio.preview(what); bkPlaying={p,btn}; btn.textContent='Stop'; p.ended.then(()=>{ if(bkPlaying&&bkPlaying.p===p) bkPlaying=null; btn.textContent='Play'; }); }
     catch(e){ btn.textContent='Play'; toast(e.message||'Could not play it.'); } finally{ btn.disabled=false; } }
 
+  async function bkShowVideo(t){ const blob=await bkBlob(t); if(!blob){ toast('Could not open the recording.'); return; }
+    const ov=document.createElement('div'); ov.style.cssText='position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.85);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px';
+    const u=URL.createObjectURL(blob); ov.innerHTML=`<video controls playsinline autoplay style="max-width:100%;max-height:80vh;border-radius:12px"></video><button class="btn quiet sm" style="margin-top:12px">Close</button>`;
+    ov.querySelector('video').src=u; ov.querySelector('button').onclick=()=>{ URL.revokeObjectURL(u); ov.remove(); }; document.body.appendChild(ov); }
+
   // the pupil's card on the trail
   function backingCardHTML(w){ const d=doc(); if(!w||!backingOn(d)) return ''; const tn=d.teacherName||'your teacher'; const ks=(w.backings||[]).slice().sort((a,b)=>b.at.localeCompare(a.at)); const ac=w.accomp;
     return `<div class="card" id="bkCard"><div class="label">Make it music</div><p style="margin:0 0 10px">Put a band under your playing. Record a snippet and add a backing, or play along with one.</p>
       <div class="row"><button class="btn sm" id="bkA">Add a backing</button><button class="btn sm quiet" id="bkB">Play along</button></div>
-      ${ac?`<div class="daybox" style="margin-top:10px"><p style="margin:0 0 8px"><b>The accompaniment${ac.label?': '+h(ac.label):''}</b>, from ${h(tn)}.${+ac.target?` Play it through with it ${h(ac.target)} ${+ac.target===1?'time':'times'} this week: <b>${Math.min(w.accompRuns||0,+ac.target)} of ${h(ac.target)}</b>.`:''}</p><button class="btn sm" id="bkC">Play with the accompaniment</button></div>`:''}
+      ${ac?`<div class="daybox" style="margin-top:10px"><p style="margin:0 0 8px"><b>${ac.kind==='youtube'?(ac.label?h(ac.label):'The piano part'):'The accompaniment'+(ac.label?': '+h(ac.label):'')}</b>, from ${h(tn)}${ac.kind==='youtube'?', on YouTube':''}.${+ac.target?` Play it through with it ${h(ac.target)} ${+ac.target===1?'time':'times'} this week: <b>${Math.min(w.accompRuns||0,+ac.target)} of ${h(ac.target)}</b>.`:''}</p><button class="btn sm" id="bkC">${ac.kind==='youtube'?'Play with the piano':'Play with the accompaniment'}</button></div>`:''}
       ${ks.length?`<div class="label" style="margin-top:12px">Your tracks this week</div>${ks.map(t=>`<div class="daybox" data-bk="${h(t.id)}"><p style="margin:0">${h(fmt(t.at.slice(0,10)))} ${h(timeOf(t.at))} · ${h(bkLabel(t))}${t.star?' · <b>starred by '+h(tn)+'</b>':''}</p>${t.tNote?`<p class="quote" style="margin:6px 0 0;font-size:17px">“${h(t.tNote)}” <span class="note" style="margin:0">${h(tn)}</span></p>`:''}<div class="row" style="margin-top:6px"><button class="btn sm quiet bkPlay">Play</button><button class="btn sm quiet bkDl">Download</button></div></div>`).join('')}`:''}
       <p class="note" style="margin:8px 0 0">Up to ${BK_MAX} tracks a week. Only you, ${h(tn)} and whoever holds the account can hear them. Making music doesn't change your practice minutes.</p></div>`; }
   function wireBackingCard(w){ if(!$('#bkCard')) return;
-    $('#bkA').onclick=()=>bkStartAfter(null); $('#bkB').onclick=bkStartAlong; const c=$('#bkC'); if(c) c.onclick=bkStartAccomp;
+    $('#bkA').onclick=()=>bkStartAfter(null); $('#bkB').onclick=bkStartAlong; const c=$('#bkC'); if(c) c.onclick=w.accomp&&w.accomp.kind==='youtube'?bkStartYoutube:bkStartAccomp;
     $$('#bkCard [data-bk]').forEach(box=>{ const t=(w.backings||[]).find(x=>x.id===box.dataset.bk); if(!t) return;
       box.querySelector('.bkPlay').onclick=e=>bkToggle(e.currentTarget, t, w);
-      box.querySelector('.bkDl').onclick=async()=>{ if(!grownUpOk(doc())) return; try{ await bkDownload(await bkWhatOf(t,w), `stuckato-${t.at.slice(0,10)}.wav`); }catch(e){ toast(e.message||'Could not make the file.'); } }; }); }
+      box.querySelector('.bkDl').onclick=async()=>{ if(!grownUpOk(doc())) return; if(t.kind==='video'){ const b=await bkBlob(t); if(b) await bkSaveFile(b, `stuckato-${t.at.slice(0,10)}.${(b.type||'').includes('mp4')?'mp4':'webm'}`); else toast('Could not open the recording.'); return; } try{ await bkDownload(await bkWhatOf(t,w), `stuckato-${t.at.slice(0,10)}.wav`); }catch(e){ toast(e.message||'Could not make the file.'); } }; }); }
 
   // the studio: a full-screen sheet over the trail
   let bkS=null;
@@ -832,6 +840,60 @@ canvas.cardc{width:100%; max-width:420px; border-radius:16px; border:1px solid v
         bkS.accomp=await BackingAudio.stretched(await BackingAudio.mono(await BackingAudio.decode(blob)), bkS.rate); bkHeadphones(hp=>{ bkS.headphones=hp; bkGoLive(); }); }
       catch(e){ bkFail(e, bkStartAccomp); } }; }
 
+  // mode D: a backing track on YouTube. It plays out loud in YouTube's own player (nothing is copied) and the microphone hears the room, so the take has the piano in it.
+  let ytLoad=null;
+  function ytApi(){ if(window.YT&&YT.Player) return Promise.resolve(); if(ytLoad) return ytLoad;
+    ytLoad=new Promise((res,rej)=>{ const prev=window.onYouTubeIframeAPIReady; window.onYouTubeIframeAPIReady=()=>{ try{ prev&&prev(); }catch(e){} res(); };
+      const sc=document.createElement('script'); sc.src='https://www.youtube.com/iframe_api'; sc.onerror=()=>{ ytLoad=null; rej(new Error('Could not reach YouTube. Check your connection.')); }; document.head.appendChild(sc); });
+    return ytLoad; }
+  function bkStartYoutube(){ const w=week(), d=doc(); if(!w||!w.accomp||w.accomp.kind!=='youtube') return; const ac=w.accomp, tn=d.teacherName||'your teacher';
+    bkS={kind:'youtube', w, rate:1, video:false};
+    bkPaint(`<div class="eyebrow">With the piano</div><h2 class="big">How fast?</h2><p>${h(ac.label||'The piano part')}, on YouTube. Start slower while you learn it.</p><div class="chips">${[[0.75,'75%'],[1,'Full speed']].map(([v,l])=>`<button type="button" class="chip ${v===1?'on':''}" data-rate="${v}">${l}</button>`).join('')}</div>
+      ${d.profile.adult?'<label class="switch" style="font-size:15px;color:var(--ink);margin:0 0 12px"><input type="checkbox" id="ytVid"> Record video too</label>':''}
+      <p>No headphones this time. The microphone needs to hear the piano as well, so ${h(tn)} hears the two of you together. Turn the sound up, or use a speaker.</p>
+      <button class="btn block" id="bkGo">Next</button><p class="note" id="bkSt"></p>`);
+    $$('#bkOv [data-rate]').forEach(b=>b.onclick=()=>{ bkS.rate=+b.dataset.rate; $$('#bkOv [data-rate]').forEach(x=>x.classList.toggle('on',x===b)); });
+    $('#bkGo').onclick=async()=>{ const S=bkS, st=$('#bkSt'); $('#bkGo').disabled=true; S.video=!!($('#ytVid')&&$('#ytVid').checked); st.textContent='Getting it ready…';
+      try{ try{ if(navigator.audioSession) navigator.audioSession.type='play-and-record'; }catch(e){}
+        S.stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false, noiseSuppression:false, autoGainControl:false}, video:S.video?{facingMode:'user'}:false});
+        await ytApi(); if(bkS!==S){ S.stream.getTracks().forEach(t=>t.stop()); return; } bkYtLive(); }
+      catch(e){ if(S.stream) S.stream.getTracks().forEach(t=>t.stop()); bkFail(e.name==='NotAllowedError'?(S.video?'The microphone and camera are needed to record. Allow them in your browser settings.':'The microphone is needed to record. Allow it in your browser settings.'):e, bkStartYoutube); } }; }
+  function bkYtLive(){ const S=bkS, ac=S.w.accomp, tn=doc().teacherName||'your teacher';
+    bkPaint(`<div class="eyebrow">With the piano</div><h2 class="big" id="bkBig">Press play on the video.</h2>
+      <div style="position:relative;width:100%;aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:#000"><div id="ytBox" style="position:absolute;inset:0"></div></div>
+      ${S.video?'<video id="ytCam" muted playsinline autoplay style="width:96px;border-radius:10px;margin-top:8px"></video>':''}
+      <p class="note" id="bkInfo">Recording starts when the video does and stops when it ends.</p><button class="btn block" id="bkStop" disabled>Stop</button>`);
+    if(S.video) $('#ytCam').srcObject=S.stream;
+    const mt=S.video?(['video/webm;codecs=vp8,opus','video/webm','video/mp4'].find(m=>window.MediaRecorder&&MediaRecorder.isTypeSupported(m))||''):(pickMime()||'');
+    const from=ac.start||0; let r=null, chunks=[], t0=0, far=from, tick=null, done=false;
+    const stopAll=()=>{ if(S.stream) S.stream.getTracks().forEach(t=>t.stop()); };
+    const onStop=()=>{ stopAll(); if(bkS!==S) return; let dur=0; try{ dur=S.player.getDuration(); }catch(x){} try{ S.player.destroy(); }catch(x){}
+      const secs=Math.round((Date.now()-t0)/1000), blob=new Blob(chunks,{type:(mt||'audio/webm').split(';')[0]});
+      if(dur&&far-from>=0.6*(dur-from)){ S.w.accompRuns=(S.w.accompRuns||0)+1; saveCurrent(); }
+      if(secs<2||!blob.size){ bkFail('That was too short to keep. Try again.', bkStartYoutube); return; }
+      S.blob=blob; S.seconds=secs; bkYtPreview(); };
+    const finish=()=>{ if(done) return; done=true; clearInterval(tick); try{ S.player.pauseVideo(); }catch(x){} if(r&&r.state!=='inactive') r.stop(); else stopAll(); };
+    S.live={stop:()=>{ done=true; clearInterval(tick); try{ if(r&&r.state!=='inactive') r.stop(); }catch(x){} stopAll(); try{ S.player.destroy(); }catch(x){} }};
+    S.player=new YT.Player('ytBox', {host:'https://www.youtube-nocookie.com', videoId:ac.ytId, width:'100%', height:'100%', playerVars:{playsinline:1, rel:0, start:from},
+      events:{ onReady:e=>{ try{ e.target.setPlaybackRate(S.rate); }catch(x){} },
+        onStateChange:e=>{ if(done) return;
+          if(e.data===YT.PlayerState.PLAYING&&!r){ try{ e.target.setPlaybackRate(S.rate); }catch(x){}
+            r=new MediaRecorder(S.stream, mt?{mimeType:mt}:undefined); r.ondataavailable=ev=>{ if(ev.data.size) chunks.push(ev.data); }; r.onstop=onStop; r.start(1000); t0=Date.now();
+            $('#bkBig').textContent='Recording. Play along!'; const b=$('#bkStop'); b.disabled=false; b.onclick=finish;
+            tick=setInterval(()=>{ try{ far=Math.max(far, S.player.getCurrentTime()); }catch(x){} const i=$('#bkInfo'); if(i) i.textContent='Recording · '+clockText(Math.round((Date.now()-t0)/1000)); if(Date.now()-t0>10*60*1000) finish(); },500); }
+          if(e.data===YT.PlayerState.ENDED&&r){ try{ far=Math.max(far, S.player.getDuration()); }catch(x){} finish(); } },
+        onError:e=>{ if(r||done) return; done=true; stopAll(); bkFail(e.data===101||e.data===150?`This video can't play inside Stuckato: whoever posted it has switched that off. Ask ${tn} for a different link.`:`YouTube could not play this video. Check the link with ${tn}.`, bkStartYoutube); } } }); }
+  function bkYtPreview(){ const S=bkS, u=URL.createObjectURL(S.blob);
+    bkPaint(`<div class="eyebrow">With the piano</div><h2 class="big">Have a listen.</h2>${S.video?`<video controls playsinline src="${u}" style="width:100%;border-radius:12px"></video>`:`<audio controls src="${u}" style="width:100%"></audio>`}
+      <p class="note">Can't hear the piano? Next time turn it up, or put the phone nearer the speaker.</p>
+      <div class="row" style="margin-top:10px"><button class="btn" id="bkKeep">Keep it</button><button class="btn quiet" id="bkAgain">Try again</button></div><p class="note" id="bkSt"></p>`);
+    $('#bkAgain').onclick=bkStartYoutube;
+    $('#bkKeep').onclick=async()=>{ const st=$('#bkSt'), w=S.w, d=doc(); if(!await bkRoom(w)) return; st.textContent='Saving…'; $('#bkKeep').disabled=true;
+      try{ const id=uid(), ext=S.video?((S.blob.type||'').includes('mp4')?'mp4':'webm'):audioExt(S.blob); const where=await bkStore(S.blob, `backing-${id}.${ext}`);
+        w.backings.push({id, at:new Date().toISOString(), mode:'youtube', kind:S.video?'video':'audio', seconds:S.seconds, mime:S.blob.type, ...where, recipe:{v:1, mode:'youtube', accompId:w.accomp&&w.accomp.id, rate:S.rate}, star:false});
+        saveCurrent(); toast('Kept. '+(d.teacherName||'Your teacher')+' can listen.'); bkClose(); }
+      catch(e){ const b=$('#bkKeep'); if(b) b.disabled=false; st.textContent='Could not save: '+(e.message||e); } }; }
+
   // modes B and C: count in, play, record in the same clock
   async function bkGoLive(){ const accomp=bkS.kind==='accomp'; const max=accomp?Math.ceil(bkS.accomp.duration):60;
     bkPaint(`<div class="eyebrow">${accomp?'With the accompaniment':'Play along'}</div><h2 class="big" id="bkBig">Getting the band ready…</h2><p class="note" id="bkInfo"></p><button class="btn block" id="bkStop" disabled>Stop</button>`);
@@ -867,9 +929,12 @@ canvas.cardc{width:100%; max-width:420px; border-radius:16px; border:1px solid v
     $('#bkKeep').onclick=bkKeep;
     $('#bkDl').onclick=async()=>{ if(!grownUpOk(doc())) return; bkStopPreview(); play.textContent='Play'; await bkDownload(bkWhat(), `stuckato-${today()}.wav`); };
     $('#bkAgain').onclick=()=>{ bkStopPreview(); const k=kind; bkS=null; if(k==='after') bkStartAfter(null); else if(k==='along') bkStartAlong(); else bkStartAccomp(); }; }
-  async function bkKeep(){ const st=$('#bkSt'), w=bkS.w, d=doc(); if(!w){ st.textContent='There is no week to keep it in yet.'; return; } w.backings=w.backings||[];
+  async function bkRoom(w){ w.backings=w.backings||[]; // the week keeps BK_MAX tracks; starred ones stay
     if(w.backings.length>=BK_MAX){ const old=w.backings.filter(x=>!x.star).sort((a,b)=>a.at.localeCompare(b.at))[0];
-      if(old){ if(!confirm(`You can keep ${BK_MAX} tracks a week. Keeping this one removes your oldest (${fmt(old.at.slice(0,10))} ${timeOf(old.at)}). Starred ones stay. Go on?`)) return; await bkRemove(old); w.backings=w.backings.filter(x=>x!==old); } }
+      if(old){ if(!confirm(`You can keep ${BK_MAX} tracks a week. Keeping this one removes your oldest (${fmt(old.at.slice(0,10))} ${timeOf(old.at)}). Starred ones stay. Go on?`)) return false; await bkRemove(old); w.backings=w.backings.filter(x=>x!==old); } }
+    return true; }
+  async function bkKeep(){ const st=$('#bkSt'), w=bkS.w, d=doc(); if(!w){ st.textContent='There is no week to keep it in yet.'; return; }
+    if(!await bkRoom(w)) return;
     bkStopPreview(); st.textContent='Saving…'; $('#bkKeep').disabled=true;
     try{ const id=uid(); const blob=bkS.takeBlob||BackingAudio.toWav(bkS.pcm.pcm, bkS.pcm.sr); const ext=(blob.type||'').includes('wav')?'wav':audioExt(blob);
       const where=await bkStore(blob, `backing-${id}.${ext}`); const what=bkWhat();
@@ -888,22 +953,28 @@ canvas.cardc{width:100%; max-width:420px; border-radius:16px; border:1px solid v
       ${ks.length?`<div class="label" style="margin-top:12px">Made with a backing this week</div>${ks.map(t=>`<div class="daybox" data-bkt="${h(t.id)}"><p style="margin:0">${h(fmt(t.at.slice(0,10)))} ${h(timeOf(t.at))} · ${h(bkLabel(t))}${t.star?' · <b>starred</b>':''}</p>
         <div class="row" style="margin-top:6px"><button class="btn sm quiet bkTPlay">Play</button><button class="btn sm ${t.star?'':'quiet'} bkStar">${t.star?'Starred ★':'Star'}</button></div>
         <div class="row" style="margin-top:6px"><input class="bkNote" placeholder="One line back, e.g. Love the strings version!" value="${h(t.tNote||'')}" style="flex:1"><button class="btn sm bkSend">Send</button></div></div>`).join('')}<div class="note">A star keeps a track past the week's ${BK_MAX}.</div>`:(w?`<div class="note">${p.backing?'Tracks appear here once '+h(name)+' keeps one.':'Switch it on and their tracks appear here.'}</div>`:'')}
-      ${w?`<div class="label" style="margin-top:14px">The exam accompaniment</div>${ac?`<div class="daybox"><p style="margin:0 0 6px"><b>${h(ac.label||'Accompaniment')}</b> · ${h(ac.seconds||'?')} s · played with it ${h(w.accompRuns||0)} ${(w.accompRuns||0)===1?'time':'times'} this week</p>
+      ${w?`<div class="label" style="margin-top:14px">The exam accompaniment</div>${ac?`<div class="daybox"><p style="margin:0 0 6px"><b>${h(ac.label||'Accompaniment')}</b> · ${ac.kind==='youtube'?'on YouTube':h(ac.seconds||'?')+' s'} · played with it ${h(w.accompRuns||0)} ${(w.accompRuns||0)===1?'time':'times'} this week</p>
           <div class="row"><button class="btn sm quiet" id="acPlay">Play</button><label class="l" for="acTarget2" style="margin:0">Times this week</label><select id="acTarget2" style="width:auto">${[0,1,2,3,4,5,6,7].map(n=>`<option value="${n}" ${+ac.target===n?'selected':''}>${n||'No target'}</option>`).join('')}</select><button class="btn sm quiet" id="acRm">Replace</button></div><audio id="acAudio" controls hidden style="width:100%;margin-top:8px"></audio></div>`
         :`<p class="note" style="margin:0 0 8px">Record or upload the piano part of a piece. ${h(name)} plays along with it in headphones, at 75%, 90% or full speed, and you hear the two together.</p>
           <input id="acLabel" placeholder="e.g. Grade 3, A1 Minuet: piano part">
           <div class="row" style="margin-top:8px"><button class="btn sm" id="acRec">Record</button><label class="btn sm quiet" for="acFile" style="cursor:pointer">Upload a file</label><input type="file" id="acFile" accept="audio/*" style="display:none"></div>
           <div class="row" style="margin-top:8px"><label class="l" for="acTarget" style="margin:0">Times this week</label><select id="acTarget" style="width:auto">${[0,1,2,3,4,5,6,7].map(n=>`<option value="${n}" ${n===3?'selected':''}>${n||'No target'}</option>`).join('')}</select></div>
-          <audio id="acAudio" controls hidden style="width:100%;margin-top:8px"></audio><button class="btn sm" id="acSave" hidden style="margin-top:8px">Save to the week</button><p class="note" id="acSt" style="margin:6px 0 0">Up to six minutes. It stays private to your studio.</p>`}`:''}</div>`;
+          <audio id="acAudio" controls hidden style="width:100%;margin-top:8px"></audio><button class="btn sm" id="acSave" hidden style="margin-top:8px">Save to the week</button><p class="note" id="acSt" style="margin:6px 0 0">Up to six minutes. It stays private to your studio.</p>
+          <div class="label" style="margin-top:14px">Or a backing track on YouTube</div>
+          <div class="row"><input id="acYt" placeholder="Paste a YouTube link" style="flex:1"><button class="btn sm" id="acYtSave">Use it</button></div>
+          <p class="note" style="margin:6px 0 0">For when you can't record the piano part yourself. ${h(name)} plays along out loud and Stuckato records them with the piano, so you hear both. It plays in YouTube's own player; nothing is copied.</p>`}`:''}</div>`;
     $('#bkOnT').onchange=e=>{ p.backing=e.target.checked; saveCurrent(); toast(p.backing?'Backing tracks are on for '+name+'.':'Backing tracks are off for '+name+'.'); renderTeacherBacking(); };
     $$('[data-bkt]').forEach(b2=>{ const t=ks.find(x=>x.id===b2.dataset.bkt); if(!t) return;
       b2.querySelector('.bkTPlay').onclick=e=>bkToggle(e.currentTarget, t, w);
       b2.querySelector('.bkStar').onclick=()=>{ t.star=!t.star; saveCurrent(); renderTeacherBacking(); };
       b2.querySelector('.bkSend').onclick=()=>{ t.tNote=b2.querySelector('.bkNote').value.trim(); saveCurrent(); toast('Sent.'); renderTeacherBacking(); }; });
     if(!w) return; const st=$('#acSt'), au=$('#acAudio');
-    if(ac){ $('#acPlay').onclick=async()=>{ const b=await bkBlob(ac); if(!b){ toast('Could not open it.'); return; } au.src=URL.createObjectURL(b); au.hidden=false; au.play().catch(()=>{}); };
+    if(ac){ $('#acPlay').onclick=async()=>{ if(ac.kind==='youtube'){ window.open(`https://www.youtube.com/watch?v=${ac.ytId}${ac.start?'&t='+ac.start+'s':''}`,'_blank','noopener'); return; } const b=await bkBlob(ac); if(!b){ toast('Could not open it.'); return; } au.src=URL.createObjectURL(b); au.hidden=false; au.play().catch(()=>{}); };
       $('#acTarget2').onchange=e=>{ ac.target=+e.target.value; saveCurrent(); toast('Saved.'); };
       $('#acRm').onclick=()=>{ if(!confirm('Replace the accompaniment? Tracks already made with it still play.')) return; w.accompOld=(w.accompOld||[]).concat([ac]); delete w.accomp; saveCurrent(); renderTeacherBacking(); }; return; }
+    $('#acYtSave').onclick=()=>{ const l=Backing.youtubeLink($('#acYt').value); if(!l){ st.textContent="That doesn't look like a link to a YouTube video. Open the video, tap Share, copy the link and paste it here."; return; }
+      w.accomp={id:uid(), at:new Date().toISOString(), kind:'youtube', ytId:l.id, start:l.start, label:$('#acLabel').value.trim(), target:+$('#acTarget').value, by:me?.name||''}; w.accompRuns=0;
+      if(!p.backing) p.backing=true; saveCurrent(); toast('Saved. It is on '+name+"'s trail."); renderTeacherBacking(); };
     const ready=(blob, label)=>{ acBlob=blob; au.src=URL.createObjectURL(blob); au.hidden=false; $('#acSave').hidden=false; st.textContent=label; };
     $('#acRec').onclick=async()=>{ const b=$('#acRec');
       if(rec){ clearTimeout(acCap); const blob=await recordStop(); b.textContent='Record again'; ready(blob,'Listen back, then save.'); return; }

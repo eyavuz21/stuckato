@@ -123,3 +123,14 @@ test('wav: a valid mono 16-bit header and length', () => {
   assert.equal(v.getUint32(40, true), 10); assert.equal(buf.byteLength, 54);
   assert.equal(v.getInt16(44 + 6, true), 32767); assert.equal(v.getInt16(44 + 8, true), -32768);
 });
+
+test('youtube: the link a teacher pastes, in its usual shapes', () => {
+  const id = 'dQw4w9WgXcQ';
+  for (const u of [`https://www.youtube.com/watch?v=${id}`, `youtube.com/watch?v=${id}&list=PL1`, `https://youtu.be/${id}`, `https://m.youtube.com/watch?v=${id}`,
+    `https://www.youtube.com/embed/${id}`, `https://youtube.com/shorts/${id}`, `https://music.youtube.com/watch?v=${id}`, ` https://youtu.be/${id}?si=abc `])
+    assert.deepEqual(B.youtubeLink(u), { id, start: 0 }, u);
+  assert.deepEqual(B.youtubeLink(`https://youtu.be/${id}?t=95`), { id, start: 95 });
+  assert.deepEqual(B.youtubeLink(`https://www.youtube.com/watch?v=${id}&t=1m30s`), { id, start: 90 });
+  for (const bad of ['', 'hello', 'https://vimeo.com/123', 'https://www.youtube.com/', 'https://www.youtube.com/watch?v=short', 'https://youtube.com/@practicewithdino'])
+    assert.equal(B.youtubeLink(bad), null, bad);
+});
