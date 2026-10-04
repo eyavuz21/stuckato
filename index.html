@@ -26,6 +26,7 @@ button{font:inherit; cursor:pointer}
 input,select,textarea{font:inherit; color:var(--ink); background:var(--card); border:1px solid var(--line); border-radius:12px; padding:10px 12px; width:100%}
 input:focus,select:focus,textarea:focus,button:focus-visible{outline:3px solid var(--amber); outline-offset:2px}
 textarea{min-height:90px; resize:vertical}
+input[type=range]{accent-color:var(--ink); padding:0; border:0; background:none; height:28px}
 label.l{display:block; font-size:13px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); margin:12px 0 5px}
 .wrap{max-width:860px; margin:0 auto; padding:18px 18px 90px}
 header.top{display:flex; align-items:center; justify-content:space-between; gap:12px; padding:6px 0 14px; border-bottom:1px solid var(--line); margin-bottom:16px}
@@ -256,6 +257,8 @@ canvas.cardc{width:100%; max-width:420px; border-radius:16px; border:1px solid v
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script src="passage.js?v=10"></script>
+<script src="backing.js?v=11"></script>
+<script src="backing-audio.js?v=11"></script>
 <script>
 (function(){
   'use strict';
@@ -516,7 +519,7 @@ canvas.cardc{width:100%; max-width:420px; border-radius:16px; border:1px solid v
       ${breakCard}${habitsHTML(w)}<div id="socialBox"></div><div class="box says"><div class="label">Lesson · ${h(fmt(w.lessonDate||w.createdAt))} · from ${h(tn)}</div><p style="margin:0"><b>What you did well:</b> ${h(w.line||w.encouragement||'Turn up every day and the lesson takes care of itself.')}</p>${(w.checklist||[]).length?`<p style="margin:8px 0 0"><b>What to work on:</b> ${h(w.checklist.join(' · '))}.</p>`:''}
         ${openExtras().map(x=>`<div class="row" style="margin:4px 0 0;justify-content:space-between;flex-wrap:nowrap;align-items:flex-start"><p style="margin:0"><b>News from ${h(tn)}:</b> ${h(x.text)} (${h(fmt(x.at.slice(0,10)))})</p><button class="btn sm quiet" data-xdone="${x.id}" style="flex:none">Done</button></div>`).join('')}</div>
       <div class="card"><div class="label">${w.sessions.length} days, then ${h(tn)}</div>
-        ${pendCard}${s?journeyMap(w, flags, 'top'):''}${todayCard}${passagePupilHTML(w, tn)}${pulseCard}${s?'':recCard}${s?journeyMap(w, flags, 'bottom'):journeyMap(w, flags, 'all')}${s?recCard:''}
+        ${pendCard}${s?journeyMap(w, flags, 'top'):''}${todayCard}${passagePupilHTML(w, tn)}${backingCardHTML(w)}${pulseCard}${s?'':recCard}${s?journeyMap(w, flags, 'bottom'):journeyMap(w, flags, 'all')}${s?recCard:''}
         <div class="label" style="margin-top:10px">At the lesson: show ${h(tn)}</div>
         <ul class="check" id="prep">${(w.checklist||[]).map((c,k)=>`<li class="${(w.ticks||[]).includes(k)?'on':''}" data-k="${k}"><i></i><span>${h(c)}</span></li>`).join('')||'<li><i></i><span style="color:var(--muted)">No checklist this week</span></li>'}</ul>
         ${extras().filter(x=>x.at>=w.createdAt).length?`<ul class="check">${extras().filter(x=>x.at>=w.createdAt).map(x=>`<li class="${x.done?'on':''}" data-x="${x.id}"><i></i><span>${h(x.text)}</span></li>`).join('')}</ul>`:''}
@@ -537,7 +540,7 @@ canvas.cardc{width:100%; max-width:420px; border-radius:16px; border:1px solid v
     wireHabits(w); renderSocial();
     wireScales(); const ps=$('#pulseSave'); if(ps) ps.onclick=()=>{ const r=scaleVal('puReady'), q=scaleVal('puWant'); if(!r||!q){ toast('Tap a number on both.'); return; } w.pulse={ready:r, want:q, at:new Date().toISOString()}; saveCurrent(); toast('Thanks. Good luck tomorrow.'); renderToday(); };
     const fp=$('#finishPend'); if(fp) fp.onclick=()=>{ si=pend.i; sess=w.sessions[pend.i]; showDone(); };
-    wireRecording(w, tn); wirePassagePupil(w, tn);
+    wireRecording(w, tn); wirePassagePupil(w, tn); wireBackingCard(w);
     const b=$('#start'); if(b) b.onclick=()=>ready(()=>startSession(i));
     $('#goGoal').onclick=()=>renderGoal(true); $('#goShare').onclick=()=>renderShare(true);
     $$('[data-xdone]').forEach(x=>x.onclick=()=>{ const e=extras().find(y=>y.id===x.dataset.xdone); if(e){ e.done=true; e.doneAt=new Date().toISOString(); } saveCurrent(); renderTrail(); toast('Done. Nice.'); });
@@ -719,6 +722,200 @@ canvas.cardc{width:100%; max-width:420px; border-radius:16px; border:1px solid v
       box2.querySelector('.tSave').onclick=()=>{ t.tNote=box2.querySelector('.tNote').value.trim(); saveCurrent(); toast('Sent.'); renderTeacherAud(); }; }); }
   async function voiceAudition(a){ // the routine in the teacher's own voice, synthesised once when she switches it on
     const steps=auditionScript(a, me?.name||''); a.audio=[]; for(let k=0;k<steps.length;k++){ try{ const r=await fetch('/api/speak',{method:'POST',headers:{'content-type':'application/json',...(await authHeaders())},body:JSON.stringify({text:steps[k].text, path:`${me.studio_id}/audition/${uid()}-${k}.mp3`})}); const j=await r.json(); a.audio[k]=r.ok&&j.url?j.url:null; }catch(e){ a.audio[k]=null; } } saveCurrent(); }
+
+  // ------------------------------------------------------------ backing tracks: put a band under the playing (music in backing.js, sound in backing-audio.js)
+  // Kept tracks live in the week (w.backings); the audio goes to the private bucket, or IndexedDB on this device. Off unless the
+  // teacher switches it on for the pupil (pilot pupils stay as they were), or ?backing=1 for trying it. Never adds practice minutes.
+  const BK_FLAG=(()=>{ try{ const q=new URLSearchParams(location.search).get('backing'); if(q==='1') sessionStorage.setItem('stuckato.backing','1'); if(q==='0') sessionStorage.removeItem('stuckato.backing'); return sessionStorage.getItem('stuckato.backing')==='1'; }catch(e){ return false; } })();
+  const backingOn=d=>!!window.BackingAudio&&(BK_FLAG||!!(d&&d.profile&&d.profile.backing));
+  const BK_MAX=5;
+  const IDB={ db:null,
+    open(){ return this.db||(this.db=new Promise((res,rej)=>{ const r=indexedDB.open('stuckato-audio',1); r.onupgradeneeded=()=>r.result.createObjectStore('blobs'); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); })); },
+    async run(mode, fn){ const db=await this.open(); return await new Promise((res,rej)=>{ const tx=db.transaction('blobs',mode); const q=fn(tx.objectStore('blobs')); tx.oncomplete=()=>res(q&&q.result); tx.onerror=()=>rej(tx.error); }); },
+    put(k,v){ return this.run('readwrite',s=>s.put(v,k)); }, get(k){ return this.run('readonly',s=>s.get(k)); }, del(k){ return this.run('readwrite',s=>s.delete(k)); } };
+  async function bkStore(blob, name, folder){ // the private bucket on the live site (the pupil's own folder, or the studio's teacher folder), else this device
+    if(cloudOn()&&me?.studio_id&&sbUser){ const path=`${me.studio_id}/${folder||sbUser.id}/${name}`; const {error}=await sb.storage.from('stuckato-private').upload(path, blob, {contentType:blob.type||'audio/wav', upsert:false}); if(error) throw new Error(error.message||'upload failed'); return {path}; }
+    const id='bk-'+name; await IDB.put(id, blob); return {idb:id}; }
+  async function bkBlob(t){ if(!t) return null; if(t.idb){ try{ return await IDB.get(t.idb)||null; }catch(e){ return null; } } const u=await takeUrl(t); if(!u) return null; try{ const r=await fetch(u); return r.ok?await r.blob():null; }catch(e){ return null; } }
+  async function bkRemove(t){ try{ if(t.idb) await IDB.del(t.idb); else if(t.path&&cloudOn()) await sb.storage.from('stuckato-private').remove([t.path]); }catch(e){} }
+  const bkLabel=t=>t.mode==='accomp'?`with the accompaniment${t.recipe.rate&&t.recipe.rate!==1?' at '+Math.round(t.recipe.rate*100)+'%':''} · ${t.seconds} s`:`${Backing.STYLE_LABEL[t.recipe.style]||'Backing'} · ${Backing.keyName(t.recipe.key)}${t.mode==='along'?' · played along':''} · ${t.seconds} s`;
+  const bkNudge=()=>{ try{ return Math.max(-0.3,Math.min(0.3,+localStorage.getItem('stuckato.backing.nudge')||0)); }catch(e){ return 0; } };
+  const bkSaveNudge=v=>{ try{ localStorage.setItem('stuckato.backing.nudge', String(v)); }catch(e){} };
+  const bkNudgeText=n=>Math.abs(n)<0.005?'No change':`Your playing moved ${Math.round(Math.abs(n)*1000)} ms ${n>0?'earlier':'later'}`;
+  const bkLast=()=>{ try{ return JSON.parse(localStorage.getItem('stuckato.backing.last')||'{}')||{}; }catch(e){ return {}; } };
+  const keyOptions=k=>Backing.NAMES.flatMap((n,t)=>['major','minor'].map(m=>`<option value="${t}:${m}" ${k&&k.tonic===t&&k.mode===m?'selected':''}>${n} ${m}</option>`)).join('');
+  function grownUpOk(d){ // under 13: the account is the parent's, signed in on the child's device; the parent re-types its email to save a file
+    const p=d.profile||{}; if(p.over13||p.adult) return true; const em=String((cloudOn()&&sbUser?.email)||d.contactEmail||'').toLowerCase();
+    const typed=prompt(em?'A grown-up saves this file. Grown-up: type the account email to carry on.':'A grown-up saves this file. Grown-up: type PARENT to carry on.'); if(typed===null) return false;
+    const ok=em?typed.trim().toLowerCase()===em:typed.trim().toUpperCase()==='PARENT'; if(!ok) alert('That did not match, so nothing was saved.'); return ok; }
+  async function bkDownload(what, name){ toast('Making the file…');
+    try{ const blob=await BackingAudio.render(what); const file=new File([blob], name, {type:'audio/wav'});
+      const phone=window.matchMedia&&matchMedia('(pointer:coarse)').matches; // phones get the share sheet (WhatsApp, Files); computers just download
+      if(phone&&navigator.canShare&&navigator.canShare({files:[file]})){ try{ await navigator.share({files:[file], title:'My track'}); return; }catch(e){ if(e&&e.name==='AbortError') return; } }
+      const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; document.body.appendChild(a); a.click(); a.remove(); toast('Saved.'); }
+    catch(e){ toast('Could not make the file: '+(e.message||e)); } }
+  async function bkWhatOf(t, w){ // a kept track, ready to play or download: the take, its recipe, and the accompaniment at the speed it was played
+    const blob=await bkBlob(t); if(!blob) throw new Error('Could not open the recording.'); const take=await BackingAudio.mono(await BackingAudio.decode(blob)); let accomp=null;
+    if(t.mode==='accomp'){ const ac=[w.accomp, ...(w.accompOld||[])].find(x=>x&&x.id===t.recipe.accompId); if(!ac) throw new Error('The accompaniment for this take is no longer here.'); const ab=await bkBlob(ac); if(!ab) throw new Error('Could not open the accompaniment.'); accomp=await BackingAudio.stretched(await BackingAudio.mono(await BackingAudio.decode(ab)), t.recipe.rate||1); }
+    return {take, recipe:t.recipe, accomp}; }
+  let bkPlaying=null;
+  async function bkToggle(btn, t, w){
+    if(bkPlaying){ const was=bkPlaying; bkPlaying=null; was.p.stop(); was.btn.textContent='Play'; if(was.btn===btn) return; }
+    btn.textContent='Loading…'; btn.disabled=true;
+    try{ const what=await bkWhatOf(t,w); const p=await BackingAudio.preview(what); bkPlaying={p,btn}; btn.textContent='Stop'; p.ended.then(()=>{ if(bkPlaying&&bkPlaying.p===p) bkPlaying=null; btn.textContent='Play'; }); }
+    catch(e){ btn.textContent='Play'; toast(e.message||'Could not play it.'); } finally{ btn.disabled=false; } }
+
+  // the pupil's card on the trail
+  function backingCardHTML(w){ const d=doc(); if(!w||!backingOn(d)) return ''; const tn=d.teacherName||'your teacher'; const ks=(w.backings||[]).slice().sort((a,b)=>b.at.localeCompare(a.at)); const ac=w.accomp;
+    return `<div class="card" id="bkCard"><div class="label">Make it music</div><p style="margin:0 0 10px">Put a band under your playing. Record a snippet and add a backing, or play along with one.</p>
+      <div class="row"><button class="btn sm" id="bkA">Add a backing</button><button class="btn sm quiet" id="bkB">Play along</button></div>
+      ${ac?`<div class="daybox" style="margin-top:10px"><p style="margin:0 0 8px"><b>The accompaniment${ac.label?': '+h(ac.label):''}</b>, from ${h(tn)}.${+ac.target?` Play it through with it ${h(ac.target)} ${+ac.target===1?'time':'times'} this week: <b>${Math.min(w.accompRuns||0,+ac.target)} of ${h(ac.target)}</b>.`:''}</p><button class="btn sm" id="bkC">Play with the accompaniment</button></div>`:''}
+      ${ks.length?`<div class="label" style="margin-top:12px">Your tracks this week</div>${ks.map(t=>`<div class="daybox" data-bk="${h(t.id)}"><p style="margin:0">${h(fmt(t.at.slice(0,10)))} ${h(timeOf(t.at))} · ${h(bkLabel(t))}${t.star?' · <b>starred by '+h(tn)+'</b>':''}</p>${t.tNote?`<p class="quote" style="margin:6px 0 0;font-size:17px">“${h(t.tNote)}” <span class="note" style="margin:0">${h(tn)}</span></p>`:''}<div class="row" style="margin-top:6px"><button class="btn sm quiet bkPlay">Play</button><button class="btn sm quiet bkDl">Download</button></div></div>`).join('')}`:''}
+      <p class="note" style="margin:8px 0 0">Up to ${BK_MAX} tracks a week. Only you, ${h(tn)} and whoever holds the account can hear them. Making music doesn't change your practice minutes.</p></div>`; }
+  function wireBackingCard(w){ if(!$('#bkCard')) return;
+    $('#bkA').onclick=()=>bkStartAfter(null); $('#bkB').onclick=bkStartAlong; const c=$('#bkC'); if(c) c.onclick=bkStartAccomp;
+    $$('#bkCard [data-bk]').forEach(box=>{ const t=(w.backings||[]).find(x=>x.id===box.dataset.bk); if(!t) return;
+      box.querySelector('.bkPlay').onclick=e=>bkToggle(e.currentTarget, t, w);
+      box.querySelector('.bkDl').onclick=async()=>{ if(!grownUpOk(doc())) return; try{ await bkDownload(await bkWhatOf(t,w), `stuckato-${t.at.slice(0,10)}.wav`); }catch(e){ toast(e.message||'Could not make the file.'); } }; }); }
+
+  // the studio: a full-screen sheet over the trail
+  let bkS=null;
+  function bkPaint(inner){ let ov=$('#bkOv'); if(!ov){ ov=document.createElement('div'); ov.id='bkOv'; ov.style.cssText='position:fixed;inset:0;z-index:60;background:var(--paper);overflow:auto;padding:calc(env(safe-area-inset-top,0px) + 20px) 20px 30px'; document.body.appendChild(ov); }
+    ov.innerHTML=`<div style="max-width:560px;margin:0 auto">${inner}<p style="margin-top:16px"><button class="btn quiet sm" id="bkX">Close</button></p></div>`; $('#bkX').onclick=bkClose; }
+  function bkStopPreview(){ if(bkS&&bkS.prev){ try{ bkS.prev.stop(); }catch(e){} bkS.prev=null; } }
+  function bkClose(){ bkStopPreview(); if(bkS){ clearInterval(bkS.tick); if(bkS.live){ try{ bkS.live.stop(); }catch(e){} } } bkS=null; const ov=$('#bkOv'); if(ov) ov.remove(); renderTrail(false); }
+  function bkFail(e, again){ bkPaint(`<div class="eyebrow">Make it music</div><h2 class="big">That didn't work.</h2><p>${h(e&&e.message||e||'Something went wrong.')}</p><button class="btn" id="bkAgain">Try again</button>`); $('#bkAgain').onclick=again; }
+  function bkHeadphones(next){ modal({label:'Before you start', title:'Headphones in?', text:'Put headphones in so the microphone only hears you. Wired ones line up best; Bluetooth adds a little delay, which you can fix afterwards with Line up.', buttons:[{label:'No headphones',cls:'quiet',onClick:()=>{ toast('The backing will be in your recording too.'); next(false); }},{label:'They\'re in',onClick:()=>next(true)}]}); }
+  const clockText=(s,max)=>`${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}${max?' of '+Math.floor(max/60)+':'+String(max%60).padStart(2,'0'):''}`;
+
+  // mode A: record (or reuse the passage take), find the key, chords that follow the player
+  function bkStartAfter(blob){ bkS={kind:'after', w:week()}; if(blob){ bkS.takeBlob=blob; bkAnalyse(); return; } bkRecordScreen(); }
+  function bkRecordScreen(){
+    bkPaint(`<div class="eyebrow">Add a backing</div><h2 class="big">Record a snippet.</h2><p>Up to a minute of anything you're working on. Then Stuckato listens for the key and puts chords under it that follow you, even if you slow down.</p><button class="btn block" id="bkRec">Record</button><p class="note" id="bkSt">Phone on the stand, a metre away.</p>`);
+    const go=async()=>{ const b=$('#bkRec'), st=$('#bkSt'); if(!b) return;
+      if(bkS.live){ const r=bkS.live.stop(); bkS.live=null; clearInterval(bkS.tick); bkS.pcm=r; bkS.takeBlob=null; bkAnalyse(); return; }
+      try{ bkS.live=await BackingAudio.recordAlone({maxSec:60, onCap:go}); }catch(e){ st.textContent='Microphone not available: '+(e.message||e); return; }
+      const t0=Date.now(); b.textContent='Stop'; bkS.tick=setInterval(()=>{ const s=$('#bkSt'); if(s) s.textContent='Recording · '+clockText(Math.round((Date.now()-t0)/1000),60); },500); };
+    $('#bkRec').onclick=go; }
+  async function bkAnalyse(){ bkPaint(`<div class="eyebrow">Add a backing</div><h2 class="big">Listening for the key…</h2><p class="note">A second or two.</p>`);
+    await new Promise(r=>setTimeout(r,30));
+    try{ const buf=bkS.pcm?BackingAudio.toBuffer(bkS.pcm.pcm, bkS.pcm.sr):await BackingAudio.mono(await BackingAudio.decode(bkS.takeBlob)); bkS.take=buf;
+      bkS.notes=Passage.notesFrom(Passage.pitchTrack(Passage.resample(buf.getChannelData(0), buf.sampleRate, 16000), 16000));
+      if(bkS.notes.length<3){ bkFail(`Only ${bkS.notes.length} ${bkS.notes.length===1?'note':'notes'} heard. Try again nearer the phone, with a few more notes.`, bkRecordScreen); return; }
+      const k=Backing.detectKey(bkS.notes); bkS.recipe={v:1, mode:'after', style:'piano', key:{tonic:k.tonic, mode:k.mode}, chords:[], offset:0, volume:0.7}; bkS.recipe.chords=Backing.followChords(bkS.notes, bkS.recipe.key);
+      if(k.confidence<0.6) bkKeyAsk(bkPreviewScreen); else bkPreviewScreen(); }
+    catch(e){ bkFail(e, bkRecordScreen); } }
+  function bkKeyAsk(next){ bkPaint(`<div class="eyebrow">Which key?</div><h2 class="big">Stuckato isn't sure of the key.</h2><p>Its best guess is picked. Change it if you know, then carry on.</p><select id="bkKey">${keyOptions(bkS.recipe.key)}</select><button class="btn block" id="bkKeyGo" style="margin-top:10px">Carry on</button><p class="note">The backing follows the sounding pitch. On a clarinet, trumpet or saxophone that is the concert key, not the key written on your part.</p>`);
+    $('#bkKeyGo').onclick=()=>{ const [t,m]=$('#bkKey').value.split(':'); bkS.recipe.key={tonic:+t, mode:m}; bkS.recipe.chords=Backing.followChords(bkS.notes, bkS.recipe.key); next(); }; }
+
+  // mode B: play along live with a looped backing
+  function bkStartAlong(){ const w=week(); const pk=w&&w.passage&&(w.passage.notes||[]).length>=6?Backing.detectKey(w.passage.notes):null; const last=bkLast();
+    bkS={kind:'along', w, recipe:{v:1, mode:'along', style:Backing.STYLES.along.includes(last.style)?last.style:'ballad', key:pk?{tonic:pk.tonic, mode:pk.mode}:(last.key||{tonic:0, mode:'major'}), tempo:last.tempo||80, offset:0, volume:0.6}, keyFrom:pk?'passage':''};
+    bkHeadphones(hp=>{ bkS.headphones=hp; bkSetupScreen(); }); }
+  function bkSetupScreen(){ const r=bkS.recipe; let taps=[];
+    bkPaint(`<div class="eyebrow">Play along</div><h2 class="big">Pick your band.</h2>
+      <div class="label">Style</div><div class="chips">${Backing.STYLES.along.map(s=>`<button type="button" class="chip ${r.style===s?'on':''}" data-st="${s}">${Backing.STYLE_LABEL[s]}</button>`).join('')}</div>
+      <label class="l" for="bkTempo">Tempo · <span id="bkTv">${r.tempo}</span> beats a minute</label><div class="row" style="flex-wrap:nowrap"><input type="range" id="bkTempo" min="50" max="160" step="1" value="${r.tempo}" style="flex:1"><button type="button" class="btn sm quiet" id="bkTap">Tap</button></div>
+      <label class="l" for="bkKey">Key${bkS.keyFrom?' · from this week\'s passage':''}</label><select id="bkKey">${keyOptions(r.key)}</select>
+      <button class="btn block" id="bkGo" style="margin-top:14px">Start · one bar to count you in</button><p class="note">Up to a minute. Tap Stop when you finish.</p>`);
+    $$('#bkOv [data-st]').forEach(b=>b.onclick=()=>{ r.style=b.dataset.st; $$('#bkOv [data-st]').forEach(x=>x.classList.toggle('on',x===b)); });
+    $('#bkTempo').oninput=e=>{ r.tempo=+e.target.value; $('#bkTv').textContent=r.tempo; };
+    $('#bkTap').onclick=()=>{ const now=performance.now(); taps=taps.filter(t=>now-t<3000); taps.push(now); if(taps.length>=3){ const iv=(taps[taps.length-1]-taps[0])/(taps.length-1); r.tempo=Math.max(50,Math.min(160,Math.round(60000/iv))); $('#bkTempo').value=r.tempo; $('#bkTv').textContent=r.tempo; } };
+    $('#bkGo').onclick=()=>{ const [t,m]=$('#bkKey').value.split(':'); r.key={tonic:+t, mode:m}; r.chords=Backing.loopChords(r.key, r.style, r.tempo, 64); try{ localStorage.setItem('stuckato.backing.last', JSON.stringify({style:r.style, tempo:r.tempo, key:r.key})); }catch(e){} bkGoLive(); }; }
+
+  // mode C: the teacher's accompaniment, at the speed the pupil picks
+  async function bkStartAccomp(){ const w=week(); if(!w||!w.accomp) return; bkS={kind:'accomp', w, rate:1, recipe:{v:1, mode:'accomp', volume:0.8, offset:0}};
+    bkPaint(`<div class="eyebrow">With the accompaniment</div><h2 class="big">How fast?</h2><p>${h(w.accomp.label||'The accompaniment')}. Start slower while you learn it; the pitch stays the same.</p><div class="chips">${[[0.75,'75%'],[0.9,'90%'],[1,'Full speed']].map(([v,l])=>`<button type="button" class="chip ${v===1?'on':''}" data-rate="${v}">${l}</button>`).join('')}</div><button class="btn block" id="bkGo">Start</button><p class="note" id="bkSt"></p>`);
+    $$('#bkOv [data-rate]').forEach(b=>b.onclick=()=>{ bkS.rate=+b.dataset.rate; $$('#bkOv [data-rate]').forEach(x=>x.classList.toggle('on',x===b)); });
+    $('#bkGo').onclick=async()=>{ const st=$('#bkSt'); $('#bkGo').disabled=true; st.textContent='Getting it ready…';
+      try{ const blob=await bkBlob(w.accomp); if(!blob) throw new Error('Could not open the accompaniment. Check your connection.'); await new Promise(r=>setTimeout(r,30));
+        bkS.accomp=await BackingAudio.stretched(await BackingAudio.mono(await BackingAudio.decode(blob)), bkS.rate); bkHeadphones(hp=>{ bkS.headphones=hp; bkGoLive(); }); }
+      catch(e){ bkFail(e, bkStartAccomp); } }; }
+
+  // modes B and C: count in, play, record in the same clock
+  async function bkGoLive(){ const accomp=bkS.kind==='accomp'; const max=accomp?Math.ceil(bkS.accomp.duration):60;
+    bkPaint(`<div class="eyebrow">${accomp?'With the accompaniment':'Play along'}</div><h2 class="big" id="bkBig">Getting the band ready…</h2><p class="note" id="bkInfo"></p><button class="btn block" id="bkStop" disabled>Stop</button>`);
+    const stop=()=>{ if(!bkS||!bkS.live) return; const r=bkS.live.stop(); bkS.live=null; clearInterval(bkS.tick); bkS.pcm={pcm:r.pcm, sr:r.sr}; bkS.rawOffset=r.offset; bkS.latency=r.latency; bkS.take=BackingAudio.toBuffer(r.pcm, r.sr);
+      const played=bkS.take.duration+r.offset; if(accomp&&played>=0.6*bkS.accomp.duration){ bkS.w.accompRuns=(bkS.w.accompRuns||0)+1; saveCurrent(); }
+      if(played<1){ bkFail('That was too short to keep. Try again, and play once the count-in finishes.', accomp?bkStartAccomp:bkSetupScreen); return; } bkPreviewScreen(); };
+    try{ const what=accomp?{recipe:{volume:bkS.recipe.volume}, accomp:bkS.accomp}:{recipe:bkS.recipe};
+      bkS.live=await BackingAudio.playAlong(what, {maxSec:60, count:accomp?2:4, onCap:stop}); }
+    catch(e){ bkFail(e.name==='NotAllowedError'?'The microphone is needed to record. Allow it in your browser settings.':e, accomp?bkStartAccomp:bkSetupScreen); return; }
+    const t0=Date.now(), lead=bkS.live.countIn*1000; $('#bkStop').disabled=false; $('#bkStop').onclick=stop;
+    bkS.tick=setInterval(()=>{ const big=$('#bkBig'), info=$('#bkInfo'); if(!big) return; const ms=Date.now()-t0; if(ms<lead){ big.textContent='Counting you in…'; info.textContent=''; } else { big.textContent='Play!'; info.textContent='Recording · '+clockText(Math.round((ms-lead)/1000),max); } },200); }
+
+  // the preview, for every mode: listen, change the style or volume, line up, then keep or download
+  function bkWhat(){ const r=bkS.recipe; const off=bkS.kind==='after'?0:(bkS.rawOffset||0)-bkNudge(); return {take:bkS.take, recipe:Object.assign({}, r, {offset:off}), accomp:bkS.accomp||null}; }
+  function bkPreviewScreen(){ const r=bkS.recipe, kind=bkS.kind; const styles=kind==='accomp'?[]:Backing.STYLES[r.mode]; const n=bkNudge();
+    bkPaint(`<div class="eyebrow">${kind==='accomp'?'With the accompaniment':kind==='along'?'Played along':'Your backing'}</div><h2 class="big">Have a listen.</h2>
+      <button class="btn block" id="bkPlay">Play</button>
+      ${styles.length?`<div class="label" style="margin-top:14px">Style</div><div class="chips">${styles.map(s=>`<button type="button" class="chip ${r.style===s?'on':''}" data-st="${s}">${Backing.STYLE_LABEL[s]}</button>`).join('')}</div>`:''}
+      <label class="l" for="bkVol">${kind==='accomp'?'Accompaniment':'Backing'} volume</label><input type="range" id="bkVol" min="0" max="1" step="0.05" value="${r.volume}" >
+      ${kind!=='accomp'?`<p style="margin:12px 0 0">Key: <b>${h(Backing.keyName(r.key))}</b> <span class="note" style="margin:0">(sounding key)</span>${kind==='after'?' <button class="btn sm quiet" id="bkKeyCh">Change</button>':''}</p><p class="note" style="margin:4px 0 0">Chords: ${h(r.chords.slice(0,8).map(Backing.chordName).join(' · '))}${r.chords.length>8?' …':''}</p>`:''}
+      ${kind!=='after'?`<label class="l" for="bkNudge">Line up</label><input type="range" id="bkNudge" min="-0.3" max="0.3" step="0.01" value="${n}"><div class="row" style="justify-content:space-between"><span class="note" style="margin:0" id="bkNudgeV">${bkNudgeText(n)}</span><button type="button" class="btn sm quiet" id="bkMeasure">Measure my phone</button></div><p class="note" style="margin:4px 0 0">If you sound early or late against the ${kind==='accomp'?'accompaniment':'backing'}, slide this until it lines up. Stuckato remembers it for this phone.</p>`:''}
+      <div class="row" style="margin-top:16px"><button class="btn" id="bkKeep">Keep</button><button class="btn quiet" id="bkDl">Download</button><button class="btn quiet" id="bkAgain">Start again</button></div><p class="note" id="bkSt"></p>`);
+    const play=$('#bkPlay');
+    const start=async()=>{ bkStopPreview(); play.textContent='Loading…'; play.disabled=true; try{ const p=await BackingAudio.preview(bkWhat()); if(!bkS){ p.stop(); return; } bkS.prev=p; play.textContent='Stop'; p.ended.then(()=>{ if(bkS&&bkS.prev===p){ bkS.prev=null; const b=$('#bkPlay'); if(b) b.textContent='Play'; } }); }catch(e){ play.textContent='Play'; toast(e.message||'Could not play it.'); } finally{ play.disabled=false; } };
+    const restart=()=>{ if(bkS.prev) start(); };
+    play.onclick=()=>{ if(bkS.prev){ bkStopPreview(); play.textContent='Play'; } else start(); };
+    $$('#bkOv [data-st]').forEach(b=>b.onclick=()=>{ r.style=b.dataset.st; $$('#bkOv [data-st]').forEach(x=>x.classList.toggle('on',x===b)); restart(); });
+    $('#bkVol').onchange=e=>{ r.volume=+e.target.value; restart(); };
+    const kc=$('#bkKeyCh'); if(kc) kc.onclick=()=>{ bkStopPreview(); bkKeyAsk(bkPreviewScreen); };
+    const nu=$('#bkNudge'); if(nu){ nu.oninput=e=>{ $('#bkNudgeV').textContent=bkNudgeText(+e.target.value); }; nu.onchange=e=>{ bkSaveNudge(+e.target.value); restart(); }; }
+    const ms=$('#bkMeasure'); if(ms) ms.onclick=()=>modal({label:'Line up', title:'Measure this phone.', text:'Take your headphones out and put the phone on a table in a quiet room. Stuckato plays four clicks and listens for them. Two seconds.', buttons:[{label:'Not now',cls:'quiet'},{label:'Measure',onClick:async()=>{ bkStopPreview(); toast('Listening…');
+      try{ const rt=await BackingAudio.measure(); const v=Math.max(-0.3,Math.min(0.3,Math.round((rt-(bkS.latency||0))*100)/100)); bkSaveNudge(v); toast('Measured: '+Math.round(rt*1000)+' ms there and back.'); bkPreviewScreen(); }catch(e){ toast('Could not measure: '+(e.message||e)); } }}]});
+    $('#bkKeep').onclick=bkKeep;
+    $('#bkDl').onclick=async()=>{ if(!grownUpOk(doc())) return; bkStopPreview(); play.textContent='Play'; await bkDownload(bkWhat(), `stuckato-${today()}.wav`); };
+    $('#bkAgain').onclick=()=>{ bkStopPreview(); const k=kind; bkS=null; if(k==='after') bkStartAfter(null); else if(k==='along') bkStartAlong(); else bkStartAccomp(); }; }
+  async function bkKeep(){ const st=$('#bkSt'), w=bkS.w, d=doc(); if(!w){ st.textContent='There is no week to keep it in yet.'; return; } w.backings=w.backings||[];
+    if(w.backings.length>=BK_MAX){ const old=w.backings.filter(x=>!x.star).sort((a,b)=>a.at.localeCompare(b.at))[0];
+      if(old){ if(!confirm(`You can keep ${BK_MAX} tracks a week. Keeping this one removes your oldest (${fmt(old.at.slice(0,10))} ${timeOf(old.at)}). Starred ones stay. Go on?`)) return; await bkRemove(old); w.backings=w.backings.filter(x=>x!==old); } }
+    bkStopPreview(); st.textContent='Saving…'; $('#bkKeep').disabled=true;
+    try{ const id=uid(); const blob=bkS.takeBlob||BackingAudio.toWav(bkS.pcm.pcm, bkS.pcm.sr); const ext=(blob.type||'').includes('wav')?'wav':audioExt(blob);
+      const where=await bkStore(blob, `backing-${id}.${ext}`); const what=bkWhat();
+      const recipe=bkS.kind==='accomp'?{v:1, mode:'accomp', accompId:w.accomp.id, rate:bkS.rate, offset:what.recipe.offset, volume:what.recipe.volume}:what.recipe;
+      w.backings.push({id, at:new Date().toISOString(), mode:bkS.kind, seconds:Math.max(1,Math.round(bkS.take.duration+(bkS.kind==='after'?0:Math.min(0,what.recipe.offset)))), mime:blob.type, ...where, recipe, star:false});
+      saveCurrent(); toast('Kept. '+(d.teacherName||'Your teacher')+' can listen.'); bkClose(); }
+    catch(e){ const b=$('#bkKeep'); if(b) b.disabled=false; st.textContent='Could not save: '+(e.message||e); } }
+
+  // teacher: the pupil's tracks, the switch, and the exam accompaniment
+  let acBlob=null, acCap=null;
+  function renderTeacherBacking(){ const box=$('#tBack'); if(!box||!current||!window.BackingAudio) return; const d=current.data, p=d.profile, w=d.weeks.length?d.weeks[d.weeks.length-1]:null; const name=p.name||'this pupil';
+    const ks=w?(w.backings||[]).slice().sort((a,b)=>b.at.localeCompare(a.at)):[]; const ac=w&&w.accomp;
+    box.innerHTML=`<div class="card"><h3>Backing tracks</h3>
+      <label class="switch" style="font-size:15px;color:var(--ink)"><input type="checkbox" id="bkOnT" ${p.backing?'checked':''}> Switch on for ${h(name)}</label>
+      <div class="note" style="margin:4px 0 0">${h(name)} records a snippet and Stuckato puts chords under it, or plays along with a backing in headphones. Made on their device, kept for the week, heard only by you, ${h(name)} and the account holder. It never adds practice minutes.</div>
+      ${ks.length?`<div class="label" style="margin-top:12px">Made with a backing this week</div>${ks.map(t=>`<div class="daybox" data-bkt="${h(t.id)}"><p style="margin:0">${h(fmt(t.at.slice(0,10)))} ${h(timeOf(t.at))} · ${h(bkLabel(t))}${t.star?' · <b>starred</b>':''}</p>
+        <div class="row" style="margin-top:6px"><button class="btn sm quiet bkTPlay">Play</button><button class="btn sm ${t.star?'':'quiet'} bkStar">${t.star?'Starred ★':'Star'}</button></div>
+        <div class="row" style="margin-top:6px"><input class="bkNote" placeholder="One line back, e.g. Love the strings version!" value="${h(t.tNote||'')}" style="flex:1"><button class="btn sm bkSend">Send</button></div></div>`).join('')}<div class="note">A star keeps a track past the week's ${BK_MAX}.</div>`:(w?`<div class="note">${p.backing?'Tracks appear here once '+h(name)+' keeps one.':'Switch it on and their tracks appear here.'}</div>`:'')}
+      ${w?`<div class="label" style="margin-top:14px">The exam accompaniment</div>${ac?`<div class="daybox"><p style="margin:0 0 6px"><b>${h(ac.label||'Accompaniment')}</b> · ${h(ac.seconds||'?')} s · played with it ${h(w.accompRuns||0)} ${(w.accompRuns||0)===1?'time':'times'} this week</p>
+          <div class="row"><button class="btn sm quiet" id="acPlay">Play</button><label class="l" for="acTarget2" style="margin:0">Times this week</label><select id="acTarget2" style="width:auto">${[0,1,2,3,4,5,6,7].map(n=>`<option value="${n}" ${+ac.target===n?'selected':''}>${n||'No target'}</option>`).join('')}</select><button class="btn sm quiet" id="acRm">Replace</button></div><audio id="acAudio" controls hidden style="width:100%;margin-top:8px"></audio></div>`
+        :`<p class="note" style="margin:0 0 8px">Record or upload the piano part of a piece. ${h(name)} plays along with it in headphones, at 75%, 90% or full speed, and you hear the two together.</p>
+          <input id="acLabel" placeholder="e.g. Grade 3, A1 Minuet: piano part">
+          <div class="row" style="margin-top:8px"><button class="btn sm" id="acRec">Record</button><label class="btn sm quiet" for="acFile" style="cursor:pointer">Upload a file</label><input type="file" id="acFile" accept="audio/*" style="display:none"></div>
+          <div class="row" style="margin-top:8px"><label class="l" for="acTarget" style="margin:0">Times this week</label><select id="acTarget" style="width:auto">${[0,1,2,3,4,5,6,7].map(n=>`<option value="${n}" ${n===3?'selected':''}>${n||'No target'}</option>`).join('')}</select></div>
+          <audio id="acAudio" controls hidden style="width:100%;margin-top:8px"></audio><button class="btn sm" id="acSave" hidden style="margin-top:8px">Save to the week</button><p class="note" id="acSt" style="margin:6px 0 0">Up to six minutes. It stays private to your studio.</p>`}`:''}</div>`;
+    $('#bkOnT').onchange=e=>{ p.backing=e.target.checked; saveCurrent(); toast(p.backing?'Backing tracks are on for '+name+'.':'Backing tracks are off for '+name+'.'); renderTeacherBacking(); };
+    $$('[data-bkt]').forEach(b2=>{ const t=ks.find(x=>x.id===b2.dataset.bkt); if(!t) return;
+      b2.querySelector('.bkTPlay').onclick=e=>bkToggle(e.currentTarget, t, w);
+      b2.querySelector('.bkStar').onclick=()=>{ t.star=!t.star; saveCurrent(); renderTeacherBacking(); };
+      b2.querySelector('.bkSend').onclick=()=>{ t.tNote=b2.querySelector('.bkNote').value.trim(); saveCurrent(); toast('Sent.'); renderTeacherBacking(); }; });
+    if(!w) return; const st=$('#acSt'), au=$('#acAudio');
+    if(ac){ $('#acPlay').onclick=async()=>{ const b=await bkBlob(ac); if(!b){ toast('Could not open it.'); return; } au.src=URL.createObjectURL(b); au.hidden=false; au.play().catch(()=>{}); };
+      $('#acTarget2').onchange=e=>{ ac.target=+e.target.value; saveCurrent(); toast('Saved.'); };
+      $('#acRm').onclick=()=>{ if(!confirm('Replace the accompaniment? Tracks already made with it still play.')) return; w.accompOld=(w.accompOld||[]).concat([ac]); delete w.accomp; saveCurrent(); renderTeacherBacking(); }; return; }
+    const ready=(blob, label)=>{ acBlob=blob; au.src=URL.createObjectURL(blob); au.hidden=false; $('#acSave').hidden=false; st.textContent=label; };
+    $('#acRec').onclick=async()=>{ const b=$('#acRec');
+      if(rec){ clearTimeout(acCap); const blob=await recordStop(); b.textContent='Record again'; ready(blob,'Listen back, then save.'); return; }
+      try{ await recordStart(); b.textContent='Stop'; st.textContent='Recording. Play the accompaniment through; tap Stop at the end.'; acCap=setTimeout(()=>b.onclick(), 6*60*1000); }catch(e){ st.textContent='Microphone not available: '+(e.message||e); } };
+    $('#acFile').onchange=e=>{ const f=e.target.files&&e.target.files[0]; if(!f) return; if(f.size>25*1024*1024){ st.textContent='That file is over 25 MB. Try a shorter or compressed one (MP3 or M4A).'; return; } ready(f, f.name+'. Listen back, then save.'); if(!$('#acLabel').value) $('#acLabel').value=f.name.replace(/\.[^.]+$/,''); };
+    $('#acSave').onclick=async()=>{ if(!acBlob) return; const b=$('#acSave'); b.disabled=true; st.textContent='Checking it…';
+      try{ const buf=await BackingAudio.decode(acBlob); if(buf.duration>6*60+5) throw new Error('That is over six minutes. Trim it to the piece and try again.');
+        st.textContent='Saving…'; const id=uid(); const ext=(acBlob.name&&acBlob.name.split('.').pop())||audioExt(acBlob);
+        let where; try{ where=await bkStore(acBlob, `accomp-${id}.${ext}`, 'teacher'); }catch(e){ throw new Error(cloudOn()?'Could not upload it. If this is the first accompaniment, run supabase/v0.11-backing.sql once in the Supabase SQL editor, then try again. ('+(e.message||e)+')':(e.message||e)); }
+        w.accomp={id, at:new Date().toISOString(), label:$('#acLabel').value.trim(), seconds:Math.round(buf.duration), mime:acBlob.type||'audio/mpeg', target:+$('#acTarget').value, by:me?.name||'', ...where}; w.accompRuns=0;
+        if(!p.backing) p.backing=true; acBlob=null; saveCurrent(); toast('Saved. It is on '+name+"'s trail."); renderTeacherBacking(); }
+      catch(e){ b.disabled=false; st.textContent=e.message||String(e); } }; }
 
   // ------------------------------------------------------------ session runner
   let si=0, stepI=0, left=0, total=0, timer=null, paused=false, sess=null;
@@ -950,10 +1147,11 @@ canvas.cardc{width:100%; max-width:420px; border-radius:16px; border:1px solid v
     const showResult=()=>{ const c=ppDiff; const sp=c.spots;
       res.innerHTML=`<p style="margin:10px 0 6px">Stuckato thinks <b>${c.matched} of ${c.total}</b> notes matched ${h(tn)}'s.${sp.length?` Have a listen at ${sp.map(x=>Passage.fmtT(x.t)).join(' and ')}.`:' Nothing to point at.'}</p>
         ${sp.length?`<div class="chips" style="margin:0 0 6px">${sp.map((x,k)=>`<button type="button" class="chip" data-spot="${k}">${Passage.fmtT(x.t)}</button>`).join('')}</div><div id="ppSpot"></div>`:''}
-        <div class="row" style="margin-top:8px"><button class="btn sm" id="ppSend">Send to ${h(tn)}</button><button class="btn sm quiet" id="ppAgain">Record again</button></div>`;
+        <div class="row" style="margin-top:8px"><button class="btn sm" id="ppSend">Send to ${h(tn)}</button><button class="btn sm quiet" id="ppAgain">Record again</button>${backingOn(doc())?'<button class="btn sm quiet" id="ppBack">Add a backing</button>':''}</div>`;
       $$('[data-spot]').forEach(b=>b.onclick=()=>{ $$('[data-spot]').forEach(x=>x.classList.toggle('on',x===b)); const x=sp[+b.dataset.spot];
         $('#ppSpot').innerHTML=`<div class="flag"><span>${Passage.fmtT(x.t)} · ${h(spotText(x))}</span><span class="row" style="gap:6px;flex:none">${ref?`<button class="btn sm quiet" id="spHers">Hers</button><button class="btn sm quiet" id="spLoop">Loop hers</button>`:''}<button class="btn sm quiet" id="spMine">Mine</button></span></div>`;
         const hb=$('#spHers'); if(hb) hb.onclick=()=>playSpan(ref,x.t,x.te,1); const lb=$('#spLoop'); if(lb) lb.onclick=()=>playSpan(ref,x.t,x.te,3); $('#spMine').onclick=()=>playSpan(mine,x.tp,x.tp+spanLen(x),1); });
+      const pb=$('#ppBack'); if(pb) pb.onclick=()=>{ if(ppBlob) bkStartAfter(ppBlob); };
       $('#ppAgain').onclick=()=>{ ppBlob=null; ppDiff=null; res.innerHTML=''; rb.textContent='Record mine'; st.textContent='Ready when you are.'; };
       $('#ppSend').onclick=async()=>{ if(!ppBlob||!ppDiff) return; const b=$('#ppSend'); b.disabled=true; st.textContent='Sending…';
         try{ const i=takeDayIndex(w); const up=await uploadAudio(ppBlob, sbUser?`${me.studio_id}/passages/${sbUser.id}/${w.id||w.createdAt}-d${i}.${audioExt(ppBlob)}`:'');
@@ -990,7 +1188,8 @@ canvas.cardc{width:100%; max-width:420px; border-radius:16px; border:1px solid v
     const box=(y,hh)=>{ ctx.fillStyle='#F5E4CA'; ctx.strokeStyle='#D4BF9E'; ctx.lineWidth=2; ctx.beginPath(); ctx.roundRect(40,y,W-80,hh,26); ctx.fill(); ctx.stroke(); };
     const label=(t,y)=>{ ctx.fillStyle='#6F6350'; ctx.font=F(800,18); ctx.fillText(t.toUpperCase(),70,y); };
     const tks=w?takesOff(w).slice().sort((a,b)=>(a.at||'').localeCompare(b.at||'')):[]; const pgLine=tks.length?(()=>{ const L=tks[tks.length-1], F=tks[0]; const tot=(w.takes||[]).find(t=>t.i===L.i)?.diff?.total||''; const dn=dayName; return `The passage: ${tot-L.off} of ${tot} notes matched ${tn}'s on ${dn(L.at)}`+(tks.length>1?`, up from ${tot-F.off} on ${dn(F.at)}.`:'.'); })():'';
-    const pgLines=pgLine?lines(pgLine,W-140,F(600,20)):[]; const pgExtra=pgLines.length?14+pgLines.length*26:0;
+    const nBk=w?(w.backings||[]).length:0; const cardLine=[pgLine, nBk?`Made ${nBk} ${nBk===1?'track':'tracks'} with a backing this week.`:''].filter(Boolean).join(' ');
+    const pgLines=cardLine?lines(cardLine,W-140,F(600,20)):[]; const pgExtra=pgLines.length?14+pgLines.length*26:0;
     const top=490+pgExtra; const fb=w&&(w.line||w.encouragement); const list=w&&w.checklist?w.checklist.slice(0,4):[];
     let hh=42; if(fb) hh+=36+lines(fb,W-140,F(700,28)).length*38+40; if(list.length){ hh+=36; list.forEach(t=>hh+=lines(t,W-180,F(600,24)).length*30+8); } if(!fb&&!list.length) hh+=40; hh+=18;
     const goal=p.goalDate&&doc().weeks.length?{label:p.goalLabel||'Goal', date:p.goalDate, start:(doc().weeks[0].lessonDate||doc().weeks[0].createdAt)}:null;
@@ -1265,6 +1464,7 @@ canvas.cardc{width:100%; max-width:420px; border-radius:16px; border:1px solid v
             <div><label class="l">Typical progress between lessons, 1 to 5</label>${scale('bProg', d.baseline?.progress)}</div></div></div>
         </div><button class="btn sm" id="pSave" style="margin-top:10px">Save profile</button></div>
       <div id="tAud"></div>
+      <div id="tBack"></div>
       <div class="card"><h3>Add a task this week</h3>
         <div class="row"><input id="xText" placeholder="e.g. Listen to the Bach three times before Thursday" style="flex:1"><button type="button" class="btn quiet mic" data-dictate="xText">Dictate</button><button class="btn sm" id="xAdd">Add</button></div>
         ${(d.extras||[]).filter(x=>!x.done).length?`<div style="margin-top:8px">${(d.extras||[]).filter(x=>!x.done).map(x=>`<div class="flag"><span>${h(x.text)} <span class="note" style="margin:0">· ${h(fmt(x.at.slice(0,10)))}</span></span><button class="btn sm quiet" data-xrm="${x.id}">Remove</button></div>`).join('')}</div>`:''}
@@ -1297,7 +1497,7 @@ canvas.cardc{width:100%; max-width:420px; border-radius:16px; border:1px solid v
     $('#gen').onclick=generateWeek; wireScales();
     $$('[data-dictate]').forEach(b=>b.onclick=()=>dictate(b.dataset.dictate,b));
     if(w) wirePassageTeacher(w, d, p);
-    renderTeacherAud();
+    renderTeacherAud(); renderTeacherBacking();
     if(preview) renderPreview();
   }
   async function generateWeek(){

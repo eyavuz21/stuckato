@@ -6,7 +6,7 @@
 // The tables all reference auth.users(id) on delete cascade, so removing the auth user removes the member
 // row and the pupil's document with it. Audio is the exception: it lives in a storage bucket under the
 // studio's folder, so the files this person uploaded are collected from their own document and deleted
-// first, by path.
+// first, by path: public URLs in melodigo-audio, and private paths (audition takes, backing tracks) in stuckato-private.
 //
 // A teacher is refused while their studio still has members. Deleting a teacher cascades the studio, and
 // the studio cascades every pupil in it, so one tap would erase other people's children's data. That is
@@ -14,6 +14,7 @@
 import { whoAmI, readJson } from "./_auth.js";
 
 const BUCKET = "melodigo-audio";
+const PRIVATE = "stuckato-private"; // audition takes and backing tracks, stored by path (no public URL)
 
 // Every storage path this person's own document points at.
 function audioPaths(data, bucket) {
@@ -24,6 +25,12 @@ function audioPaths(data, bucket) {
     if (i !== -1) found.add(decodeURIComponent(u.slice(i + marker.length).split("?")[0]));
     return u;
   });
+  return [...found];
+}
+// Paths in the private bucket: every "path" field in the document under this person's own folder.
+function privatePaths(data, userId) {
+  const found = new Set();
+  JSON.stringify(data ?? {}).replace(/"path":"([^"]+)"/g, (_, p) => { if (p.split("/")[1] === userId) found.add(p); return _; });
   return [...found];
 }
 
@@ -67,6 +74,13 @@ export default async function handler(req, res) {
         method: "DELETE", headers: { ...h, "content-type": "application/json" }, body: JSON.stringify({ prefixes: paths })
       });
       if (d.ok) filesDeleted = paths.length;
+    }
+    const priv = rows.length ? privatePaths(rows[0].data, userId) : [];
+    if (priv.length) {
+      const d = await fetch(`${url}/storage/v1/object/${PRIVATE}`, {
+        method: "DELETE", headers: { ...h, "content-type": "application/json" }, body: JSON.stringify({ prefixes: priv })
+      });
+      if (d.ok) filesDeleted += priv.length;
     }
   } catch { /* a missing recording must not block the deletion itself */ }
 
