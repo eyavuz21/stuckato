@@ -15,6 +15,8 @@
   --amber:#000000; --amber-ink:#F5E4CA; --varnish:#000000; --sage:#4A4436; --gold:#000000; --danger:#A8372A;
   --tintA:#EFDCC0; --tintB:#F2E2CA; --tintC:#E9D5B6; --shadow:0 10px 26px rgba(74,52,16,.16);
   --ok:#2E6B44; --warn:#8A5A12;
+  /* One accent, used ONLY for moments of progress (10 Nov 2026): the colour comes to mean 'I did something'. */
+  --win:#E8572A; --win-soft:#F8C7A6; --win-ink:#000000;
   color-scheme: light;
 }
 *{box-sizing:border-box}
@@ -84,7 +86,7 @@ html.clean #demoBar,html.clean #startbar{display:none!important}
 .who{font-size:13.5px; color:var(--muted); margin-top:8px; font-weight:700}
 .row{display:flex; gap:8px; align-items:center; flex-wrap:wrap}
 .grid2{display:grid; grid-template-columns:1fr 1fr; gap:10px} @media (max-width:640px){ .grid2{grid-template-columns:1fr} }
-.note{font-size:15px; color:var(--muted); margin-top:8px; font-weight:500}
+.note{font-size:16px; color:var(--muted); margin-top:8px; font-weight:600}
 .tabs{position:fixed; left:0; right:0; bottom:0; display:flex; background:var(--card); border-top:1px solid var(--line); padding:8px 8px 14px; z-index:5}
 .tabs button{flex:1; background:none; border:none; font-size:13.5px; font-weight:800; color:var(--muted); padding:6px 2px; border-radius:10px}
 .tabs button.on{color:var(--amber)}
@@ -125,7 +127,7 @@ details.defs summary{cursor:pointer; font-weight:700} details.defs dl{margin:8px
 .stave-week{display:block; width:100%; height:auto; margin:6px 0 2px} .stave-week text{font-family:"Plus Jakarta Sans", system-ui, sans-serif; font-weight:800; font-size:13px; fill:var(--muted)}
 .ticks{list-style:none; padding:0; margin:8px 0 0} .ticks li{display:flex; align-items:center; gap:12px; padding:12px 14px; border:1.5px solid var(--line); border-radius:16px; margin-bottom:8px; font-weight:700; font-size:17px; background:var(--card); cursor:pointer} .ticks li i{width:26px; height:26px; border-radius:8px; border:2px solid var(--line); flex:none; display:inline-block} .ticks li.on{border-color:var(--amber); background:var(--tintC)} .ticks li.on i{background:var(--amber); border-color:var(--amber)}
 .tokens{display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-top:6px}
-.tok{width:18px; height:18px; border-radius:50%; background:var(--stave); border:1.5px solid var(--line)} .tok.on{background:var(--gold); border-color:var(--gold)}
+.tok{width:18px; height:18px; border-radius:50%; background:var(--stave); border:1.5px solid var(--line)} .tok.on{background:var(--win); border-color:var(--ink); animation:pop .45s ease-out both}
 .flag{display:flex; justify-content:space-between; align-items:center; gap:12px; padding:12px 0; border-top:1px solid var(--line); font-size:17px; font-weight:600} .flag .note{font-size:14px; font-weight:600}
 .flag.res{color:var(--muted); text-decoration:line-through}
 .pill{display:inline-block; font-size:13px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; padding:5px 11px; border-radius:999px; background:var(--stave); color:var(--muted)}
@@ -162,6 +164,21 @@ canvas.cardc{width:100%; max-width:420px; border-radius:16px; border:1px solid v
 details.more{margin-top:14px}details.more>summary{cursor:pointer;list-style:none;padding:12px 14px;border:1px solid var(--ink);border-radius:12px;font-weight:700;text-align:center}details.more>summary::-webkit-details-marker{display:none}details.more>summary::after{content:' ▾'}details.more[open]>summary::after{content:' ▴'}details.more[open]>summary{margin-bottom:12px}
 .joy{border-color:var(--ink)} .joy-big{font-size:20px;font-weight:800;margin:0 0 8px;line-height:1.3} .surprise{background:var(--ink);color:var(--paper);border-color:var(--ink)} .surprise .label{color:var(--paper)} .surprise a{color:var(--paper);text-decoration:underline}
 .skills{display:flex;flex-direction:column;gap:8px;margin-top:6px} .skill{display:flex;gap:12px;align-items:center;padding:10px 12px;border:1.5px solid var(--line);border-radius:16px;background:var(--paper)} .skill-dot{flex:none;min-width:44px;text-align:center;font-weight:800;font-size:18px} .skill.strong,.skill.shown{border-color:var(--ink)} .skill.shown{background:var(--ink);color:var(--paper)} .skill.shown .note{color:var(--paper)} .skill.new{opacity:.7}
+
+/* progress moments: the accent, bigger type, a little motion */
+.joy{border:2px solid var(--ink); background:var(--card); position:relative; overflow:hidden}
+.joy::before{content:''; position:absolute; inset:0 auto 0 0; width:8px; background:var(--win)}
+.joy .label{color:var(--ink)}
+.joy-big{font-size:24px !important; font-weight:800; line-height:1.2}
+.surprise{background:var(--win) !important; color:var(--win-ink) !important; border:2px solid var(--ink) !important; animation:pop .5s ease-out both}
+.surprise::before{display:none} .surprise .label{color:var(--win-ink) !important} .surprise p{font-size:19px; font-weight:700} .surprise a{color:var(--win-ink) !important; font-weight:800}
+.skill.strong{background:var(--win-soft); border-color:var(--ink)}
+.skill.shown{background:var(--win) !important; color:var(--win-ink) !important; border-color:var(--ink)} .skill.shown .note{color:var(--win-ink) !important}
+.skill.strong .skill-dot,.skill.shown .skill-dot{animation:pop .5s ease-out both}
+.skill b{font-size:17px}
+#doneTitle{font-size:44px}
+@keyframes pop{0%{transform:scale(.85); opacity:0} 60%{transform:scale(1.06); opacity:1} 100%{transform:scale(1)}}
+@media (prefers-reduced-motion: reduce){ *{animation:none !important} }
 </style>
 </head>
 <body>
