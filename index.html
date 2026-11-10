@@ -160,6 +160,8 @@ canvas.cardc{width:100%; max-width:420px; border-radius:16px; border:1px solid v
 @media (prefers-reduced-motion: reduce){ .rec .blink{animation:none} }
 @media (prefers-reduced-motion: reduce){ .toast{transition:none} }
 details.more{margin-top:14px}details.more>summary{cursor:pointer;list-style:none;padding:12px 14px;border:1px solid var(--ink);border-radius:12px;font-weight:700;text-align:center}details.more>summary::-webkit-details-marker{display:none}details.more>summary::after{content:' ▾'}details.more[open]>summary::after{content:' ▴'}details.more[open]>summary{margin-bottom:12px}
+.joy{border-color:var(--ink)} .joy-big{font-size:20px;font-weight:800;margin:0 0 8px;line-height:1.3} .surprise{background:var(--ink);color:var(--paper);border-color:var(--ink)} .surprise .label{color:var(--paper)} .surprise a{color:var(--paper);text-decoration:underline}
+.skills{display:flex;flex-direction:column;gap:8px;margin-top:6px} .skill{display:flex;gap:12px;align-items:center;padding:10px 12px;border:1.5px solid var(--line);border-radius:16px;background:var(--paper)} .skill-dot{flex:none;min-width:44px;text-align:center;font-weight:800;font-size:18px} .skill.strong,.skill.shown{border-color:var(--ink)} .skill.shown{background:var(--ink);color:var(--paper)} .skill.shown .note{color:var(--paper)} .skill.new{opacity:.7}
 </style>
 </head>
 <body>
@@ -224,6 +226,7 @@ details.more{margin-top:14px}details.more>summary{cursor:pointer;list-style:none
   <!-- STUDENT: DONE -->
   <section class="view" id="v-done">
     <div class="card"><div class="label">Session done</div><h2 class="big" id="doneTitle"></h2><p id="doneSub" style="margin:0"></p></div>
+    <div id="doneJoy"></div>
     <div class="card"><div class="label">What did you work on today?</div><p class="note" style="margin:0">Tap everything you did. Your teacher sees this before the lesson.</p><ul class="ticks" id="worked"></ul>
       <form id="workedOther" class="row" style="margin-top:6px"><input id="workedText" placeholder="Something else?" style="flex:1"><button class="btn sm" type="submit">Add</button></form></div>
     <div class="card reflect"><div class="label">In your own words</div><p class="note" style="margin:0 0 6px">What did you work on, and what changed? A sentence is enough. Nothing counts until it is written; <span id="reflWho">your teacher</span> reads it before the lesson.</p>
@@ -521,7 +524,7 @@ details.more{margin-top:14px}details.more>summary{cursor:pointer;list-style:none
       ${pendCard}${todayCard}${pulseCard}${s?'':recCard}${s?recCard:''}
       ${passagePupilHTML(w, tn)}${breakCard}${habitsHTML(w)}<div id="socialBox"></div><div class="box says"><div class="label">Lesson · ${h(fmt(w.lessonDate||w.createdAt))} · from ${h(tn)}</div><p style="margin:0"><b>What you did well:</b> ${h(w.line||w.encouragement||'Turn up every day and the lesson takes care of itself.')}</p>${(w.checklist||[]).length?`<p style="margin:8px 0 0"><b>What to work on:</b> ${h(w.checklist.join(' · '))}.</p>`:''}
         ${openExtras().map(x=>`<div class="row" style="margin:4px 0 0;justify-content:space-between;flex-wrap:nowrap;align-items:flex-start"><p style="margin:0"><b>News from ${h(tn)}:</b> ${h(x.text)} (${h(fmt(x.at.slice(0,10)))})</p><button class="btn sm quiet" data-xdone="${x.id}" style="flex:none">Done</button></div>`).join('')}</div>
-      ${backingCardHTML(w)}
+      ${backingCardHTML(w)}${skillsHTML()}
       <details class="more" id="trailMore"${trailMoreOpen?' open':''}><summary>More: your week, tokens, goal and questions for ${h(tn)}</summary>
       <div class="card"><div class="label">${w.sessions.length} days, then ${h(tn)}</div>
         ${s?journeyMap(w, flags, 'top'):''}${s?journeyMap(w, flags, 'bottom'):journeyMap(w, flags, 'all')}
@@ -1066,11 +1069,53 @@ details.more{margin-top:14px}details.more>summary{cursor:pointer;list-style:none
     const ex=w.done.find(x=>x.i===si); if(ex){ Object.assign(ex, {startedAt:rec.startedAt, minutes:rec.minutes, target:rec.target, short:rec.short, reason:rec.reason, heardSec:rec.heardSec, checked:rec.checked}); } else w.done.push(rec);
     saveCurrent(); showDone();
   }
+
+  // ------------------------------------------------------------ joy: then-vs-now, a surprise, a sound (10 Nov 2026)
+  // Built on three findings: hearing your own improvement is the strongest reward in music practice; variety keeps
+  // curiosity up (novelty); and mastery reads better as a map of skills than as a streak that punishes a missed day.
+  function playFlourish(){ try{ const C=window.AudioContext||window.webkitAudioContext; const ac=new C(); const t0=ac.currentTime+0.02;
+    [523.25,659.25,783.99,1046.5].forEach((f,k)=>{ const o=ac.createOscillator(), g=ac.createGain(); o.type='triangle'; o.frequency.value=f;
+      const t=t0+k*0.09; g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(0.12,t+0.02); g.gain.exponentialRampToValueAtTime(0.0001,t+(k===3?0.9:0.35));
+      o.connect(g).connect(ac.destination); o.start(t); o.stop(t+1); }); setTimeout(()=>ac.close(),1600); }catch(e){} }
+  function thenNowHTML(w){ // the pupil hearing (or seeing) their own progress this week
+    const takes=(w.takes||[]).slice().sort((a,b)=>(a.at||'').localeCompare(b.at||''));
+    if(takes.length>=2){ const F=takes[0], L=takes[takes.length-1]; const f=takeOff(F), l=takeOff(L); const better=l<f;
+      const play=t=>takeSrc(t)?`<audio controls src="${h(takeSrc(t))}" style="width:100%;margin-top:6px"></audio>`:'';
+      return `<div class="card joy"><div class="label">Then and now</div><p class="joy-big">${better?`${f} → ${l} notes off. You're getting there.`:l===0?'Every note matched. Lovely.':`${f} → ${l} notes off. Same again tomorrow and it moves.`}</p>
+        <div class="grid2"><div><div class="note" style="margin:0">${h(dayName(F.at))}</div>${play(F)}</div><div><div class="note" style="margin:0">${h(dayName(L.at))}</div>${play(L)}</div></div></div>`; }
+    const past=(doc().weeks||[]).filter(x=>x!==w); const prev=past.length?weekMinutes(past[past.length-1]):0; const now=weekMinutes(w);
+    if(prev>0) return `<div class="card joy"><div class="label">Then and now</div><p class="joy-big">${now} minutes this week${now>=prev?`, already past last week's ${prev}.`:`. Last week was ${prev}: ${prev-now} to go.`}</p></div>`;
+    return ''; }
+  const SURPRISES=[
+    {k:'Copy this rhythm', t:'Clap it, then play it on one note: ♩ ♩ ♫ ♩ · ♫ ♫ ♩ ♩. Got it? Try it twice as fast.'},
+    {k:'Eyes closed', t:'Play your hardest two bars once with your eyes shut. Listen only. Did it sound different?'},
+    {k:'Whisper version', t:'Play one phrase as quietly as you possibly can, still in tune. Quiet is harder than loud.'},
+    {k:'Teach it', t:'Show someone at home one thing you got better at today. Explaining it makes it stick.'},
+    {k:'Did you know?', t:'Your brain keeps learning after you stop: sleep replays what you practised and locks it in.'},
+    {k:'Did you know?', t:'Short, spread-out practice beats one long session. Ten minutes a day wins over an hour on Sunday.'},
+    {k:'Listen like a pro', t:'Find a recording of a great player of your instrument and listen for one thing only: how they start each note.'},
+    {k:'Slow motion', t:'Play the tricky bit at half speed, perfectly. Then three-quarters. Slow and right beats fast and wrong.'},
+    {k:'Mystery mood', t:'Play your piece as if it were happy. Then as if it were sad. Which did you like better?'},
+    {k:'Did you know?', t:'Making mistakes while practising is how the brain learns. The players who improve fastest make lots of them, slowly.'},
+  ];
+  function surpriseHTML(w, i){ const n=(doc().weeks||[]).reduce((a,x)=>a+doneCount(x),0)+i; const s=SURPRISES[n%SURPRISES.length]; const inst=doc().profile.instrument||'your instrument';
+    const extra=s.k==='Listen like a pro'?` <a href="https://www.youtube.com/results?search_query=${encodeURIComponent((w.passage?.label||'')+' '+inst+' performance')}" target="_blank" rel="noopener">Find one</a>`:'';
+    return `<div class="card joy surprise"><div class="label">🎁 Today's surprise · ${h(s.k)}</div><p style="margin:0">${h(s.t)}${extra}</p></div>`; }
+  function skillsList(){ // every item the teacher has set, with how often it has been worked on and whether it was shown at a lesson
+    const map=new Map(); for(const w of (doc().weeks||[])){ (w.checklist||[]).forEach((c,k)=>{ const key=c.trim().toLowerCase(); const s=map.get(key)||{name:c.trim(), n:0, shown:false, last:''}; if((w.ticks||[]).includes(k)) s.shown=true; s.last=w.createdAt||s.last; map.set(key,s); });
+      for(const d of (w.done||[])) for(const it of (d.worked||[])){ const key=String(it).trim().toLowerCase(); const s=map.get(key)||{name:String(it).trim(), n:0, shown:false, last:''}; s.n++; s.last=w.createdAt||s.last; map.set(key,s); } }
+    return [...map.values()].sort((a,b)=>(b.last||'').localeCompare(a.last||'')||b.n-a.n); }
+  function skillsHTML(){ const all=skillsList(); if(!all.length) return ''; const tn=doc().teacherName||'your teacher';
+    const lvl=s=>s.shown?{c:'shown',l:'Shown to '+tn,d:'★'}:s.n>=7?{c:'strong',l:'Strong',d:'♪♪♪'}:s.n>=3?{c:'getting',l:'Getting there',d:'♪♪'}:s.n>=1?{c:'started',l:'Started',d:'♪'}:{c:'new',l:'New',d:'○'};
+    const top=all.slice(0,8); const done=all.filter(s=>s.shown||s.n>=7).length;
+    return `<div class="card"><div class="label">Your skills · ${done} of ${all.length} strong</div><div class="skills">${top.map(s=>{ const L=lvl(s); return `<div class="skill ${L.c}"><span class="skill-dot">${L.d}</span><span><b>${h(s.name)}</b><br><span class="note" style="margin:0">${h(L.l)}${s.n?` · ${s.n} ${s.n===1?'session':'sessions'}`:''}</span></span></div>`; }).join('')}</div>
+      <div class="note" style="margin:6px 0 0">Work on a skill in 3 sessions and it's getting there; 7 and it's strong; show it at a lesson for the star.</div></div>`; }
   function showDone(){ // the Done screen for session si: what you did, your sentence, how it felt. The token comes with the sentence.
     const w=week(); const d=(w.done||[]).find(x=>x.i===si)||{};
     $('#doneTitle').textContent=`Day ${doneCount(w)} of ${w.sessions.length}.`+(streak()>0?` That's ${streak()} in a row.`:''); $('#doneSub').textContent=(d.minutes?`${d.minutes} of ${d.target||planMinutes(sess)} minutes${d.own?', on your own':''}. `:(d.own?'Practised on your own. ':`${sess.steps.reduce((a,x)=>a+(+x.minutes||0),0)} minutes. `))+(d.short?'Shorter than planned; your teacher will see why. ':'')+(d.note?'':'Write what changed and the token is yours.');
     $('#reflWho').textContent=doc().teacherName||'your teacher'; $('#refl').value=d.note||''; $('#refl').dataset.via=d.noteVia||''; updateReflBtn();
-    renderWorked(); $$('#feel button').forEach(b=>{ b.classList.toggle('on', b.dataset.f===d.feel); }); $('#tailor').hidden=true; $('#donePassage').hidden=!w.passage; show('done');
+    renderWorked(); $$('#feel button').forEach(b=>{ b.classList.toggle('on', b.dataset.f===d.feel); }); $('#tailor').hidden=true; $('#donePassage').hidden=!w.passage;
+    $('#doneJoy').innerHTML=thenNowHTML(w)+surpriseHTML(w, si); show('done'); if(!d.note) playFlourish();
   }
   function updateReflBtn(){ const ok=$('#refl').value.trim().length>=20; const b=$('#doneBack'); b.disabled=!ok; b.textContent=ok?'Done for today':'Write a sentence to finish'; $('#reflHint').textContent=ok?'':'A sentence or two, or tap Dictate and say it.'; }
   $('#refl').oninput=()=>{ if(!$('#refl').dataset.via) $('#refl').dataset.via='typed'; updateReflBtn(); };
