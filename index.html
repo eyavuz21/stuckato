@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Stuckato</title>
 <meta name="description" content="Short bursts. Real progress. Couch to 5K for practising an instrument, in a choir or in an orchestra. Your teacher sets the week; Stuckato gets you to practise every day.">
-<link rel="icon" type="image/svg+xml" href="icon-tile.svg?v=10"><link rel="apple-touch-icon" href="icon-192.png?v=10"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#F5E4CA">
+<link rel="icon" type="image/svg+xml" href="icon-tile.svg?v=13"><link rel="apple-touch-icon" href="icon-192.png?v=13"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#F5E4CA">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap">
 <style>
@@ -159,13 +159,14 @@ dialog::backdrop{background:rgba(0,0,0,.65)} dialog .in{padding:22px} dialog h2{
 canvas.cardc{width:100%; max-width:420px; border-radius:16px; border:1px solid var(--line); display:block; margin:10px auto}
 @media (prefers-reduced-motion: reduce){ .rec .blink{animation:none} }
 @media (prefers-reduced-motion: reduce){ .toast{transition:none} }
+details.more{margin-top:14px}details.more>summary{cursor:pointer;list-style:none;padding:12px 14px;border:1px solid var(--ink);border-radius:12px;font-weight:700;text-align:center}details.more>summary::-webkit-details-marker{display:none}details.more>summary::after{content:' ▾'}details.more[open]>summary::after{content:' ▴'}details.more[open]>summary{margin-bottom:12px}
 </style>
 </head>
 <body>
 <div class="wrap">
   <div id="demoBar" hidden></div>
   <header class="top">
-    <div class="brand"><h1><img src="wordmark.svg?v=10" alt="Stuckato" style="height:30px;display:block"></h1></div>
+    <div class="brand"><h1><img src="wordmark.svg?v=13" alt="Stuckato" style="height:30px;display:block"></h1></div>
     <div class="auth" id="auth"></div>
   </header>
 
@@ -256,9 +257,9 @@ canvas.cardc{width:100%; max-width:420px; border-radius:16px; border:1px solid v
 <dialog id="dlg"><div class="in" id="dlgIn"></div></dialog>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-<script src="passage.js?v=10"></script>
-<script src="backing.js?v=12"></script>
-<script src="backing-audio.js?v=11"></script>
+<script src="passage.js?v=13"></script>
+<script src="backing.js?v=13"></script>
+<script src="backing-audio.js?v=13"></script>
 <script>
 (function(){
   'use strict';
@@ -481,6 +482,7 @@ canvas.cardc{width:100%; max-width:420px; border-radius:16px; border:1px solid v
   function tokensView(){ const t=doc().tokens||{earned:0,redeemed:0}; const avail=Math.max(0,(t.earned||0)-(t.redeemed||0)); return {avail, toNext: Math.max(0, 6-(avail%6||0))}; }
 
   function renderToday(){ renderTrail(); }
+  let trailMoreOpen=false; // the folded part of the pupil home stays open across re-renders once opened
   function renderTrail(showIt){
     if(!current) return;
     const w=week(); const p=doc().profile; const v=$('#v-trail'); const tn=doc().teacherName||'your teacher'; const bar=$('#startbar');
@@ -516,10 +518,13 @@ canvas.cardc{width:100%; max-width:420px; border-radius:16px; border:1px solid v
       : (w.recording ? `<div class="card"><div class="label">Play-through sent · ${h(fmt(w.recording.at.slice(0,10)))}</div><p style="margin:0">${w.recording.heard?h(tn)+' has heard it.':'Waiting for '+h(tn)+' to listen.'}${w.recording.reply?` <b>${h(tn)} says:</b> “${h(w.recording.reply)}”`:''}</p></div>` : '');
     v.innerHTML=`
       <div class="chips"><span class="chip">${h(fmt(today()))}</span><span class="chip">Day <b>${Math.min(n+1,w.sessions.length)} of ${w.sessions.length}</b></span><span class="chip">${h(mins)} min <b>set by ${h(tn)}</b></span>${+p.selfMinutes>mins?`<span class="chip">you aim for <b>${h(p.selfMinutes)} min</b></span>`:''}${p.goalDate?`<span class="chip">${h(p.goalLabel||'Goal')} <b>${weeksBetween(today(),p.goalDate)} weeks</b>${goalLight()?' · '+lightHTML():''}</span>`:''}${w.group?`<span class="chip">${h(w.group.name||'Group')} week${p.part?' · '+h(p.part):''}</span>`:''}</div>
+      ${pendCard}${todayCard}${pulseCard}${s?'':recCard}${s?recCard:''}
       ${breakCard}${habitsHTML(w)}<div id="socialBox"></div><div class="box says"><div class="label">Lesson · ${h(fmt(w.lessonDate||w.createdAt))} · from ${h(tn)}</div><p style="margin:0"><b>What you did well:</b> ${h(w.line||w.encouragement||'Turn up every day and the lesson takes care of itself.')}</p>${(w.checklist||[]).length?`<p style="margin:8px 0 0"><b>What to work on:</b> ${h(w.checklist.join(' · '))}.</p>`:''}
         ${openExtras().map(x=>`<div class="row" style="margin:4px 0 0;justify-content:space-between;flex-wrap:nowrap;align-items:flex-start"><p style="margin:0"><b>News from ${h(tn)}:</b> ${h(x.text)} (${h(fmt(x.at.slice(0,10)))})</p><button class="btn sm quiet" data-xdone="${x.id}" style="flex:none">Done</button></div>`).join('')}</div>
+      ${passagePupilHTML(w, tn)}${backingCardHTML(w)}
+      <details class="more" id="trailMore"${trailMoreOpen?' open':''}><summary>More: your week, tokens, goal and questions for ${h(tn)}</summary>
       <div class="card"><div class="label">${w.sessions.length} days, then ${h(tn)}</div>
-        ${pendCard}${s?journeyMap(w, flags, 'top'):''}${todayCard}${passagePupilHTML(w, tn)}${backingCardHTML(w)}${pulseCard}${s?'':recCard}${s?journeyMap(w, flags, 'bottom'):journeyMap(w, flags, 'all')}${s?recCard:''}
+        ${s?journeyMap(w, flags, 'top'):''}${s?journeyMap(w, flags, 'bottom'):journeyMap(w, flags, 'all')}
         <div class="label" style="margin-top:10px">At the lesson: show ${h(tn)}</div>
         <ul class="check" id="prep">${(w.checklist||[]).map((c,k)=>`<li class="${(w.ticks||[]).includes(k)?'on':''}" data-k="${k}"><i></i><span>${h(c)}</span></li>`).join('')||'<li><i></i><span style="color:var(--muted)">No checklist this week</span></li>'}</ul>
         ${extras().filter(x=>x.at>=w.createdAt).length?`<ul class="check">${extras().filter(x=>x.at>=w.createdAt).map(x=>`<li class="${x.done?'on':''}" data-x="${x.id}"><i></i><span>${h(x.text)}</span></li>`).join('')}</ul>`:''}
@@ -534,7 +539,9 @@ canvas.cardc{width:100%; max-width:420px; border-radius:16px; border:1px solid v
         <div id="flags">${stillDiffersLine(w)?`<div class="flag"><span>${h(stillDiffersLine(w))}</span></div>`:''}${flags.filter(f=>!f.resolved).map(f=>`<div class="flag"><span>${h(f.text)}</span><button class="btn sm quiet" data-unflag="${f.id}" aria-label="Remove">×</button></div>`).join('')||(stillDiffersLine(w)?'':'<div class="note" style="margin:0">Nothing flagged. Type it the moment it happens: a squeak, a question, a breakthrough.</div>')}</div>
         <form id="flagForm" class="row" style="margin-top:8px"><input id="flagText" placeholder="e.g. G string squeaks on down bows" style="flex:1"><button class="btn sm" type="submit">Flag it</button></form>
         <div class="note">${h(tn)} sees these before the lesson starts.</div></div>
-      <div class="grid2" style="margin-top:4px"><button class="btn quiet" id="goGoal">Set or change the goal</button><button class="btn" id="goShare">Share the card</button></div>`;
+      <div class="grid2" style="margin-top:4px"><button class="btn quiet" id="goGoal">Set or change the goal</button><button class="btn" id="goShare">Share the card</button></div>
+      </details>`;
+    const tm=$('#trailMore'); if(tm) tm.ontoggle=()=>{ trailMoreOpen=tm.open; };
     const os=$('#ownStart'); if(os) os.onclick=()=>ready(()=>startOwn(i));
     const bs=$('#breakStart'); if(bs) bs.onclick=()=>ready(()=>startOwn(-1,true));
     wireHabits(w); renderSocial();
@@ -1249,7 +1256,7 @@ canvas.cardc{width:100%; max-width:420px; border-radius:16px; border:1px solid v
     $('#dlBtn').onclick=()=>{ const c=$('#cardc'); c.toBlob(blob=>{ const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='stuckato-week.png'; a.click(); },'image/png'); };
     if(showIt!==false) show('share');
   }
-  const WM_IMG=new Image(); WM_IMG.src='wordmark.svg?v=10'; // the wordmark on the shared card
+  const WM_IMG=new Image(); WM_IMG.src='wordmark.svg?v=13'; // the wordmark on the shared card
   function drawCard(c){
     const ctx=c.getContext('2d'); const W=c.width; const p=doc().profile; const w=week(); const tn=doc().teacherName||'your teacher';
     const n=w?doneCount(w):0, tot=w?w.sessions.length:7; const mins=w?(w.done||[]).reduce((a,d)=>a+(w.sessions[d.i]?w.sessions[d.i].steps.reduce((x,y)=>x+(+y.minutes||0),0):0),0):0;
@@ -1521,7 +1528,7 @@ canvas.cardc{width:100%; max-width:420px; border-radius:16px; border:1px solid v
           <div><label class="l" for="pGoalDate">Goal date (rough)</label><input type="date" id="pGoalDate" value="${h(p.goalDate||'')}"></div>
           <div><label class="l" for="pSpw">Days a week</label><input type="number" id="pSpw" min="3" max="7" value="${h(p.sessionsPerWeek||7)}"><div class="note" style="margin:4px 0 0">Seven: one short session every day.</div></div>
           <div style="grid-column:1/-1"><label class="l" for="pStages">Stages to the goal, one per line: name, weeks (optional)</label><textarea id="pStages" placeholder="Foundations, 8&#10;Pieces, 8&#10;Polish, 4&#10;Mock, 1&#10;Exam, 1">${h((p.stages||[]).map(x=>x.name+', '+x.weeks).join('\n'))}</textarea><div class="note" style="margin:4px 0 0">Optional. Leave empty and the pupil sees only the weeks to the date. Fill it in and the stages appear on their trail, in your name.</div></div>
-          <div style="grid-column:1/-1"><label class="l" for="pReward">The reward at six tokens (a full week or two)</label><input id="pReward" value="${h(p.reward||'')}" placeholder="e.g. a hot chocolate after Thursday's lesson, a new set of strings, a sheet-music voucher"><div class="note" style="margin:4px 0 0">Named by you, a parent or the school. Small, occasional, from a real person. The pupil sees it on their Journey.</div></div>
+          <div style="grid-column:1/-1"><label class="l" for="pReward">The reward at six tokens (a full week or two)</label><input id="pReward" value="${h(p.reward||'')}" placeholder="e.g. a hot chocolate after the next lesson, a new set of strings, a sheet-music voucher"><div class="note" style="margin:4px 0 0">Named by you, a parent or the school. Small, occasional, from a real person. The pupil sees it on their Journey.</div></div>
           <div><label class="l" for="pMin">Minutes a day (you set this)</label><input type="number" id="pMin" min="10" max="120" step="5" value="${h(p.minutes||levelMinutes(p.level))}"><div class="note" style="margin:4px 0 0">Suggested for the level: ${levelMinutes(p.level)} (grades 1 to 2 up to 30, 3 to 4 up to 45, 5 and above up to 60). Change it and it sticks.${+p.selfMinutes?' '+h(p.name||'The pupil')+' has set their own target: '+h(p.selfMinutes)+' min.':''}</div>${(p.targetLog||[]).length?`<div class="note" style="margin:6px 0 0"><b>Target changes:</b> ${(p.targetLog||[]).slice(-5).reverse().map(x=>`${h(x.name)} (${h(x.by)}) ${h(x.from)} to ${h(x.to)} min, ${h(fmt(x.at.slice(0,10)))}`).join(' · ')}</div>`:''}</div>
           <div><label class="l">When they finish</label><label class="switch" style="font-size:15px;color:var(--ink)"><input type="checkbox" id="pNotify" ${p.notifyFinish?'checked':''}> Tell me when they finish a session</label><div class="note" style="margin:4px 0 0">An email the moment they write their sentence. Either way, "finished today" shows in your pupil list.</div></div>
           <div style="grid-column:1/-1"><div class="label" style="margin-top:6px">Before the pilot (baseline, fill in once)</div><div class="grid2">
@@ -1693,7 +1700,7 @@ canvas.cardc{width:100%; max-width:420px; border-radius:16px; border:1px solid v
     const W=(title,intro,steps)=>({title,intro,steps:steps.map(([name,minutes,caption])=>({name,minutes,caption}))});
     const WORK=['D major scale, two octaves','Twinkle variation A, first phrase','Bow nearer the bridge','Long slow bows'];
     const day=(t,intro,a,b)=>W(t,intro,[['Warm-up',3,'Long slow bows on the open D, the way Melisande showed you.'],[a,7,a+', slowly. Once through, then once more.'],[b,7,b+'. Stop before it gets messy.'],['Wind down',3,'One last open D. Then stop; that is the session.']]);
-    const emre={profile:{name:'Emre',instrument:'violin',part:'Second violin',level:'beginner',goalLabel:'Grade 1 exam',goalDate:addDays(today(),150),sessionsPerWeek:7,minutes:20,reminder:'push',reward:'a hot chocolate after Thursday\'s lesson'},teacherName:'Melisande',notes:[],extras:[{id:uid(),text:'Listen to the Twinkle variations recording once before Thursday',at:new Date().toISOString(),done:false,by:'Melisande'}],
+    const emre={profile:{name:'Emre',instrument:'violin',part:'Second violin',level:'beginner',goalLabel:'Grade 1 exam',goalDate:addDays(today(),150),sessionsPerWeek:7,minutes:20,reminder:'push',reward:'a hot chocolate after the next lesson'},teacherName:'Melisande',notes:[],extras:[{id:uid(),text:'Listen to the Twinkle variations recording once before the next lesson',at:new Date().toISOString(),done:false,by:'Melisande'}],
       flags:[{id:uid(),text:'G string squeaks on down bows',at:new Date().toISOString(),resolved:false},{id:uid(),text:'Got the third-finger F sharp in tune three times in a row',at:new Date().toISOString(),resolved:false}],tokens:{earned:4,redeemed:0},
       weeks:[{id:uid(),createdAt:addDays(today(),-3),lessonDate:addDays(today(),-3),nextLesson:addDays(today(),4),workedOn:'D major scale, bow contact point nearer the bridge, first phrase of Twinkle variation A. Rushes the scale.',line:"Lovely tone today. Don't rush the scale.",encouragement:'A short session every day and the lesson takes care of itself.',
         sessions:[day('Slowly','Melisande said: don\'t rush the scale. Everything slowly today.',WORK[0],WORK[1]),day('Nearer the bridge','Melisande said: bow nearer the bridge. That is the whole of today.',WORK[2],WORK[1]),day('From memory','Music away today. Say the note names as you play.',WORK[0],WORK[3]),day('The F sharp','Melisande said the F sharp was low in the lesson. Slowly, and listen for it yourself.',WORK[1],WORK[0]),day('Long notes','Melisande said: nearer the bridge on the long notes. Nothing new today.',WORK[2],WORK[3]),day('Once through','Play each thing once, properly, as you would for Melisande.',WORK[0],WORK[1]),day('Ready for Saturday','Short and tidy. Then rest.',WORK[1],WORK[2])],

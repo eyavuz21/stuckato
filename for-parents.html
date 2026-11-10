@@ -4,10 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>Stuckato &middot; the October pilot, for parents</title>
-<meta name="description" content="What the four-week Stuckato pilot involves, exactly what we record, who sees it, and how to say no.">
-<link rel="icon" type="image/svg+xml" href="icon-tile.svg?v=10">
-<link rel="apple-touch-icon" href="icon-192.png?v=10">
+<title>Stuckato &middot; what progress really looks like</title>
+<meta name="description" content="A short guide for parents: how children really progress on an instrument, and how to help without pushing.">
+<link rel="icon" type="image/svg+xml" href="icon-tile.svg?v=13">
+<link rel="apple-touch-icon" href="icon-192.png?v=13">
 <meta name="theme-color" content="#F5E4CA">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap">
@@ -69,6 +69,13 @@ footer p+p{margin-top:6px}
 .chip{display:inline-block; font-size:.66rem; font-weight:800; letter-spacing:.1em; text-transform:uppercase; padding:4px 10px; border-radius:999px; color:var(--paper)}
 .group.app .chip{background:#2E6B44}
 .group.diary .chip{background:#A8372A}
+.steps{display:flex; flex-direction:column; gap:14px; margin-top:16px}
+.step{display:flex; gap:14px; align-items:flex-start}
+.step .n{flex:none; width:34px; height:34px; border-radius:999px; background:var(--ink); color:var(--paper); font-weight:800; display:flex; align-items:center; justify-content:center; font-size:.95rem}
+.step p{color:var(--muted)} .step h3{margin-bottom:4px}
+.yes .x{color:#2E6B44} .no .x{color:#A8372A}
+.chart{margin-top:16px} .chart svg{width:100%; height:auto; display:block}
+.cap{font-size:.85rem; color:var(--faint); margin-top:8px}
 </style>
 </head>
 <body>
@@ -90,119 +97,88 @@ footer p+p{margin-top:6px}
     </div>
     <p class="slogan">Short bursts. Real progress.</p>
 
-    <h1>We are trying something for four weeks in October.</h1>
+    <h1>What progress on an instrument really looks like.</h1>
     <p class="lede">
-      Melisande is running a small pilot with about twenty of her pupils. This page explains what it involves,
-      exactly what we record, and how to say no. It takes two minutes to read and nothing happens until you say yes.
+      Learning an instrument is one of the slowest, most rewarding things a child can do, and it rarely moves in a straight line.
+      This page is for parents who want to help. It takes three minutes to read.
     </p>
   </header>
 
   <section>
-    <h2>What your child does</h2>
+    <h2>Progress comes in steps, not a straight line</h2>
     <p>
-      After each lesson Melisande writes down what to work on and for how many minutes a day. Stuckato turns that into a
-      short guided session for each day of the week, in her own words. Your child taps what they worked on when they
-      finish. That is the whole thing: a few minutes a day, then a tick.
+      Most children improve in bursts. A new skill clicks, then there are weeks where nothing seems to change while it settles
+      into their hands and ears. Those flat weeks are not wasted. They are usually when the next step is being built.
     </p>
-  </section>
-
-  <section>
-    <h2>Which group is your child in?</h2>
-    <p>
-      Melisande will tell you which one. Some pupils use the app and some keep a paper diary instead. Both groups
-      matter equally, and we cannot tell whether the app helps without both.
-    </p>
-
-    <div class="groups">
-      <div class="group app">
-        <span class="chip">On the app</span>
-        <h3>Nothing for you to fill in</h3>
-        <p>
-          Your child does a short guided session each day and taps what they worked on. The app records all of it
-          by itself.
-        </p>
-        <p><strong>You can skip straight to <a href="#what-we-record">what we record</a>.</strong></p>
-      </div>
-
-      <div class="group diary">
-        <span class="chip">On the paper diary</span>
-        <h3>One short form a week</h3>
-        <p>
-          Your child writes down the minutes they practised each day. Then, on the evening before each lesson,
-          Melisande sends you a form that takes about a minute: the minutes for each day, and these two questions.
-        </p>
-        <ul>
-          <li>How ready does your child feel for tomorrow's lesson? 1 to 5.</li>
-          <li>How much did they want to practise this week? 1 to 5.</li>
-        </ul>
-        <p>
-          Those are word for word the two the app asks its own group, which is the only reason the two groups can
-          be compared at all.
-        </p>
-      </div>
-    </div>
-  </section>
-
-
-  <section>
-    <h2 id="what-we-record">What we record</h2>
-    <p>Everything below is either logged by the app as your child uses it, or entered by Melisande after a lesson. There is nothing else.</p>
-    <div class="tablewrap">
-      <table>
-        <thead><tr><th>What</th><th>Where it comes from</th></tr></thead>
-        <tbody>
-          <tr><td>Days practised and minutes</td><td>The app's own clock, or the paper diary</td></tr>
-          <tr><td>Which sessions were finished</td><td>Tapped by your child at the end of a session</td></tr>
-          <tr><td>A sentence about how it went</td><td>Optional, written or spoken by your child</td></tr>
-          <tr><td>Two questions once a week</td><td>How ready they feel for the lesson, and how much they wanted to practise. Both 1 to 5</td></tr>
-          <tr><td>Attendance, and two ratings</td><td>Melisande, after each lesson: prepared, and progress since last time</td></tr>
-          <tr><td>A short recording, sometimes</td><td>Only if your child chooses to record a play-through for Melisande</td></tr>
-          <tr><td>A track with a backing, if switched on</td><td>Off during the pilot. If Melisande switches it on later, your child can put chords under a recording and keep up to five a week, privately. Under 13, saving the file to a phone needs you to type the account email.</td></tr>
-        </tbody>
-      </table>
+    <div class="card chart">
+      <svg viewBox="0 0 600 200" role="img" aria-label="A dotted straight line rising steadily, and a solid stepped line that rises in bursts with flat stretches between, ending higher">
+        <line x1="40" y1="170" x2="580" y2="170" stroke="#D4BF9E" stroke-width="2"/>
+        <line x1="40" y1="170" x2="40" y2="20" stroke="#D4BF9E" stroke-width="2"/>
+        <path d="M40 160 L560 40" stroke="#948872" stroke-width="3" stroke-dasharray="7 7" fill="none"/>
+        <path d="M40 160 L110 160 L140 132 L230 130 L255 104 L360 102 L385 70 L470 68 L500 36 L580 34" stroke="#000" stroke-width="4" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+        <text x="420" y="132" font-size="15" fill="#6F6350" font-family="Plus Jakarta Sans, sans-serif">What parents expect</text>
+        <text x="60" y="56" font-size="15" fill="#000" font-weight="700" font-family="Plus Jakarta Sans, sans-serif">What actually happens</text>
+        <text x="40" y="192" font-size="13" fill="#948872" font-family="Plus Jakarta Sans, sans-serif">Months of lessons</text>
+      </svg>
+      <p class="cap">Both lines end up in the same place. Only one of them feels like progress every week.</p>
     </div>
   </section>
 
   <section>
-    <h2>Who sees it</h2>
-    <div class="card">
-      <p><strong>Melisande sees her own pupils' data and nothing else.</strong> She is their teacher; this is the same information she would gather in a notebook, kept more tidily.</p>
-      <p>When we look at whether the pilot worked, <strong>names are removed first.</strong> Each pupil has a short code, and the file we actually read has the code and not the name. The list linking the two stays in Melisande's account and is not shared with anyone, including Emre.</p>
-      <p>Nothing is sold, nothing is advertised against, and no data goes to anyone outside the two of us.</p>
+    <h2>What real progress looks like</h2>
+    <p>The grade your child is on is only one sign, and not the most important one. Look for these instead:</p>
+    <ul>
+      <li><strong>A better sound.</strong> Clearer, steadier, more in tune, even on easy pieces.</li>
+      <li><strong>Independence.</strong> They start practising without being asked, or know what to work on without you.</li>
+      <li><strong>Fixing their own mistakes.</strong> They stop, notice something is wrong and try it again on their own.</li>
+      <li><strong>Reading faster.</strong> New pieces take fewer lessons to get going.</li>
+      <li><strong>Enjoying it.</strong> They play things nobody asked them to, or for friends and family.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>A few things that surprise parents</h2>
+    <div class="steps">
+      <div class="step"><span class="n">1</span><div><h3>Strings sound scratchy for a long time.</h3><p>On violin, viola and cello a clean sound takes years, not months. A rough sound in the first year or two is normal, not a sign that nothing is happening.</p></div></div>
+      <div class="step"><span class="n">2</span><div><h3>Exams are milestones, not the goal.</h3><p>A grade roughly every year or two is typical. Rushing through grades often leaves gaps in sound, reading and rhythm that catch up with a child later. Some pupils make great progress without taking exams at all.</p></div></div>
+      <div class="step"><span class="n">3</span><div><h3>A little every day beats a lot once a week.</h3><p>Ten focused minutes most days does more than an hour on Sunday. How they practise matters more than how long.</p></div></div>
+      <div class="step"><span class="n">4</span><div><h3>Every child moves at their own speed.</h3><p>Age, other activities, growth spurts, school pressure and simply how a child is feeling all change the pace. A slower term is not a failure.</p></div></div>
     </div>
   </section>
 
   <section>
-    <h2>What we do not do</h2>
+    <h2>How you can help</h2>
+    <div class="no yes">
+      <div><span class="x">&check;</span><span><strong>Keep a routine.</strong> The same time most days, so practice becomes a habit rather than a negotiation.</span></div>
+      <div><span class="x">&check;</span><span><strong>Ask them to play for you.</strong> A two-minute "concert" after dinner means a lot, even if you don't play yourself.</span></div>
+      <div><span class="x">&check;</span><span><strong>Praise the effort, not the talent.</strong> "You kept going with that tricky bit" helps more than "you're so gifted".</span></div>
+      <div><span class="x">&check;</span><span><strong>Listen to music together</strong> and go to concerts when you can. Children want to sound like what they hear.</span></div>
+      <div><span class="x">&check;</span><span><strong>Ask the teacher what this term's goals are</strong>, so you and your child are aiming at the same thing.</span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>What tends to backfire</h2>
     <div class="no">
-      <div><span class="x">&times;</span><span><strong>We do not score your child's playing.</strong> The app never tells a child they played something wrong. The one feature that listens compares a recording to Melisande's own playing of the same bars and shows her where they differ. She decides what it means.</span></div>
-      <div><span class="x">&times;</span><span><strong>We do not rank pupils against each other.</strong> There is no leaderboard and no comparison between children.</span></div>
-      <div><span class="x">&times;</span><span><strong>We do not use it to chase you.</strong> If a week goes badly it is information, not a telling-off.</span></div>
+      <div><span class="x">&times;</span><span><strong>Comparing them with siblings or friends.</strong> It turns music into a competition they can lose.</span></div>
+      <div><span class="x">&times;</span><span><strong>Standing over every practice.</strong> Some help is great for young children, but they need room to work things out themselves.</span></div>
+      <div><span class="x">&times;</span><span><strong>Using practice as a punishment</strong>, or taking it away as one.</span></div>
+      <div><span class="x">&times;</span><span><strong>Threatening to stop lessons</strong> after a bad week. Bad weeks are part of learning, and the threat usually costs more than the week did.</span></div>
+      <div><span class="x">&times;</span><span><strong>Judging progress by the next exam</strong> rather than by the signs above.</span></div>
     </div>
   </section>
 
   <section>
-    <h2>The rule we wrote down in advance</h2>
-    <div class="rule-box">
-      <p class="k">Agreed before the pilot started, so we cannot move the line afterwards</p>
-      <p class="big">If 60% of pupils are still practising twice a week in week four, we keep going. Under 50% and we stop, and we say so publicly.</p>
-      <p style="margin-top:12px;color:var(--muted);font-size:.94rem">
-        Twenty pupils over four weeks is a pilot, not a trial. We will report what changed and what we think caused it.
-        We will not claim it is proof of anything.
-      </p>
-    </div>
-  </section>
-
-  <section>
-    <h2>Saying no, or stopping</h2>
-    <p>Taking part is entirely up to you, and saying no changes nothing about your child's lessons. They carry on exactly as before.</p>
-    <p>You can stop at any point, without giving a reason, by telling Melisande. We will delete your child's data if you ask. If you stop partway through we will leave out what was collected up to then, unless you are happy for us to keep it.</p>
-    <p>If your child is young, the account is held by you. They still do the practising themselves.</p>
+    <h2>If you're worried</h2>
+    <p>
+      Talk to the teacher, ideally not in front of your child. Ask what they are seeing, what the next few months should look like,
+      and how you can help at home. Teachers usually welcome this conversation, and it is far better than worrying quietly.
+    </p>
   </section>
 
   <section>
     <h2>Questions</h2>
-    <p>Ask Melisande at a lesson, or email <a href="mailto:hello@stuckato.app">hello@stuckato.app</a>. If something on this page is unclear, that is worth telling us too, because the next parent may have the same question.</p>
+    <p>Ask your child's teacher at a lesson, or email <a href="mailto:hello@stuckato.app">hello@stuckato.app</a>.</p>
   </section>
 
 </div>
