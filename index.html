@@ -182,6 +182,14 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
 #doneTitle{font-size:44px}
 @keyframes pop{0%{transform:scale(.85); opacity:0} 60%{transform:scale(1.06); opacity:1} 100%{transform:scale(1)}}
 @media (prefers-reduced-motion: reduce){ *{animation:none !important} }
+
+/* more orange (10 Nov 2026, Melisande loves it): the buttons that START a win, and work in progress */
+#start, #barStart:not(.quiet), #doneBack:not([disabled]), #ppRec, #recBtn{background:var(--win) !important; color:var(--win-ink) !important; border:2px solid var(--ink) !important}
+#startbar #barStart:not(.quiet){box-shadow:0 6px 0 var(--ink)} #startbar #barStart:not(.quiet):active{transform:translateY(3px); box-shadow:0 3px 0 var(--ink)}
+.chip.on{background:var(--win) !important; color:var(--win-ink) !important; border-color:var(--ink) !important} .chip.on b{color:var(--win-ink) !important}
+.skill.getting{border-left:8px solid var(--win)}
+.feel button.on{background:var(--win) !important; color:var(--win-ink) !important; border-color:var(--ink) !important}
+.check li.on i, .ticks li.on i{background:var(--win) !important; border-color:var(--ink) !important} .ticks li.on{border-color:var(--ink) !important; background:var(--win-soft) !important}
 </style>
 </head>
 <body>
@@ -400,9 +408,10 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
   const evidenced=d=>!!d && d.check!=='no' && (!!d.note || (d.at||'')<'2026-09-16');
   function evCount(w){ return w?(w.done||[]).filter(evidenced).length:0; }
   function pendingDone(w){ return w?(w.done||[]).find(d=>!d.note && (d.at||'')>='2026-09-16'):null; }
-  function recordingDue(w){ if(!w||w.recording||!w.sessions) return false; if(doneCount(w)>=w.sessions.length) return true; return w.nextLesson ? today()>=addDays(w.nextLesson,-1) : doneCount(w)>=w.sessions.length-1; }
+  function recordingDue(w){ return false; // the weekly play-through was folded into the week's passage (10 Nov 2026)
+    if(!w||w.recording||!w.sessions) return false; if(doneCount(w)>=w.sessions.length) return true; return w.nextLesson ? today()>=addDays(w.nextLesson,-1) : doneCount(w)>=w.sessions.length-1; }
   function maybeWeekBonusFor(d, w){ // two extra tokens once every day is evidenced AND the play-through is in; once per week
-    if(!w||w.bonus||!w.sessions) return false; if(evCount(w)<w.sessions.length||!w.recording) return false;
+    if(!w||w.bonus||!w.sessions) return false; if(evCount(w)<w.sessions.length) return false;
     const t=d.tokens||(d.tokens={earned:0,redeemed:0}); t.earned=(t.earned||0)+2; w.bonus=true; return true; }
   const maybeWeekBonus=w=>maybeWeekBonusFor(doc(), w);
   const timeOf=iso=>{ try{ return new Date(iso).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}); }catch(e){ return ''; } };
@@ -485,7 +494,7 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
     });
     const full=!!w.bonus;
     if(part!=='top'){ out+=`<rect x="40" y="${H-90}" width="280" height="44" rx="14" fill="var(--varnish)"/><text x="180" y="${H-63}" text-anchor="middle" class="t" style="fill:var(--card)">Next lesson with ${h(tn)} · ${h(fmt(w.nextLesson))}</text>`;
-      out+=coin(300,H-102,full,'+2')+(full?`<text x="180" y="${H-20}" text-anchor="middle" class="s">Week complete: two extra tokens.</text>`:`<text x="180" y="${H-26}" text-anchor="middle" class="s">A token a day, once you write what changed.</text><text x="180" y="${H-8}" text-anchor="middle" class="s">Every day plus the play-through: two more.</text>`); }
+      out+=coin(300,H-102,full,'+2')+(full?`<text x="180" y="${H-20}" text-anchor="middle" class="s">Week complete: two extra tokens.</text>`:`<text x="180" y="${H-26}" text-anchor="middle" class="s">A token a day, once you write what changed.</text><text x="180" y="${H-8}" text-anchor="middle" class="s">Every day this week: two more.</text>`); }
     return out+'</svg>';
   }
   function roadHTML(p){ // the road to the goal: a note a week to the double bar, then the stages (the teacher's, or a suggested shape)
@@ -512,7 +521,6 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
     if(!w){
       v.innerHTML=`<div class="chips"><span class="chip">${h(fmt(today()))}</span><span class="chip">${h(p.name||'')}</span></div><div class="card"><div class="label">Your trail</div><h2 class="big">No week yet.</h2><p>Your first week appears here after your next lesson, once ${h(tn)} has written it.</p></div>
         ${openExtras().length?`<div class="box says"><div class="label">From ${h(tn)}</div>${openExtras().map(x=>`<div class="flag"><span>${h(x.text)}</span><button class="btn sm quiet" data-xdone="${x.id}">Done</button></div>`).join('')}</div>`:''}
-        ${roadHTML(p)}
         <div class="row" style="margin-top:6px"><button class="btn quiet" id="goGoal">Set or change the goal</button></div>
         ${mode==='local'?'<div class="card" style="margin-top:14px"><h3>Trying it on your own?</h3><p>Open the <b>Teacher</b> tab, write a lesson note as if you were the teacher, and generate a week. Then come back here.</p></div>':''}`;
       $$('[data-xdone]').forEach(x=>x.onclick=()=>{ const e=extras().find(y=>y.id===x.dataset.xdone); if(e){ e.done=true; } saveCurrent(); renderTrail(); });
@@ -531,7 +539,7 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
     const todayCard = s ? `<div class="card" style="border-color:var(--ink)"><div class="label" style="color:var(--ink)">Today · day ${i+1} of ${w.sessions.length} · ${h(fmt(today()))}</div><p><b>${h(s.title)}</b>. ${h(s.intro)}</p><p>${h(s.steps.map(x=>x.name).join(' · '))}</p>
         ${lastDone?`<p class="note" style="margin:0 0 10px">Last time, ${h(fmt(lastDone.at.slice(0,10)))}: it felt ${h((lastDone.feel||'').toLowerCase())}${(lastDone.worked||[]).length?`; you worked on ${h(lastDone.worked.join(', '))}`:''}.</p>`:''}
         <button class="btn block" id="start">Start the guided session · ${s.steps.reduce((a,x)=>a+(+x.minutes||0),0)} min</button><button class="btn block quiet" id="ownStart" style="margin-top:8px">Practise on my own · start the clock</button></div>`
-      : `<div class="card" style="border-color:var(--ink)"><div class="label">${w.recording?'Week complete':'All days done'}</div><p style="margin:0">${w.recording?`All ${w.sessions.length} days done and the play-through sent. Next lesson ${h(fmt(w.nextLesson))}.${br?'':' Rest.'}`:`All ${w.sessions.length} days done. One thing left before ${h(tn)} hears you on ${h(fmt(w.nextLesson))}: the play-through, below.`}</p>
+      : `<div class="card" style="border-color:var(--ink)"><div class="label">Week complete</div><p style="margin:0">All ${w.sessions.length} days done. Next lesson ${h(fmt(w.nextLesson))}.${br?'':' Rest.'}</p>
         ${br&&!(doc().breakLog||[]).some(x=>x.note&&(x.at||'').slice(0,10)===today())&&!(w.done||[]).some(x=>(x.at||'').slice(0,10)===today())?`<button class="btn block" id="breakStart" style="margin-top:10px">Keep going over the break · start the clock</button>`:''}</div>`;
     const dueSoon=w.nextLesson&&(w.nextLesson===addDays(today(),1)||w.nextLesson===today()); const pulseCard=(dueSoon&&!w.pulse)?`<div class="card" style="border-color:var(--ink)"><div class="label">Before ${h(tn)} sees you</div><p style="margin:0 0 4px">How ready do you feel for the lesson?</p>${scale('puReady')}<p style="margin:0 0 4px">How much did you want to practise this week?</p>${scale('puWant')}<button class="btn block sm" id="pulseSave">Save</button><div class="note" style="margin:6px 0 0">Ten seconds, once a week. ${h(tn)} sees the numbers, not a judgement.</div></div>`:'';
     const pend=pendingDone(w);
@@ -554,15 +562,13 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
         <div class="label" style="margin-top:12px">Tokens · ${Math.min(6,tk.avail%6||(tk.avail>=6?6:0))} of 6</div>
         <div class="tokens">${Array.from({length:6},(_,k)=>`<i class="tok ${k<(tk.avail%6||(tk.avail>=6?6:0))?'on':''}"></i>`).join('')}</div>
         <p style="margin:6px 0 0">${tk.avail>=6?'Ask '+h(tn)+(p.reward?' for '+h(p.reward):' for your reward')+'.':'Each filled circle is a token. '+tk.toNext+' more for '+(p.reward?h(p.reward):'your reward')+'.'}</p>
-        <p style="margin:6px 0 0">${streak()>0?`You have practised ${streak()} ${streak()===1?'day':'days'} in a row!`:'Practise today and the run starts.'}</p></div>
+        <p style="margin:6px 0 0">${evCount(w)>0?`<b>${evCount(w)} ${evCount(w)===1?'day':'days'} practised this week.</b> Every one counts, whatever happened last week.`:'Practise today and this week starts.'}</p></div>
       ${p.goalDate?`<div class="card"><div class="label">${weeksBetween(today(),p.goalDate)} weeks to ${h(p.goalLabel||'your goal')} · ${h(fmtL(p.goalDate))}</div>${staveGoal(doc().weeks,p.goalDate,(p.goalLabel||'Goal')+' · '+fmtS(p.goalDate))}<div class="note" style="margin-top:6px">A note a week. Filled notes are weeks you practised; the double bar line is the day.</div></div>`:''}
-      ${doc().weeks.length>1?`<div class="card"><div class="label">The last ${Math.min(5,doc().weeks.length)} weeks</div>${staveMonth(doc().weeks)}</div>`:''}
-      ${roadHTML(p)}
       <div class="box warn"><div class="label">At the lesson: ask ${h(tn)}</div>
         <div id="flags">${stillDiffersLine(w)?`<div class="flag"><span>${h(stillDiffersLine(w))}</span></div>`:''}${flags.filter(f=>!f.resolved).map(f=>`<div class="flag"><span>${h(f.text)}</span><button class="btn sm quiet" data-unflag="${f.id}" aria-label="Remove">×</button></div>`).join('')||(stillDiffersLine(w)?'':'<div class="note" style="margin:0">Nothing flagged. Type it the moment it happens: a squeak, a question, a breakthrough.</div>')}</div>
         <form id="flagForm" class="row" style="margin-top:8px"><input id="flagText" placeholder="e.g. G string squeaks on down bows" style="flex:1"><button class="btn sm" type="submit">Flag it</button></form>
         <div class="note">${h(tn)} sees these before the lesson starts.</div></div>
-      <div class="grid2" style="margin-top:4px"><button class="btn quiet" id="goGoal">Set or change the goal</button><button class="btn" id="goShare">Share the card</button></div>
+      <div style="margin-top:4px"><button class="btn quiet block" id="goGoal">Set or change the goal</button></div>
       </details>`;
     const tm=$('#trailMore'); if(tm) tm.ontoggle=()=>{ trailMoreOpen=tm.open; };
     const os=$('#ownStart'); if(os) os.onclick=()=>ready(()=>startOwn(i));
@@ -572,7 +578,7 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
     const fp=$('#finishPend'); if(fp) fp.onclick=()=>{ si=pend.i; sess=w.sessions[pend.i]; showDone(); };
     wireRecording(w, tn); wirePassagePupil(w, tn); wireBackingCard(w);
     const b=$('#start'); if(b) b.onclick=()=>ready(()=>startSession(i));
-    $('#goGoal').onclick=()=>renderGoal(true); $('#goShare').onclick=()=>renderShare(true);
+    $('#goGoal').onclick=()=>renderGoal(true);
     $$('[data-xdone]').forEach(x=>x.onclick=()=>{ const e=extras().find(y=>y.id===x.dataset.xdone); if(e){ e.done=true; e.doneAt=new Date().toISOString(); } saveCurrent(); renderTrail(); toast('Done. Nice.'); });
     $$('#prep li[data-k]').forEach(li=>li.onclick=()=>{ w.ticks=w.ticks||[]; const k=+li.dataset.k; w.ticks=w.ticks.includes(k)?w.ticks.filter(x=>x!==k):[...w.ticks,k]; saveCurrent(); renderTrail(false); });
     $$('li[data-x]').forEach(li=>li.onclick=()=>{ const e=extras().find(y=>y.id===li.dataset.x); if(e) e.done=!e.done; saveCurrent(); renderTrail(false); });
@@ -804,14 +810,13 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
     ov.querySelector('video').src=u; ov.querySelector('button').onclick=()=>{ URL.revokeObjectURL(u); ov.remove(); }; document.body.appendChild(ov); }
 
   // the pupil's card on the trail
-  function backingCardHTML(w){ const d=doc(); if(!w||!backingOn(d)) return ''; const tn=d.teacherName||'your teacher'; const ks=(w.backings||[]).slice().sort((a,b)=>b.at.localeCompare(a.at)); const ac=w.accomp;
-    return `<div class="card" id="bkCard"><div class="label">Make it music</div><p style="margin:0 0 10px">Put a band under your playing. Record a snippet and add a backing, or play along with one.</p>
-      <div class="row"><button class="btn sm" id="bkA">Add a backing</button><button class="btn sm quiet" id="bkB">Play along</button></div>
+  function backingCardHTML(w){ const d=doc(); if(!w||!backingOn(d)||!w.accomp) return ''; // creative backings hidden (10 Nov 2026); only the teacher's accompaniment shows const tn=d.teacherName||'your teacher'; const ks=(w.backings||[]).slice().sort((a,b)=>b.at.localeCompare(a.at)); const ac=w.accomp;
+    return `<div class="card" id="bkCard"><div class="label">Play with the accompaniment</div>
       ${ac?`<div class="daybox" style="margin-top:10px"><p style="margin:0 0 8px"><b>${ac.kind==='youtube'?(ac.label?h(ac.label):'The piano part'):'The accompaniment'+(ac.label?': '+h(ac.label):'')}</b>, from ${h(tn)}${ac.kind==='youtube'?', on YouTube':''}.${+ac.target?` Play it through with it ${h(ac.target)} ${+ac.target===1?'time':'times'} this week: <b>${Math.min(w.accompRuns||0,+ac.target)} of ${h(ac.target)}</b>.`:''}</p><button class="btn sm" id="bkC">${ac.kind==='youtube'?'Play with the piano':'Play with the accompaniment'}</button></div>`:''}
       ${ks.length?`<div class="label" style="margin-top:12px">Your tracks this week</div>${ks.map(t=>`<div class="daybox" data-bk="${h(t.id)}"><p style="margin:0">${h(fmt(t.at.slice(0,10)))} ${h(timeOf(t.at))} · ${h(bkLabel(t))}${t.star?' · <b>starred by '+h(tn)+'</b>':''}</p>${t.tNote?`<p class="quote" style="margin:6px 0 0;font-size:17px">“${h(t.tNote)}” <span class="note" style="margin:0">${h(tn)}</span></p>`:''}<div class="row" style="margin-top:6px"><button class="btn sm quiet bkPlay">Play</button><button class="btn sm quiet bkDl">Download</button></div></div>`).join('')}`:''}
       <p class="note" style="margin:8px 0 0">Up to ${BK_MAX} tracks a week. Only you, ${h(tn)} and whoever holds the account can hear them. Making music doesn't change your practice minutes.</p></div>`; }
   function wireBackingCard(w){ if(!$('#bkCard')) return;
-    $('#bkA').onclick=()=>bkStartAfter(null); $('#bkB').onclick=bkStartAlong; const c=$('#bkC'); if(c) c.onclick=w.accomp&&w.accomp.kind==='youtube'?bkStartYoutube:bkStartAccomp;
+    const ba=$('#bkA'); if(ba) ba.onclick=()=>bkStartAfter(null); const bb=$('#bkB'); if(bb) bb.onclick=bkStartAlong; const c=$('#bkC'); if(c) c.onclick=w.accomp&&w.accomp.kind==='youtube'?bkStartYoutube:bkStartAccomp;
     $$('#bkCard [data-bk]').forEach(box=>{ const t=(w.backings||[]).find(x=>x.id===box.dataset.bk); if(!t) return;
       box.querySelector('.bkPlay').onclick=e=>bkToggle(e.currentTarget, t, w);
       box.querySelector('.bkDl').onclick=async()=>{ if(!grownUpOk(doc())) return; if(t.kind==='video'){ const b=await bkBlob(t); if(b) await bkSaveFile(b, `stuckato-${t.at.slice(0,10)}.${(b.type||'').includes('mp4')?'mp4':'webm'}`); else toast('Could not open the recording.'); return; } try{ await bkDownload(await bkWhatOf(t,w), `stuckato-${t.at.slice(0,10)}.wav`); }catch(e){ toast(e.message||'Could not make the file.'); } }; }); }
@@ -1132,7 +1137,7 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
       <div class="note" style="margin:6px 0 0">Work on a skill in 3 sessions and it's getting there; 7 and it's strong; show it at a lesson for the star.</div></div>`; }
   function showDone(){ // the Done screen for session si: what you did, your sentence, how it felt. The token comes with the sentence.
     const w=week(); const d=(w.done||[]).find(x=>x.i===si)||{};
-    $('#doneTitle').textContent=`Day ${doneCount(w)} of ${w.sessions.length}.`+(streak()>0?` That's ${streak()} in a row.`:''); $('#doneSub').textContent=(d.minutes?`${d.minutes} of ${d.target||planMinutes(sess)} minutes${d.own?', on your own':''}. `:(d.own?'Practised on your own. ':`${sess.steps.reduce((a,x)=>a+(+x.minutes||0),0)} minutes. `))+(d.short?'Shorter than planned; your teacher will see why. ':'')+(d.note?'':'Write what changed and the token is yours.');
+    $('#doneTitle').textContent=`Day ${doneCount(w)} of ${w.sessions.length}.`+(evCount(w)>1?` ${evCount(w)} this week.`:' Nicely done.'); $('#doneSub').textContent=(d.minutes?`${d.minutes} of ${d.target||planMinutes(sess)} minutes${d.own?', on your own':''}. `:(d.own?'Practised on your own. ':`${sess.steps.reduce((a,x)=>a+(+x.minutes||0),0)} minutes. `))+(d.short?'Shorter than planned; your teacher will see why. ':'')+(d.note?'':'Write what changed and the token is yours.');
     $('#reflWho').textContent=doc().teacherName||'your teacher'; $('#refl').value=d.note||''; $('#refl').dataset.via=d.noteVia||''; updateReflBtn();
     renderWorked(); $$('#feel button').forEach(b=>{ b.classList.toggle('on', b.dataset.f===d.feel); }); $('#tailor').hidden=true; $('#donePassage').hidden=!w.passage;
     $('#doneJoy').innerHTML=thenNowHTML(w)+surpriseHTML(w, si); show('done'); if(!d.note) playFlourish();
