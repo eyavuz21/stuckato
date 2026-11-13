@@ -550,9 +550,9 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
     v.innerHTML=`
       <div class="chips"><span class="chip">${h(fmt(today()))}</span><span class="chip">Day <b>${Math.min(n+1,w.sessions.length)} of ${w.sessions.length}</b></span><span class="chip">${h(mins)} min <b>set by ${h(tn)}</b></span>${+p.selfMinutes>mins?`<span class="chip">you aim for <b>${h(p.selfMinutes)} min</b></span>`:''}${p.goalDate?`<span class="chip">${h(p.goalLabel||'Goal')} <b>${weeksBetween(today(),p.goalDate)} weeks</b>${goalLight()?' · '+lightHTML():''}</span>`:''}${w.group?`<span class="chip">${h(w.group.name||'Group')} week${p.part?' · '+h(p.part):''}</span>`:''}</div>
       ${pendCard}${todayCard}${pulseCard}${s?'':recCard}${s?recCard:''}
-      ${passagePupilHTML(w, tn)}${breakCard}${habitsHTML(w)}<div id="socialBox"></div><div class="box says"><div class="label">Lesson · ${h(fmt(w.lessonDate||w.createdAt))} · from ${h(tn)}</div><p style="margin:0"><b>What you did well:</b> ${h(w.line||w.encouragement||'Turn up every day and the lesson takes care of itself.')}</p>${(w.checklist||[]).length?`<p style="margin:8px 0 0"><b>What to work on:</b> ${h(w.checklist.join(' · '))}.</p>`:''}
+      ${backingCardHTML(w)}${passagePupilHTML(w, tn)}${breakCard}${habitsHTML(w)}<div id="socialBox"></div><div class="box says"><div class="label">Lesson · ${h(fmt(w.lessonDate||w.createdAt))} · from ${h(tn)}</div><p style="margin:0"><b>What you did well:</b> ${h(w.line||w.encouragement||'Turn up every day and the lesson takes care of itself.')}</p>${(w.checklist||[]).length?`<p style="margin:8px 0 0"><b>What to work on:</b> ${h(w.checklist.join(' · '))}.</p>`:''}
         ${openExtras().map(x=>`<div class="row" style="margin:4px 0 0;justify-content:space-between;flex-wrap:nowrap;align-items:flex-start"><p style="margin:0"><b>News from ${h(tn)}:</b> ${h(x.text)} (${h(fmt(x.at.slice(0,10)))})</p><button class="btn sm quiet" data-xdone="${x.id}" style="flex:none">Done</button></div>`).join('')}</div>
-      ${backingCardHTML(w)}${skillsHTML()}
+      ${skillsHTML()}
       <details class="more" id="trailMore"${trailMoreOpen?' open':''}><summary><span class="more-ic">📖</span><span class="more-txt"><b>Your week at a glance</b><span class="more-stats"><span>Day ${Math.min(n+1,w.sessions.length)}/${w.sessions.length}</span><span class="more-win">${Math.min(6,tk.avail%6||(tk.avail>=6?6:0))}/6 tokens</span>${p.goalDate?`<span>${weeksBetween(today(),p.goalDate)} wks to ${h(p.goalLabel||'goal')}</span>`:''}</span></span><span class="more-chev">›</span></summary>
       <div class="card"><div class="label">${w.sessions.length} days, then ${h(tn)}</div>
         ${s?journeyMap(w, flags, 'top'):''}${s?journeyMap(w, flags, 'bottom'):journeyMap(w, flags, 'all')}
@@ -765,6 +765,8 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
   const BK_FLAG=(()=>{ try{ const q=new URLSearchParams(location.search).get('backing'); if(q==='1') sessionStorage.setItem('stuckato.backing','1'); if(q==='0') sessionStorage.removeItem('stuckato.backing'); return sessionStorage.getItem('stuckato.backing')==='1'; }catch(e){ return false; } })();
   const backingOn=d=>!!window.BackingAudio&&(BK_FLAG||!!(d&&d.profile&&d.profile.backing));
   const BK_MAX=5;
+  // the week's passage (note-by-note comparison) is off: pitch matching on a phone isn't reliable enough to tell a pupil a note is wrong (13 Nov 2026). ?passage=1 brings it back for testing.
+  const PASSAGE_ON=(()=>{ try{ return new URLSearchParams(location.search).get('passage')==='1'; }catch(e){ return false; } })();
   const IDB={ db:null,
     open(){ return this.db||(this.db=new Promise((res,rej)=>{ const r=indexedDB.open('stuckato-audio',1); r.onupgradeneeded=()=>r.result.createObjectStore('blobs'); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); })); },
     async run(mode, fn){ const db=await this.open(); return await new Promise((res,rej)=>{ const tx=db.transaction('blobs',mode); const q=fn(tx.objectStore('blobs')); tx.oncomplete=()=>res(q&&q.result); tx.onerror=()=>rej(tx.error); }); },
@@ -810,9 +812,9 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
     ov.querySelector('video').src=u; ov.querySelector('button').onclick=()=>{ URL.revokeObjectURL(u); ov.remove(); }; document.body.appendChild(ov); }
 
   // the pupil's card on the trail
-  function backingCardHTML(w){ const d=doc(); if(!w||!backingOn(d)||!w.accomp) return ''; // creative backings hidden (10 Nov 2026); only the teacher's accompaniment shows const tn=d.teacherName||'your teacher'; const ks=(w.backings||[]).slice().sort((a,b)=>b.at.localeCompare(a.at)); const ac=w.accomp;
-    return `<div class="card" id="bkCard"><div class="label">Play with the accompaniment</div>
-      ${ac?`<div class="daybox" style="margin-top:10px"><p style="margin:0 0 8px"><b>${ac.kind==='youtube'?(ac.label?h(ac.label):'The piano part'):'The accompaniment'+(ac.label?': '+h(ac.label):'')}</b>, from ${h(tn)}${ac.kind==='youtube'?', on YouTube':''}.${+ac.target?` Play it through with it ${h(ac.target)} ${+ac.target===1?'time':'times'} this week: <b>${Math.min(w.accompRuns||0,+ac.target)} of ${h(ac.target)}</b>.`:''}</p><button class="btn sm" id="bkC">${ac.kind==='youtube'?'Play with the piano':'Play with the accompaniment'}</button></div>`:''}
+  function backingCardHTML(w){ const d=doc(); if(!w||!w.accomp) return ''; /* creative backings hidden (10 Nov 2026); only the teacher's accompaniment shows */ const tn=d.teacherName||'your teacher'; const ks=(w.backings||[]).slice().sort((a,b)=>b.at.localeCompare(a.at)); const ac=w.accomp;
+    return `<div class="card" id="bkCard" style="border-color:var(--ink)"><div class="label" style="color:var(--ink)">This week's backing track</div>
+      ${ac?`<div class="daybox" style="margin-top:10px"><p style="margin:0 0 8px"><b>${ac.kind==='youtube'?(ac.label?h(ac.label):'The piano part'):'The accompaniment'+(ac.label?': '+h(ac.label):'')}</b>, from ${h(tn)}${ac.kind==='youtube'?', on YouTube':''}.${+ac.target?` Play it through with it ${h(ac.target)} ${+ac.target===1?'time':'times'} this week: <b>${Math.min(w.accompRuns||0,+ac.target)} of ${h(ac.target)}</b>.`:''}</p><button class="btn block" id="bkC">Play with the backing track</button></div>`:''}
       ${ks.length?`<div class="label" style="margin-top:12px">Your tracks this week</div>${ks.map(t=>`<div class="daybox" data-bk="${h(t.id)}"><p style="margin:0">${h(fmt(t.at.slice(0,10)))} ${h(timeOf(t.at))} · ${h(bkLabel(t))}${t.star?' · <b>starred by '+h(tn)+'</b>':''}</p>${t.tNote?`<p class="quote" style="margin:6px 0 0;font-size:17px">“${h(t.tNote)}” <span class="note" style="margin:0">${h(tn)}</span></p>`:''}<div class="row" style="margin-top:6px"><button class="btn sm quiet bkPlay">Play</button><button class="btn sm quiet bkDl">Download</button></div></div>`).join('')}`:''}
       <p class="note" style="margin:8px 0 0">Up to ${BK_MAX} tracks a week. Only you, ${h(tn)} and whoever holds the account can hear them. Making music doesn't change your practice minutes.</p></div>`; }
   function wireBackingCard(w){ if(!$('#bkCard')) return;
@@ -1139,7 +1141,7 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
     const w=week(); const d=(w.done||[]).find(x=>x.i===si)||{};
     $('#doneTitle').textContent=`Day ${doneCount(w)} of ${w.sessions.length}.`+(evCount(w)>1?` ${evCount(w)} this week.`:' Nicely done.'); $('#doneSub').textContent=(d.minutes?`${d.minutes} of ${d.target||planMinutes(sess)} minutes${d.own?', on your own':''}. `:(d.own?'Practised on your own. ':`${sess.steps.reduce((a,x)=>a+(+x.minutes||0),0)} minutes. `))+(d.short?'Shorter than planned; your teacher will see why. ':'')+(d.note?'':'Write what changed and the token is yours.');
     $('#reflWho').textContent=doc().teacherName||'your teacher'; $('#refl').value=d.note||''; $('#refl').dataset.via=d.noteVia||''; updateReflBtn();
-    renderWorked(); $$('#feel button').forEach(b=>{ b.classList.toggle('on', b.dataset.f===d.feel); }); $('#tailor').hidden=true; $('#donePassage').hidden=!w.passage;
+    renderWorked(); $$('#feel button').forEach(b=>{ b.classList.toggle('on', b.dataset.f===d.feel); }); $('#tailor').hidden=true; $('#donePassage').hidden=!(PASSAGE_ON?w.passage:w.accomp); $('#donePassage').textContent=PASSAGE_ON&&w.passage?"Then record the week's passage":'Then play with the backing track';
     $('#doneJoy').innerHTML=thenNowHTML(w)+surpriseHTML(w, si); show('done'); if(!d.note) playFlourish();
   }
   function updateReflBtn(){ const ok=$('#refl').value.trim().length>=20; const b=$('#doneBack'); b.disabled=!ok; b.textContent=ok?'Done for today':'Write a sentence to finish'; $('#reflHint').textContent=ok?'':'A sentence or two, or tap Dictate and say it.'; }
@@ -1164,7 +1166,7 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
       t.innerHTML=`<div class="label">Which bit?</div><ul class="ticks" id="hardList">${items.map(it=>`<li class="${d?.hard===it?'on':''}" data-hb="${h(it)}"><i></i><span>${h(it)}</span></li>`).join('')}</ul><p class="note" id="hardNote" style="margin:6px 0 0">${d?.hard?'Noted for the next lesson. Hard days count double.':'Tap the one that was hard. It goes to '+h(doc().teacherName||'your teacher')+' for the next lesson.'}</p>`;
       $$('#hardList li').forEach(li=>li.onclick=()=>{ const it=li.dataset.hb; const f=doc().flags=doc().flags||[]; if(d.hard){ const old=f.find(x=>x.id===d.hardFlag); if(old) old.text='Hard: '+it; } else { const id=uid(); f.push({id, text:'Hard: '+it, at:new Date().toISOString(), resolved:false, by:'pupil'}); d.hardFlag=id; } d.hard=it; saveCurrent(); b.onclick(); }); }
     else t.innerHTML = b.dataset.f==='Easy'?'<b>Easy.</b> Good to know; your teacher will see it and can move you on.':'<b>Noted.</b> Steady is the point. Sleep does the rest.'; });
-  $('#donePassage').onclick=()=>{ const w=week(); const d=(w.done||[]).find(x=>x.i===si); if(d&&!d.note){ toast('Write the sentence first.'); return; } renderJourney(true); const c=$('#pgCard'); if(c) c.scrollIntoView({behavior:'smooth',block:'center'}); };
+  $('#donePassage').onclick=()=>{ const w=week(); const d=(w.done||[]).find(x=>x.i===si); if(d&&!d.note){ toast('Write the sentence first.'); return; } if(!(PASSAGE_ON&&w.passage)&&w.accomp){ (w.accomp.kind==='youtube'?bkStartYoutube:bkStartAccomp)(); return; } renderJourney(true); const c=$('#pgCard'); if(c) c.scrollIntoView({behavior:'smooth',block:'center'}); };
   $('#doneBack').onclick=()=>{ const w=week(); const d=(w.done||[]).find(x=>x.i===si); const txt=$('#refl').value.trim(); if(!d||txt.length<20){ updateReflBtn(); return; }
     const first=!d.note; d.note=txt; d.noteVia=$('#refl').dataset.via||'typed'; d.noteAt=new Date().toISOString();
     const onBreak=!!breakInfo();
@@ -1231,7 +1233,7 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
     return `an extra ${sp.got} heard`; }
   function spanLen(sp){ return Math.max(0.4, sp.te-sp.t); }
   function takeSrc(t){ return t&&(t.url||t.data)||''; }
-  function passageTeacherHTML(w, d, p){
+  function passageTeacherHTML(w, d, p){ if(!PASSAGE_ON) return '';
     const pg=w.passage; const takes=(w.takes||[]).slice().sort((a,b)=>(b.at||'').localeCompare(a.at||''));
     const chordal=isChordal(p.instrument)?`<div class="note" style="margin:6px 0 0">${h(p.instrument)}: Stuckato hears one note at a time, so chords and two hands will give rough spots. Treat them as places to listen, nothing more.</div>`:'';
     if(!pg) return `<div class="label" style="margin-top:12px">The week's passage</div><div class="daybox"><p style="margin:0 0 8px">Record the few bars that matter this week, once, the way you want them to sound. ${h(p.name||'The pupil')} records the same bars after a session; Stuckato lines the two up and shows you both where they differ. You decide what it means.</p>
@@ -1249,7 +1251,7 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
         :`<div class="note">No take yet. After a session ${h(p.name||'the pupil')} records these bars; each day's take appears here with the spots to listen to.</div>`}</div>`;
   }
   let pgBlob=null, pgNotes=null, pgSeconds=0, pgCap=null;
-  function wirePassageTeacher(w, d, p){
+  function wirePassageTeacher(w, d, p){ if(!PASSAGE_ON) return;
     const rb=$('#pgRec'); const a=$('#pgAudio'); const st=$('#pgStatus');
     if(rb){
       rb.onclick=async()=>{
@@ -1273,7 +1275,7 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
     $$('[data-pgask]').forEach(b=>b.onclick=()=>{ const t=sorted[+b.dataset.pgask]; if(!t) return; const q=prompt('Ask '+(p.name||'them')+' about the passage (day '+(t.i+1)+'):'); if(!q||!q.trim()) return; d.extras=d.extras||[]; d.extras.push({id:uid(), text:'About the passage (day '+(t.i+1)+'): '+q.trim(), at:new Date().toISOString(), done:false, by:me?.name||''}); t.ask=true; t.heard=true; saveCurrent(); renderTStudent(); toast('Sent.'); });
   }
   function passagePupilHTML(w, tn){ // the pupil's card: hear the teacher's bars, record the same bars, see where they differ
-    const pg=w.passage; if(!pg) return ''; const takes=w.takes||[]; const src=takeSrc(pg);
+    const pg=w.passage; if(!pg||!PASSAGE_ON) return ''; const takes=w.takes||[]; const src=takeSrc(pg);
     return `<div class="card" id="pgCard" style="border-color:var(--ink)"><div class="label" style="color:var(--ink)">The week's passage · from ${h(tn)}</div>
       <p style="margin:0 0 8px"><b>${h(pg.label||'The bars that matter this week')}</b>. ${pg.notes.length} notes, ${pg.seconds||''} seconds, played by ${h(tn)}.</p>
       <div class="row">${src?`<button class="btn sm quiet" id="ppPlay">Play</button><button class="btn sm quiet" id="ppSlow">Play slowly</button>`:''}<button class="btn sm" id="ppRec">Record mine</button></div>
