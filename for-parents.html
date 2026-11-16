@@ -33,7 +33,7 @@ h2{font-size:clamp(1.15rem,3.4vw,1.4rem); line-height:1.15}
 h3{font-size:1rem}
 p{margin:0}
 .brand{display:flex; align-items:center; gap:10px}
-.brand svg{width:30px; height:30px; display:block}
+.brand svg{height:30px; width:auto; display:block}
 .brand .name{font-weight:800; font-size:20px; letter-spacing:-.02em}
 .slogan{font-size:15px; font-weight:600; letter-spacing:.04em; color:var(--muted); margin:0.7px 0 26px}
 .lede{margin-top:14px; color:var(--muted); font-size:1.05rem; max-width:56ch}
@@ -83,17 +83,7 @@ footer p+p{margin-top:6px}
 
   <header>
     <div class="brand">
-      <svg viewBox="0 0 256 256" role="img" aria-label="Stuckato" xmlns="http://www.w3.org/2000/svg">
-        <g transform="translate(0 -3.1)">
-          <g transform="translate(17 0) scale(0.85)">
-            <path d="M172 82C170 58 140 50 120 54C96 59 82 76 86 96C91 120 126 128 150 138C176 149 186 166 178 186C168 210 132 218 108 210C90 204 80 192 76 176"
-                  fill="none" stroke="#000000" stroke-width="35.07" stroke-linecap="round" stroke-linejoin="round"/>
-          </g>
-          <circle cx="65.9" cy="222.2" r="14.9" fill="#000000"/>
-          <circle cx="190.1" cy="222.2" r="14.9" fill="#000000"/>
-        </g>
-      </svg>
-      <span class="name">Stuckato</span>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="-85.63 -98.97 469.83 114.5" role="img" aria-label="Stuckato"><g transform="translate(-36.77 -41.72)"><g transform="translate(-35.57 40.85) scale(0.59738)"><path d="M76.44 -141.96C45.76 -141.96 24.44 -126.36 24.44 -98.8C24.44 -80.6 34.32 -70.72 52.52 -58.24C67.6 -47.84 72.28 -41.08 72.28 -30.68C72.28 -19.24 62.4 -7.28 45.76 -7.28C32.76 -7.28 23.92 -11.44 23.92 -15.08C23.92 -17.68 27.04 -16.64 32.76 -20.28C37.44 -23.4 40.04 -28.6 40.04 -35.36C40.04 -45.76 31.2 -52.52 21.32 -52.52C8.84 -52.52 0 -42.12 0 -28.08C0 -10.92 17.68 5.2 45.24 5.2C79.04 5.2 105.04 -13 105.04 -43.16C105.04 -57.72 99.84 -68.64 79.56 -83.72C60.84 -97.76 54.6 -103.48 54.6 -113.36C54.6 -121.68 60.84 -130.52 76.96 -130.52C85.8 -130.52 93.08 -128.44 93.08 -124.8C93.08 -122.72 90.48 -122.72 86.84 -120.12C83.72 -117.52 81.64 -113.36 81.64 -107.64C81.64 -97.24 89.44 -91 99.84 -91C112.32 -91 119.08 -100.88 119.08 -110.76C119.08 -130 102.96 -141.96 76.44 -141.96Z" fill="#000000"/></g></g><path d="M31.8 0.6Q21.9 0.6 16.45 -4.75Q11 -10.1 11 -19.7V-41.6H1.8V-54.6H2.3Q6.5 -54.6 8.75 -56.7Q11 -58.8 11 -63V-67H26V-54.6H38.8V-41.6H26V-20.7Q26 -17.9 27 -16.05Q28 -14.2 30.1 -13.3Q32.2 -12.4 35.3 -12.4Q36 -12.4 36.9 -12.5Q37.8 -12.6 38.8 -12.7V0Q37.3 0.2 35.4 0.4Q33.5 0.6 31.8 0.6Z M65.2 1.2Q58.6 1.2 53.95 -1.65Q49.3 -4.5 46.9 -9.6Q44.5 -14.7 44.5 -21.5V-54.6H59.5V-22.7Q59.5 -19.6 60.75 -17.25Q62 -14.9 64.3 -13.6Q66.6 -12.3 69.5 -12.3Q72.5 -12.3 74.75 -13.6Q77 -14.9 78.25 -17.25Q79.5 -19.6 79.5 -22.7V-54.6H94.5V0H80.5V-10.8L81.3 -8.4Q79.4 -3.5 75.15 -1.15Q70.9 1.2 65.2 1.2Z M130.3 1.2Q122.1 1.2 115.55 -2.55Q109 -6.3 105.15 -12.8Q101.3 -19.3 101.3 -27.4Q101.3 -35.5 105.1 -41.95Q108.9 -48.4 115.5 -52.1Q122.1 -55.8 130.3 -55.8Q136.4 -55.8 141.6 -53.7Q146.8 -51.6 150.5 -47.85Q154.2 -44.1 155.8 -39L142.8 -33.4Q141.4 -37.5 138.05 -39.9Q134.7 -42.3 130.3 -42.3Q126.4 -42.3 123.35 -40.4Q120.3 -38.5 118.55 -35.1Q116.8 -31.7 116.8 -27.3Q116.8 -22.9 118.55 -19.5Q120.3 -16.1 123.35 -14.2Q126.4 -12.3 130.3 -12.3Q134.8 -12.3 138.1 -14.7Q141.4 -17.1 142.8 -21.2L155.8 -15.5Q154.3 -10.7 150.6 -6.9Q146.9 -3.1 141.7 -0.95Q136.5 1.2 130.3 1.2Z M162.6 0V-75.7H177.6V-27.2L172 -29L196.1 -54.6H214.6L194.8 -32.6L214.5 0H197.5L181 -27.7L189.7 -29.9L173 -11.7L177.6 -20.4V0Z M236.1 1.2Q230.2 1.2 225.9 -0.7Q221.6 -2.6 219.3 -6.15Q217 -9.7 217 -14.6Q217 -19.2 219.1 -22.75Q221.2 -26.3 225.55 -28.7Q229.9 -31.1 236.4 -32.1L253.1 -34.8V-23.8L239.1 -21.3Q235.9 -20.7 234.2 -19.25Q232.5 -17.8 232.5 -15.1Q232.5 -12.6 234.4 -11.2Q236.3 -9.8 239.1 -9.8Q242.8 -9.8 245.6 -11.4Q248.4 -13 249.95 -15.75Q251.5 -18.5 251.5 -21.8V-36Q251.5 -39.1 249.05 -41.2Q246.6 -43.3 242.4 -43.3Q238.4 -43.3 235.35 -41.1Q232.3 -38.9 230.9 -35.3L218.9 -41Q220.5 -45.6 224 -48.9Q227.5 -52.2 232.4 -54Q237.3 -55.8 243.1 -55.8Q250 -55.8 255.3 -53.3Q260.6 -50.8 263.55 -46.35Q266.5 -41.9 266.5 -36V0H252.5V-8.8L255.9 -9.4Q253.5 -5.8 250.6 -3.45Q247.7 -1.1 244.1 0.05Q240.5 1.2 236.1 1.2Z M300.8 0.6Q290.9 0.6 285.45 -4.75Q280 -10.1 280 -19.7V-41.6H270.8V-54.6H271.3Q275.5 -54.6 277.75 -56.7Q280 -58.8 280 -63V-67H295V-54.6H307.8V-41.6H295V-20.7Q295 -17.9 296 -16.05Q297 -14.2 299.1 -13.3Q301.2 -12.4 304.3 -12.4Q305 -12.4 305.9 -12.5Q306.8 -12.6 307.8 -12.7V0Q306.3 0.2 304.4 0.4Q302.5 0.6 300.8 0.6Z M341.7 1.2Q333.6 1.2 326.95 -2.5Q320.3 -6.2 316.35 -12.65Q312.4 -19.1 312.4 -27.3Q312.4 -35.6 316.35 -42Q320.3 -48.4 326.95 -52.1Q333.6 -55.8 341.7 -55.8Q349.8 -55.8 356.4 -52.1Q363 -48.4 366.95 -42Q370.9 -35.6 370.9 -27.3Q370.9 -19.1 366.95 -12.65Q363 -6.2 356.4 -2.5Q349.8 1.2 341.7 1.2ZM341.7 -12.3Q345.8 -12.3 348.85 -14.2Q351.9 -16.1 353.65 -19.5Q355.4 -22.9 355.4 -27.3Q355.4 -31.7 353.65 -35.05Q351.9 -38.4 348.85 -40.35Q345.8 -42.3 341.7 -42.3Q337.6 -42.3 334.5 -40.35Q331.4 -38.4 329.65 -35.05Q327.9 -31.7 327.9 -27.3Q327.9 -22.9 329.65 -19.5Q331.4 -16.1 334.5 -14.2Q337.6 -12.3 341.7 -12.3Z" fill="#000000"/></svg>
     </div>
     <p class="slogan">Short bursts. Real progress.</p>
 
@@ -185,10 +175,10 @@ footer p+p{margin-top:6px}
     <h3>What we record</h3>
     <ul>
       <li>Days practised and minutes, from the app's clock or the paper diary.</li>
-      <li>Which sessions were finished, and an optional sentence from your child about how it went.</li>
-      <li>Two questions once a week: how ready they feel for the lesson, and how much they wanted to practise (both 1 to 5).</li>
-      <li>Attendance and two ratings from the teacher after each lesson: prepared, and progress since last time.</li>
-      <li>A short recording, only if your child chooses to send a play-through to the teacher.</li>
+      <li>Which sessions were finished, and one sentence from your child about how it went. They can type it or say it out loud: the phone or tablet turns speech into text, and only the text is saved. We never receive or keep the voice.</li>
+      <li>Two questions once a week: how ready they feel for the lesson, and how much they wanted to practise. Each is a number from 1 (not at all) to 5 (completely).</li>
+      <li>Attendance and two ratings from the teacher after each lesson: how prepared your child was, from 1 (not prepared) to 5 (fully prepared), and their progress since the last lesson, from 1 (none) to 5 (a great deal).</li>
+      <li>A sound recording of your child playing, only if they choose to play along with a backing track. It goes to the teacher to listen to. It is sound only, never video for anyone under 18, and for a child under 13 the app asks a grown-up before it is saved.</li>
     </ul>
     <h3>Who sees it</h3>
     <p>
@@ -204,8 +194,8 @@ footer p+p{margin-top:6px}
     <p>
       Taking part is up to you, and saying no changes nothing about your child's lessons. You can stop at any time, without
       giving a reason, by telling the teacher. <strong>We will delete your child's data if you ask.</strong> If you stop partway
-      through, we leave out what was collected unless you are happy for us to keep it. If your child is young, the account is
-      held by you; they still do the practising themselves.
+      through, we leave out what was collected up to then, unless you are happy for us to keep it. If your child is under 13, the account is
+      held by you; they still do the practising themselves. Pupils aged 13 or over can hold their own account.
     </p>
   </section>
 
