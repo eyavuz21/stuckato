@@ -5,24 +5,25 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Stuckato</title>
 <meta name="description" content="Short bursts. Real progress. Couch to 5K for practising an instrument, in a choir or in an orchestra. Your teacher sets the week; Stuckato gets you to practise every day.">
-<link rel="icon" type="image/svg+xml" href="icon-tile.svg?v=13"><link rel="apple-touch-icon" href="icon-192.png?v=13"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#F5E4CA">
+<link rel="icon" type="image/svg+xml" href="icon-tile.svg?v=13"><link rel="apple-touch-icon" href="icon-192.png?v=13"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#F7F7F5">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Outfit:wght@400;500;600;700;800&display=swap">
 <style>
-/* One theme: beige paper, black ink (the logo's colours, reversed 22 Sep 2026). */
+/* One theme: black and white, Bricolage Grotesque for headings and Outfit for text (22 Nov 2026; was beige paper and orange). */
 :root{
-  --paper:#F5E4CA; --stave:#E6D2B2; --card:#FBF1E0; --ink:#000000; --muted:#6F6350; --line:#D4BF9E;
-  --amber:#000000; --amber-ink:#F5E4CA; --varnish:#000000; --sage:#4A4436; --gold:#000000; --danger:#A8372A;
-  --tintA:#EFDCC0; --tintB:#F2E2CA; --tintC:#E9D5B6; --shadow:0 10px 26px rgba(74,52,16,.16);
-  --ok:#2E6B44; --warn:#8A5A12;
-  /* One accent, used ONLY for moments of progress (10 Nov 2026): the colour comes to mean 'I did something'. */
-  --win:#E8572A; --win-soft:#F8C7A6; --win-ink:#000000;
+  --paper:#F7F7F5; --stave:#EFEFEB; --card:#FFFFFF; --ink:#0A0A0A; --muted:#5A5A5A; --line:#E2E2DE;
+  --amber:#0A0A0A; --amber-ink:#FFFFFF; --varnish:#0A0A0A; --sage:#3D3D3D; --gold:#0A0A0A; --danger:#9B2C2C;
+  --tintA:#EFEFEC; --tintB:#F2F2EF; --tintC:#E9E9E6; --shadow:0 10px 26px rgba(0,0,0,.10);
+  --ok:#1F5C3A; --warn:#7A5512;
+  /* Wins: in black and white the "I did something" moments are solid black, with a soft grey for work in progress. */
+  --win:#0A0A0A; --win-soft:#E9E9E6; --win-ink:#FFFFFF;
+  --display:"Bricolage Grotesque", "Outfit", system-ui, sans-serif;
   color-scheme: light;
 }
 *{box-sizing:border-box}
 html,body{margin:0}
-body{background:var(--paper) repeating-linear-gradient(0deg, transparent 0 34px, var(--stave) 34px 35px); color:var(--ink); font-family:"Plus Jakarta Sans", system-ui, sans-serif; font-size:17px; line-height:1.45; min-height:100vh; font-weight:500}
-h1,h2,h3{font-family:"Plus Jakarta Sans", system-ui, sans-serif; font-weight:800; letter-spacing:-.01em; margin:0; text-wrap:balance}
+body{background:var(--paper); color:var(--ink); font-family:"Outfit", system-ui, sans-serif; font-size:17px; line-height:1.45; min-height:100vh; font-weight:500}
+h1,h2,h3,.big{font-family:var(--display); font-weight:800; letter-spacing:-.015em; margin:0; text-wrap:balance}
 a{color:var(--amber)}
 button{font:inherit; cursor:pointer}
 input,select,textarea{font:inherit; color:var(--ink); background:var(--card); border:1px solid var(--line); border-radius:12px; padding:10px 12px; width:100%}
@@ -91,7 +92,7 @@ html.clean #demoBar,html.clean #startbar{display:none!important}
 .tabs button{flex:1; background:none; border:none; font-size:13.5px; font-weight:800; color:var(--muted); padding:6px 2px; border-radius:10px}
 .tabs button.on{color:var(--amber)}
 #startbar{position:fixed; left:0; right:0; bottom:0; padding:10px 16px 16px; background:var(--card); border-top:1px solid var(--line); z-index:5} #startbar .btn{margin:0} #startbar .row{gap:8px} #startbar .row .btn{flex:1}
-.tabs button span{display:block; font-family:"Plus Jakarta Sans", system-ui, sans-serif; font-size:22px; line-height:1; margin-bottom:3px}
+.tabs button span{display:block; font-family:var(--display); font-size:22px; line-height:1; margin-bottom:3px}
 .view{display:none} .view.on{display:block}
 .dots{display:inline-flex; gap:8px; align-items:center; vertical-align:middle}
 .dot{width:14px; height:14px; border-radius:50%; border:2px solid var(--line)} .dot.done{background:var(--amber); border-color:var(--amber)} .dot.now{border-color:var(--amber)}
@@ -101,7 +102,7 @@ html.clean #demoBar,html.clean #startbar{display:none!important}
 .ring{width:210px; height:210px; margin:6px auto 10px; position:relative}
 .ring svg{width:100%; height:100%; transform:rotate(-90deg)}
 .ring .t{position:absolute; inset:0; display:grid; place-items:center; text-align:center}
-.ring .t b{font-family:"Plus Jakarta Sans", system-ui, sans-serif; font-weight:400; font-size:50px; line-height:1; display:block; color:var(--varnish)}
+.ring .t b{font-family:var(--display); font-weight:800; font-size:50px; line-height:1; display:block; color:var(--varnish)}
 .ring .t span{font-size:12px; color:var(--muted); letter-spacing:.06em; text-transform:uppercase}
 .steps{list-style:none; margin:10px 0 0; padding:0}
 .steps li{display:flex; justify-content:space-between; padding:8px 0; border-top:1px solid var(--line); color:var(--muted); font-size:14.5px}
@@ -122,9 +123,9 @@ details.defs summary{cursor:pointer; font-weight:700} details.defs dl{margin:8px
 .check li i{width:18px; height:18px; border-radius:5px; border:1.5px solid var(--line); flex:none; margin-top:3px; background:var(--card)}
 .check li.on i{background:var(--amber); border-color:var(--amber)} .check li.on{color:var(--muted); text-decoration:line-through}
 
-.jmap{display:block; width:100%; height:auto; margin:6px 0} .jmap text{font-family:"Plus Jakarta Sans", system-ui, sans-serif} .jmap .t{font-size:14px; font-weight:800; fill:var(--ink)} .jmap .t.now{fill:var(--amber)} .jmap .m{font-size:14px; font-weight:600; fill:var(--muted)} .jmap .s{font-size:12px; font-weight:600; fill:var(--muted)}
+.jmap{display:block; width:100%; height:auto; margin:6px 0} .jmap text{font-family:"Outfit", system-ui, sans-serif} .jmap .t{font-size:14px; font-weight:800; fill:var(--ink)} .jmap .t.now{fill:var(--amber)} .jmap .m{font-size:14px; font-weight:600; fill:var(--muted)} .jmap .s{font-size:12px; font-weight:600; fill:var(--muted)}
 .box.warn{border-color:var(--danger)} .box.warn .label{color:var(--danger)}
-.stave-week{display:block; width:100%; height:auto; margin:6px 0 2px} .stave-week text{font-family:"Plus Jakarta Sans", system-ui, sans-serif; font-weight:800; font-size:13px; fill:var(--muted)}
+.stave-week{display:block; width:100%; height:auto; margin:6px 0 2px} .stave-week text{font-family:"Outfit", system-ui, sans-serif; font-weight:800; font-size:13px; fill:var(--muted)}
 .ticks{list-style:none; padding:0; margin:8px 0 0} .ticks li{display:flex; align-items:center; gap:12px; padding:12px 14px; border:1.5px solid var(--line); border-radius:16px; margin-bottom:8px; font-weight:700; font-size:17px; background:var(--card); cursor:pointer} .ticks li i{width:26px; height:26px; border-radius:8px; border:2px solid var(--line); flex:none; display:inline-block} .ticks li.on{border-color:var(--amber); background:var(--tintC)} .ticks li.on i{background:var(--amber); border-color:var(--amber)}
 .tokens{display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-top:6px}
 .tok{width:18px; height:18px; border-radius:50%; background:var(--stave); border:1.5px solid var(--line)} .tok.on{background:var(--win); border-color:var(--ink); animation:pop .45s ease-out both}
@@ -141,7 +142,7 @@ dialog{border:none; border-radius:22px; padding:0; width:min(560px,92vw); backgr
 dialog::backdrop{background:rgba(0,0,0,.65)} dialog .in{padding:22px} dialog h2{font-size:26px; margin-bottom:10px}
 .dlgrow{display:flex; gap:8px; justify-content:flex-end; margin-top:14px}
 .session-preview .s{border-top:1px solid var(--line); padding:10px 0}
-.session-preview .s b{font-family:"Plus Jakarta Sans", system-ui, sans-serif; font-weight:400; font-size:20px}
+.session-preview .s b{font-family:var(--display); font-weight:800; font-size:20px}
 .session-preview ol{margin:4px 0 0; padding-left:18px; font-size:14px; color:var(--muted)}
 .hero{padding:10px 0 6px}
 .hero h2{font-size:44px; line-height:1.02; color:var(--varnish); margin-bottom:10px}
@@ -151,7 +152,7 @@ dialog::backdrop{background:rgba(0,0,0,.65)} dialog .in{padding:22px} dialog h2{
 .rec{display:inline-flex; align-items:center; gap:8px}
 .rec .blink{width:10px; height:10px; border-radius:50%; background:var(--danger); animation:blink 1s infinite}
 @keyframes blink{50%{opacity:.2}}
-.script{font-family:"Plus Jakarta Sans", system-ui, sans-serif; font-size:19px; line-height:1.45; padding:14px 16px; background:var(--tintA); border-radius:14px; border:1px solid var(--line)}
+.script{font-family:"Outfit", system-ui, sans-serif; font-size:19px; line-height:1.45; padding:14px 16px; background:var(--tintA); border-radius:14px; border:1px solid var(--line)}
 .mic{width:auto; padding:8px 12px; font-size:13px}
 .demo-bar{position:sticky; top:0; z-index:6; background:var(--varnish); color:var(--paper); padding:8px 12px; border-radius:12px; margin-bottom:12px; display:flex; gap:8px; align-items:center; flex-wrap:wrap; font-size:13.5px}
 .demo-bar .seg{display:inline-flex; border-radius:999px; overflow:hidden; border:1px solid rgba(245,228,202,.32)}
@@ -190,6 +191,43 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
 .skill.getting{border-left:8px solid var(--win)}
 .feel button.on{background:var(--win) !important; color:var(--win-ink) !important; border-color:var(--ink) !important}
 .check li.on i, .ticks li.on i{background:var(--win) !important; border-color:var(--ink) !important} .ticks li.on{border-color:var(--ink) !important; background:var(--win-soft) !important}
+/* games (22 Nov 2026): the smiling quaver, the mystery tune and records, warm-ups, treat box, quiz */
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes noteFall{0%{transform:translateY(-60px) rotate(-15deg);opacity:1}100%{transform:translateY(105vh) rotate(220deg);opacity:.1}}
+@keyframes gpulse{0%{box-shadow:0 0 0 0 rgba(10,10,10,.28)}100%{box-shadow:0 0 0 12px rgba(10,10,10,0)}}
+.bob{animation:bob 1.6s ease-in-out infinite} .spin{animation:spin 1.8s linear infinite}
+.conf{position:fixed; inset:0; pointer-events:none; z-index:80; overflow:hidden} .conf span{position:absolute; top:0; font-weight:800; animation:noteFall 2.7s ease-in forwards}
+.g-hero{display:flex; align-items:center; gap:14px; margin:4px 0 14px}
+.g-ring{position:relative; width:92px; height:92px; flex:none} .g-ring svg{position:absolute; inset:0} .g-mascot{position:absolute; left:22px; top:16px}
+.g-arc{transition:stroke-dashoffset 1.1s cubic-bezier(.2,.8,.2,1)}
+.g-hi{font-size:27px; line-height:1.08}
+.g-tune .stave{position:relative; height:70px; margin:8px 0 4px}
+.st-line{position:absolute; left:0; right:0; height:1px; background:var(--ink)}
+.st-head{position:absolute; width:15px; height:11px; border-radius:50%; transform:rotate(-20deg); border:1.5px dashed var(--muted); box-sizing:border-box; background:var(--card)}
+.st-head.on{background:var(--ink); border:1.5px solid var(--ink)} .st-head.now{border:1.5px solid var(--ink); animation:gpulse 1.4s ease-out infinite}
+.st-ledger{position:absolute; width:23px; height:1px; background:var(--muted)} .st-sharp{position:absolute; font-size:15px; font-weight:700}
+.shelf{display:grid; gap:4px; text-align:center; margin-top:6px} .shelf small{display:block; font-size:11px; color:var(--muted); font-weight:600} .shelf small.b{color:var(--ink); font-weight:800}
+.rec{display:grid; place-items:center; width:26px; height:26px; margin:0 auto 2px; border-radius:50%; border:1.5px dashed var(--muted)} .rec i{width:8px; height:8px; border-radius:50%}
+.rec.on{background:repeating-radial-gradient(circle,#0A0A0A 0 1.5px,#2A2A2A 1.5px 3px); border:1.5px solid #0A0A0A} .rec.on i{background:#D8D8D4} .rec.now{border:1.5px solid var(--ink); animation:gpulse 1.4s ease-out infinite}
+.g-today .g-title{font-size:23px; line-height:1.1; margin:2px 0 10px}
+.g-steps{display:flex; flex-wrap:wrap; gap:6px; margin:0 0 12px} .g-steps span{font-size:13px; font-weight:700; padding:5px 10px; border-radius:999px; background:var(--tintC)}
+#start{animation:gpulse 1.6s ease-out infinite}
+.g-cliff{border:2px dashed var(--muted)} .g-deck{display:flex; align-items:center; justify-content:space-between; gap:12px}
+.g-unlock{font-size:14px; color:var(--muted); margin:0 2px 14px}
+.g-screen{display:flex; flex-direction:column; align-items:center; text-align:center; gap:12px; padding:10px 0 20px; max-width:460px; margin:0 auto} .g-screen.g-left{align-items:stretch; text-align:left}
+.g-pad{width:210px; height:210px; border-radius:50%; border:none; background:var(--ink); color:#fff; font-family:var(--display); font-size:30px; font-weight:800; transition:transform .09s ease-out; margin-top:6px} .g-pad.hit{transform:scale(1.08)}
+.g-fb{font-family:var(--display); font-size:26px; font-weight:800; min-height:32px}
+.g-dots{display:flex; gap:6px} .g-dots i{width:14px; height:14px; border-radius:50%; background:var(--line)} .g-dots i.perfect{background:var(--ink)} .g-dots i.good{background:#5A5A5A} .g-dots i.off{background:#C8C8C4}
+.g-stars{font-size:34px; letter-spacing:4px}
+.g-slots{display:flex; gap:8px} .g-slots span{width:52px; height:42px; border-radius:12px; border:2px dashed var(--ink); display:grid; place-items:center; font-family:var(--display); font-weight:800; font-size:18px} .g-slots span.on{border-style:solid}
+.g-keys{display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:5px; width:100%} .g-keys button{height:100px; border-radius:0 0 14px 14px; border:2px solid var(--ink); background:var(--card); font-family:var(--display); font-weight:800; font-size:19px; display:flex; align-items:flex-end; justify-content:center; padding-bottom:10px} .g-keys button:active{background:var(--tintC)}
+.g-record{width:200px; height:200px; border-radius:50%; background:repeating-radial-gradient(circle,#111 0 2px,#262626 2px 4px); display:grid; place-items:center; box-shadow:0 16px 36px rgba(0,0,0,.2)} .g-record div{width:84px; height:84px; border-radius:50%; background:#D8D8D4; color:#0A0A0A; display:grid; place-items:center; font-size:11px; font-weight:800; line-height:1.3}
+.g-record.gold div{background:#E6B422} .g-record.silver div{background:#C9CDD3} .g-record.bronze div{background:#B87333}
+.g-fact{width:100%; text-align:left; border:2px dashed var(--ink); border-radius:18px; padding:14px; background:var(--card); display:flex; flex-direction:column; gap:6px; color:var(--ink)} .g-fact.open{border-style:solid; background:var(--tintC)} .g-fact-t{font-size:17px; font-weight:600; line-height:1.35}
+.g-cards{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; width:100%} .g-card{min-height:150px; border-radius:18px; border:2px solid var(--ink); background:var(--card); color:var(--ink); padding:10px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; font-size:13px; font-weight:600} .g-card b{font-size:15px} .g-card.open{background:var(--ink); color:#fff}
+.g-opt{width:100%; text-align:left; font-size:18px; font-weight:700; padding:15px 18px; border-radius:16px; border:2px solid var(--ink); background:var(--card); color:var(--ink); margin-top:8px} .g-opt.right{background:var(--ink); color:#fff} .g-opt.miss{background:#C8C8C4}
+@media (prefers-reduced-motion: reduce){ .bob,.spin,#start,.st-head.now,.rec.now{animation:none !important} .g-pad,.g-arc{transition:none} }
 /* free play (22 Nov 2026): a minute or three of making it up over a backing loop, after the session */
 #fpStart{background:var(--win) !important; color:var(--win-ink) !important; border:2px solid var(--ink) !important}
 .fp-clock{display:flex; justify-content:space-between; align-items:baseline; gap:12px} .fp-time{font-size:52px; font-weight:800; line-height:1; font-variant-numeric:tabular-nums}
@@ -281,6 +319,12 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
   </section>
   <!-- STUDENT: FREE PLAY (after the session; the teacher switches it on) -->
   <section class="view" id="v-free"></section>
+  <!-- STUDENT: GAMES (22 Nov 2026): warm-ups before the session, the record and the treat box after it, the lesson-day quiz -->
+  <section class="view" id="v-warm"></section>
+  <section class="view" id="v-echo"></section>
+  <section class="view" id="v-reward"></section>
+  <section class="view" id="v-treat"></section>
+  <section class="view" id="v-quiz"></section>
   <!-- STUDENT: JOURNEY -->
   <section class="view" id="v-journey"></section>
   <!-- STUDENT: GOAL -->
@@ -305,6 +349,7 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
 <script src="passage.js?v=13"></script>
 <script src="backing.js?v=13"></script>
 <script src="backing-audio.js?v=13"></script>
+<script src="games.js?v=14"></script>
 <script>
 (function(){
   'use strict';
@@ -370,7 +415,7 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
   }
 
   // ------------------------------------------------------------ routing
-  function show(v){ if(v!=='free'&&typeof fpHalt==='function') fpHalt(); $$('.view').forEach(x=>x.classList.toggle('on', x.id==='v-'+v)); $$('#tabs button').forEach(b=>b.classList.toggle('on', b.dataset.v===v||(v==='trail'&&b.dataset.v==='today'))); const bar=$('#startbar'); bar.hidden=!(v==='trail'&&bar.innerHTML); window.scrollTo({top:0}); }
+  function show(v){ if(v!=='free'&&typeof fpHalt==='function') fpHalt(); if(v!=='warm') beatStop(); $$('.view').forEach(x=>x.classList.toggle('on', x.id==='v-'+v)); $$('#tabs button').forEach(b=>b.classList.toggle('on', b.dataset.v===v||(v==='trail'&&b.dataset.v==='today'))); const bar=$('#startbar'); bar.hidden=!(v==='trail'&&bar.innerHTML); window.scrollTo({top:0}); }
   function setTabs(role){
     const t=$('#tabs');
     if(!role){ t.hidden=true; t.innerHTML=''; return; }
@@ -563,7 +608,7 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
       : (w.recording ? `<div class="card"><div class="label">Play-through sent · ${h(fmt(w.recording.at.slice(0,10)))}</div><p style="margin:0">${w.recording.heard?h(tn)+' has heard it.':'Waiting for '+h(tn)+' to listen.'}${w.recording.reply?` <b>${h(tn)} says:</b> “${h(w.recording.reply)}”`:''}</p></div>` : '');
     v.innerHTML=`
       <div class="chips"><span class="chip">${h(fmt(today()))}</span><span class="chip">Day <b>${Math.min(n+1,w.sessions.length)} of ${w.sessions.length}</b></span><span class="chip">${h(mins)} min <b>set by ${h(tn)}</b></span>${+p.selfMinutes>mins?`<span class="chip">you aim for <b>${h(p.selfMinutes)} min</b></span>`:''}${p.goalDate?`<span class="chip">${h(p.goalLabel||'Goal')} <b>${weeksBetween(today(),p.goalDate)} weeks</b>${goalLight()?' · '+lightHTML():''}</span>`:''}${w.group?`<span class="chip">${h(w.group.name||'Group')} week${p.part?' · '+h(p.part):''}</span>`:''}</div>
-      ${pendCard}${todayCard}${pulseCard}${s?'':recCard}${s?recCard:''}
+      ${pendCard}${gamesOn()?gameHomeHTML(w,i,s,todayCard):todayCard}${pulseCard}${s?'':recCard}${s?recCard:''}
       ${backingCardHTML(w)}${passagePupilHTML(w, tn)}${breakCard}${habitsHTML(w)}<div id="socialBox"></div><div class="box says"><div class="label">Lesson · ${h(fmt(w.lessonDate||w.createdAt))} · from ${h(tn)}</div><p style="margin:0"><b>What you did well:</b> ${h(w.line||w.encouragement||'Turn up every day and the lesson takes care of itself.')}</p>${(w.checklist||[]).length?`<p style="margin:8px 0 0"><b>What to work on:</b> ${h(w.checklist.join(' · '))}.</p>`:''}
         ${openExtras().map(x=>`<div class="row" style="margin:4px 0 0;justify-content:space-between;flex-wrap:nowrap;align-items:flex-start"><p style="margin:0"><b>News from ${h(tn)}:</b> ${h(x.text)} (${h(fmt(x.at.slice(0,10)))})</p><button class="btn sm quiet" data-xdone="${x.id}" style="flex:none">Done</button></div>`).join('')}</div>
       ${skillsHTML()}
@@ -591,7 +636,8 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
     wireScales(); const ps=$('#pulseSave'); if(ps) ps.onclick=()=>{ const r=scaleVal('puReady'), q=scaleVal('puWant'); if(!r||!q){ toast('Tap a number on both.'); return; } w.pulse={ready:r, want:q, at:new Date().toISOString()}; saveCurrent(); toast('Thanks. Good luck tomorrow.'); renderToday(); };
     const fp=$('#finishPend'); if(fp) fp.onclick=()=>{ si=pend.i; sess=w.sessions[pend.i]; showDone(); };
     wireRecording(w, tn); wirePassagePupil(w, tn); wireBackingCard(w);
-    const b=$('#start'); if(b) b.onclick=()=>ready(()=>startSession(i));
+    const b=$('#start'); if(b) b.onclick=()=>gamesOn()?startWithGames(i):ready(()=>startSession(i));
+    if(gamesOn()) wireGameHome(w, i);
     $('#goGoal').onclick=()=>renderGoal(true);
     $$('[data-xdone]').forEach(x=>x.onclick=()=>{ const e=extras().find(y=>y.id===x.dataset.xdone); if(e){ e.done=true; e.doneAt=new Date().toISOString(); } saveCurrent(); renderTrail(); toast('Done. Nice.'); });
     $$('#prep li[data-k]').forEach(li=>li.onclick=()=>{ w.ticks=w.ticks||[]; const k=+li.dataset.k; w.ticks=w.ticks.includes(k)?w.ticks.filter(x=>x!==k):[...w.ticks,k]; saveCurrent(); renderTrail(false); });
@@ -599,8 +645,8 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
     $('#flagForm').onsubmit=e=>{ e.preventDefault(); const t=$('#flagText').value.trim(); if(!t) return; doc().flags=doc().flags||[]; doc().flags.push({id:uid(), text:t, at:new Date().toISOString(), resolved:false}); saveCurrent(); renderTrail(false); toast('Flagged for the lesson.'); };
     $$('[data-unflag]').forEach(b=>b.onclick=()=>{ doc().flags=doc().flags.filter(f=>f.id!==b.dataset.unflag); saveCurrent(); renderTrail(false); });
     // the pinned bar: today, one tap, wherever you have scrolled
-    bar.innerHTML = s ? `<button class="btn block" id="barStart">Start today · ${h(s.title)} · ${s.steps.reduce((a,x)=>a+(+x.minutes||0),0)} min</button>` : recordingDue(w) ? `<button class="btn block" id="barStart">Record the play-through for ${h(tn)}</button>` : `<button class="btn block quiet" id="barStart">Week complete · next lesson ${h(fmt(w.nextLesson))}</button>`;
-    $('#barStart').onclick=()=>{ if(s) startSession(i); else if(recordingDue(w)&&$('#recCard')) $('#recCard').scrollIntoView({behavior:'smooth',block:'center'}); else window.scrollTo({top:0,behavior:'smooth'}); };
+    bar.innerHTML = s ? `<button class="btn block" id="barStart">${gamesOn()?"Let's go":'Start today'} · ${h(s.title)} · ${s.steps.reduce((a,x)=>a+(+x.minutes||0),0)} min</button>` : recordingDue(w) ? `<button class="btn block" id="barStart">Record the play-through for ${h(tn)}</button>` : `<button class="btn block quiet" id="barStart">Week complete · next lesson ${h(fmt(w.nextLesson))}</button>`;
+    $('#barStart').onclick=()=>{ if(s){ if(gamesOn()) startWithGames(i); else startSession(i); } else if(recordingDue(w)&&$('#recCard')) $('#recCard').scrollIntoView({behavior:'smooth',block:'center'}); else window.scrollTo({top:0,behavior:'smooth'}); };
     if(showIt!==false) show('trail');
   }
 
@@ -1106,7 +1152,8 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
     clearInterval(timer); clearInterval(ownTimer); try{ speechSynthesis.cancel(); player.pause(); }catch(e){}
     const hr=hearStop(); delete doc().activeUntil;
     const w=week(); w.done=w.done||[]; const rec={i:si, at:new Date().toISOString(), startedAt:new Date(sessStart||Date.now()).toISOString(), feel:'', worked:[], own:!!ownTime, ...(t||{}), ...hr};
-    const ex=w.done.find(x=>x.i===si); if(ex){ Object.assign(ex, {startedAt:rec.startedAt, minutes:rec.minutes, target:rec.target, short:rec.short, reason:rec.reason, heardSec:rec.heardSec, checked:rec.checked}); } else w.done.push(rec);
+    if(gamePre&&Object.keys(gamePre).length) rec.warm=gamePre; gamePre=null; // the warm-up games played before this session
+    const ex=w.done.find(x=>x.i===si); if(ex){ Object.assign(ex, {startedAt:rec.startedAt, minutes:rec.minutes, target:rec.target, short:rec.short, reason:rec.reason, heardSec:rec.heardSec, checked:rec.checked}, rec.warm?{warm:rec.warm}:{}); } else w.done.push(rec);
     saveCurrent(); showDone();
   }
 
@@ -1182,7 +1229,7 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
   // The buttons under Done save the sentence first (it used to say "Write the sentence first" even when it was written but not yet saved).
   $('#donePassage').onclick=()=>{ const w=week(); if(!saveNote()){ toast('Write the sentence first.'); return; } if(!(PASSAGE_ON&&w.passage)&&w.accomp){ (w.accomp.kind==='youtube'?bkStartYoutube:bkStartAccomp)(); return; } renderJourney(true); const c=$('#pgCard'); if(c) c.scrollIntoView({behavior:'smooth',block:'center'}); };
   $('#doneFree').onclick=()=>{ if(!saveNote()){ toast('Write the sentence first.'); return; } fpIntro(); };
-  $('#doneBack').onclick=()=>{ if(saveNote()) renderJourney(true); };
+  $('#doneBack').onclick=()=>{ if(!saveNote()) return; if(gamesOn()) renderReward(); else renderJourney(true); };
   function saveNote(){ const w=week(); const d=(w.done||[]).find(x=>x.i===si); const txt=$('#refl').value.trim(); if(!d||txt.length<20){ updateReflBtn(); return false; }
     const first=!d.note; d.note=txt; d.noteVia=$('#refl').dataset.via||'typed'; d.noteAt=new Date().toISOString();
     const onBreak=!!breakInfo();
@@ -1256,6 +1303,208 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
       <button class="btn block" id="fpFinish">Done</button><button class="btn block quiet" id="fpAgain" style="margin-top:8px">Play again</button>`;
     $$('#fpLike [data-like]').forEach(b=>b.onclick=()=>{ if(d&&d.free){ d.free.liked=b.dataset.like; saveCurrent(); } $$('#fpLike button').forEach(x=>x.classList.toggle('on', x===b)); });
     $('#fpFinish').onclick=()=>renderJourney(true); $('#fpAgain').onclick=fpIntro; show('free'); }
+  // ------------------------------------------------------------ games (22 Nov 2026): practice you want to come back to
+  // Home: a smiling quaver in a "ready for the lesson" ring, the week's mystery tune (one note per practised day) over a shelf of
+  // records (one pressed per practised day), today's steps, the cliffhanger, the fact deck and the next unlock. Before the session:
+  // Catch the beat, then Echo it (sing, play or tap back; aural practice). After the sentence: the record is pressed, today's fact
+  // card turns over and a treat box opens, with a guess at the mystery tune. Features unlock as the pupil practises (games.js).
+  // Nothing marks a note wrong: an echo is spot on, close, or unsure (unsure takes from 13+ go to the teacher). On for every pupil
+  // unless the teacher switches games off (profile.games===false). Points ("notes") are derived from the data, never stored.
+  var gamePre=null, beatIv=null, gAc=null;
+  function beatStop(){ if(beatIv){ clearInterval(beatIv); beatIv=null; } }
+  function gamesOn(d){ return !!window.Games&&(((d||doc()).profile)||{}).games!==false; }
+  const weekKey=w=>String(w&&(w.id||w.createdAt||w.lessonDate)||'week');
+  const practisedAll=d=>(d.weeks||[]).reduce((a,w)=>a+(w.done||[]).filter(evidenced).length,0);
+  const unl=d=>{ d=d||doc(); return Games.unlocks(practisedAll(d), !!(d.profile||{}).unlockAll); };
+  function mysteryOf(w){ const t=Games.tuneFor(weekKey(w)); const shown=Math.min(7, evCount(w)); const g=w.mystery||null; const rv=Games.revealed(shown, w.nextLesson, today());
+    return {tune:t, shown, guess:g&&g.guess, pays:g?Games.payoutFor(g.shown):0, revealed:rv, right:!!(g&&g.guess===t.name), options:Games.optionsFor(weekKey(w))}; }
+  function pointsOf(d){ const P=Games.POINTS; let n=0;
+    for(const w of (d.weeks||[])){ for(const x of (w.done||[])){ if(evidenced(x)) n+=P.session; const g=x.warm||{}; if(g.beat) n+=g.beat.perfect*P.perfect+g.beat.good*P.good; if(g.echo) n+=g.echo.right*P.echo; }
+      if(w.quiz) n+=w.quiz.right*P.quiz; const m=mysteryOf(w); if(m.revealed&&m.right) n+=P.mystery*m.pays; }
+    return n; }
+  function factsOf(d){ const f=((d||doc()).profile||{}).facts; if(!f||!(f.cards||[]).length) return null; const since=f.approvedAt||'';
+    const got=((d||doc()).weeks||[]).reduce((a,w)=>a+(w.done||[]).filter(x=>evidenced(x)&&(x.at||'')>=since).length,0); return {f, unlocked:Math.min(f.cards.length, got)}; }
+  function mascotSVG(px, grin){ return `<svg class="bob" width="${px}" height="${Math.round(px*56/48)}" viewBox="0 0 48 56" aria-hidden="true"><rect x="33" y="4" width="3.6" height="30" rx="1.4" fill="#0A0A0A"/><path d="M36.6 4 C 43 8 50 14 46 28 C 44 21 41 18 36.6 17 Z" fill="#0A0A0A"/><circle cx="20" cy="37" r="16" fill="#0A0A0A"/><circle cx="14" cy="33" r="4" fill="#fff"/><circle cx="26" cy="33" r="4" fill="#fff"/><circle cx="15" cy="34" r="2" fill="#111"/><circle cx="27" cy="34" r="2" fill="#111"/><path d="${grin?'M12 41 Q20 49 28 41':'M14 42 Q20 46 26 42'}" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round"/></svg>`; }
+  function gCtx(){ try{ const C=window.AudioContext||window.webkitAudioContext; if(!C) return null; if(!gAc||gAc.state==='closed') gAc=new C(); if(gAc.resume) gAc.resume(); return gAc; }catch(e){ return null; } }
+  function gTone(m, dur, at, type, vol){ const ac=gCtx(); if(!ac) return; const t=ac.currentTime+(at||0)+0.02; const o=ac.createOscillator(), g=ac.createGain(); o.type=type||'triangle'; o.frequency.value=440*Math.pow(2,(m-69)/12);
+    g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(vol||0.22,t+0.015); g.gain.exponentialRampToValueAtTime(0.0001,t+dur); o.connect(g); g.connect(ac.destination); o.start(t); o.stop(t+dur+0.05); }
+  const gPlay=(ms,gap)=>ms.forEach((m,i)=>gTone(m,0.42,i*(gap||0.5)));
+  const gFanfare=()=>[72,76,79,84].forEach((m,i)=>gTone(m,i===3?0.7:0.25,i*0.09,'triangle',0.15));
+  function confetti(){ try{ if(matchMedia('(prefers-reduced-motion: reduce)').matches) return; }catch(e){}
+    const box=document.createElement('div'); box.className='conf'; box.setAttribute('aria-hidden','true');
+    box.innerHTML=Array.from({length:30},(_,i)=>`<span style="left:${(i*37)%100}%;animation-delay:${((i*7)%12)/10}s;font-size:${16+(i*5)%22}px;color:${['#0A0A0A','#5A5A5A','#A3A3A3'][i%3]}">${'♪♫♩♬'[i%4]}</span>`).join('');
+    document.body.appendChild(box); setTimeout(()=>box.remove(),4200); }
+  const NOTE_NAMES=['C','C♯','D','D♯','E','F','F♯','G','G♯','A','A♯','B'];
+  function tuneStaveHTML(w){ const m=mysteryOf(w); // bottom line at 56px, lines 10px apart, one step 5px
+    const heads=m.tune.notes.map(Games.staffNote).map((x,k)=>{ const on=k<m.shown||m.revealed, now=k===m.shown&&!m.revealed; const y=56-x.pos*5, left=`calc(${4+k*13.2}% )`;
+      return `${x.ledger?`<i class="st-ledger" style="left:calc(${4+k*13.2}% - 4px);top:${y}px"></i>`:''}${x.sharp&&on?`<span class="st-sharp" style="left:calc(${4+k*13.2}% - 12px);top:${y-12}px">♯</span>`:''}<i class="st-head ${on?'on':now?'now':''}" style="left:${left};top:${y-5}px"></i>`; }).join('');
+    return `<div class="stave" role="img" aria-label="Mystery tune, ${m.revealed?'all notes':m.shown+' of 7 notes'} showing">${[16,26,36,46,56].map(t=>`<i class="st-line" style="top:${t}px"></i>`).join('')}${heads}</div>`; }
+  function shelfHTML(w,i){ return `<div class="shelf" style="grid-template-columns:repeat(${w.sessions.length},minmax(0,1fr))">${w.sessions.map((s,k)=>{ const d=(w.done||[]).find(x=>x.i===k); const on=!!(d&&evidenced(d)), now=k===i;
+      return `<div><span class="rec ${on?'on':now?'now':''}"><i></i></span><small class="${now?'b':''}">${now&&!on?'Today':'Day '+(k+1)}</small></div>`; }).join('')}</div>`; }
+  function gameHomeHTML(w, i, s, fallbackToday){ const d=doc(), p=d.profile, tn=d.teacherName||'your teacher'; const u=unl(d);
+    const planMin=w.sessions.reduce((a,x)=>a+(x.steps||[]).reduce((b,y)=>b+(+y.minutes||0),0),0);
+    const ready=Games.readiness(evCount(w), w.sessions.length, weekMinutes(w), planMin); const lv=Games.levelOf(pointsOf(d)); const m=mysteryOf(w); const fx=factsOf(d);
+    const doneToday=(w.done||[]).some(x=>evidenced(x)&&(x.at||'').slice(0,10)===today());
+    const lessonDay=w.nextLesson?new Date(w.nextLesson+'T12:00').toLocaleDateString('en-GB',{weekday:'long'}):'the lesson';
+    const hero=`<div class="g-hero"><div class="g-ring"><svg viewBox="0 0 92 92" width="92" height="92" role="img" aria-label="${ready} percent ready for the lesson"><circle cx="46" cy="46" r="40" fill="none" stroke="var(--line)" stroke-width="7"/><circle class="g-arc" cx="46" cy="46" r="40" fill="none" stroke="var(--ink)" stroke-width="7" stroke-linecap="round" stroke-dasharray="251.3" stroke-dashoffset="${(251.3*(1-ready/100)).toFixed(1)}" transform="rotate(-90 46 46)"/></svg><span class="g-mascot">${mascotSVG(48, doneToday)}</span></div>
+      <div style="min-width:0"><h2 class="g-hi">${doneToday?`See you tomorrow, ${h(p.name||'you')}!`:s?`Hi ${h(p.name||'there')}! Day ${i+1} is ready`:`Nice week, ${h(p.name||'you')}!`}</h2><div class="note" style="margin:2px 0 0">${ready}% ready for ${h(lessonDay)}'s lesson · level ${lv.level} · ${lv.into}/${lv.of} notes</div></div></div>`;
+    const tune=`<div class="card g-tune"><div class="row" style="justify-content:space-between"><b>Mystery tune</b><span class="note" style="margin:0">${m.revealed?'complete':m.shown+' of 7 notes'}</span></div>${tuneStaveHTML(w)}${shelfHTML(w,i)}</div>`;
+    const steps=[u.has('beat')?'Catch the beat':null, u.has('echo')?'Echo it':null, `Practise ${s?planMinutes(s):''} min`, 'Press your record', 'Treat box'].filter(Boolean);
+    const todayG=s&&!doneToday?`<div class="card g-today"><div class="label">Today · day ${i+1} of ${w.sessions.length}</div><h2 class="g-title">${h(s.title)}</h2><div class="g-steps">${steps.map((x,k)=>`<span>${k+1} · ${h(x)}</span>`).join('')}</div>
+        <button class="btn block" id="start">Let's go</button><div class="row" style="justify-content:space-between;margin-top:8px"><button class="btn sm quiet" id="ownStart">Practise on my own</button>${u.has('beat')||u.has('echo')?'<button class="btn sm quiet" id="startNoWarm">Skip the warm-ups</button>':''}</div></div>`:fallbackToday;
+    let cliff='';
+    if(m.revealed) cliff=`<div class="card g-cliff"><b>The mystery tune was ${h(m.tune.name)}.</b><div class="note" style="margin:2px 0 8px">${m.guess?(m.right?`You guessed it: +${Games.POINTS.mystery*m.pays} notes (${m.pays}×).`:`You said ${h(m.guess)}. A new tune starts after the lesson.`):'A new tune starts after the lesson.'}</div><button class="btn sm quiet" id="gTunePlay">▶ Play it</button></div>`;
+    else if(m.guess) cliff=`<div class="card g-cliff"><b>Your guess: ${h(m.guess)} (pays ${m.pays}×)</b><div class="note" style="margin:2px 0 0">Note ${m.shown+1} arrives with your next practice. If it surprises you, you can change your guess, for ${Games.payoutFor(m.shown+1)}×.</div></div>`;
+    else if(m.shown>0) cliff=`<div class="card g-cliff"><b>${m.shown} ${m.shown===1?'note':'notes'} in. Can you name the tune?</b><div class="note" style="margin:2px 0 8px">Guess now for ${Games.payoutFor(m.shown)}× notes on lesson day, or practise for another clue.</div><button class="btn sm quiet" id="gGuess">Guess the tune</button></div>`;
+    else cliff=`<div class="card g-cliff"><b>A mystery tune is hiding in this week.</b><div class="note" style="margin:2px 0 0">Every day you practise reveals one note. Guess it early for triple notes.</div></div>`;
+    let deck='';
+    if(fx){ const quizOk=u.has('quiz')&&(fx.f.quiz||[]).some(q=>q.card<fx.unlocked); const nxt=fx.unlocked<fx.f.cards.length?fx.f.cards[fx.unlocked].split(/\s+/).slice(0,4).join(' '):'';
+      deck=`<div class="card g-deck"><div style="min-width:0"><b>Fact deck · ${fx.unlocked} of ${fx.f.cards.length} cards</b><div class="note" style="margin:2px 0 0">${w.quiz?`Lesson-day quiz: ${h(w.quiz.medal||'')} record, ${w.quiz.right} of ${w.quiz.of}.`:nxt?`Next card: “${h(nxt)}…”`:'Every card turned over. Try the quiz!'}</div></div>${quizOk&&!w.quiz?'<button class="btn sm" id="gQuiz">Quiz</button>':''}</div>`; }
+    const nx=u.next?`<div class="g-unlock">Next unlock in ${u.next.left} ${u.next.left===1?'practice':'practices'}: <b>${h(u.next.name)}</b>. ${h(u.next.what)}.</div>`:'';
+    return hero+tune+(todayG||'')+cliff+deck+nx; }
+  function wireGameHome(w, i){
+    const nw=$('#startNoWarm'); if(nw) nw.onclick=()=>{ gamePre=null; ready(()=>startSession(i)); };
+    const tp=$('#gTunePlay'); if(tp) tp.onclick=()=>gPlay(mysteryOf(w).tune.notes,0.45);
+    const gq=$('#gQuiz'); if(gq) gq.onclick=renderQuiz;
+    const gg=$('#gGuess'); if(gg) gg.onclick=()=>{ const m=mysteryOf(w); gPlay(m.tune.notes.slice(0,m.shown),0.45);
+      modal({label:'Mystery tune', title:'Which tune is it?', text:`${m.shown} ${m.shown===1?'note':'notes'} in. A right guess now pays ${Games.payoutFor(m.shown)}× on lesson day.`,
+        buttons:[...m.options.map(o=>({label:o, onClick:()=>{ w.mystery={guess:o, shown:m.shown, at:new Date().toISOString()}; saveCurrent(); gTone(79,0.12); gTone(84,0.25,0.1); renderTrail(false); toast('Locked in. The answer comes with the last note.'); }})), {label:'Not yet', cls:'quiet', onClick:()=>{}}]}); }; }
+  function startWithGames(i){ gamePre={}; const u=unl(); if(u.has('beat')) renderBeat(i); else if(u.has('echo')) renderEcho(i); else ready(()=>startSession(i)); }
+  function toSession(i){ beatStop(); ready(()=>startSession(i)); }
+  function renderBeat(i){ const bpm=unl().has('beatfast')?104:80, ms=60000/bpm; let t0=0, taps=[], running=false; const v=$('#v-warm');
+    v.innerHTML=`<div class="g-screen"><div class="eyebrow">Rhythm warm-up</div><h2 class="big">Catch the beat</h2><p class="note" style="margin:0">Tap the big dot exactly on the click. Eight taps; perfect ones score double.</p>
+      <button class="g-pad" id="gPad" aria-label="Tap on the beat">Start</button><div class="g-fb" id="gFb" aria-live="polite"></div><div class="g-dots" id="gDots">${'<i></i>'.repeat(8)}</div><div id="gEnd" style="width:100%"></div>
+      <button class="btn sm quiet" id="gSkip">Skip</button></div>`;
+    const pad=$('#gPad'), fb=$('#gFb'); const next=()=>{ beatStop(); if(unl().has('echo')) renderEcho(i); else toSession(i); };
+    $('#gSkip').onclick=next;
+    pad.onclick=()=>{
+      if(!running&&taps.length<8){ running=true; t0=performance.now(); let k=0; const tick=()=>{ gTone(k%4===0?96:91,0.05,0,'square',0.06); k++; pad.classList.add('hit'); setTimeout(()=>pad.classList.remove('hit'),110); }; tick(); beatStop(); beatIv=setInterval(tick, ms); pad.textContent='Tap!'; return; }
+      if(!running) return; const ph=(performance.now()-t0)/ms; const r=Games.rateTap(Math.abs(ph-Math.round(ph))*ms); taps.push(r);
+      fb.textContent=r==='perfect'?'Perfect!':r==='good'?'Good':(ph-Math.round(ph)<0?'Early':'Late'); const dots=$$('#gDots i'); if(dots[taps.length-1]) dots[taps.length-1].className=r;
+      if(taps.length>=8){ running=false; beatStop(); const b=Games.beatStars(taps); gamePre=gamePre||{}; gamePre.beat=b; pad.textContent='Done'; gFanfare(); if(b.stars>=2) confetti();
+        $('#gEnd').innerHTML=`<div class="g-stars">${'★'.repeat(b.stars)}${'☆'.repeat(3-b.stars)}</div><p style="margin:0">${b.perfect} perfect, ${b.good} good.</p><button class="btn block" id="gNext" style="margin-top:10px">${unl().has('echo')?'Next: Echo it':'On to the practice'}</button>`;
+        $('#gNext').onclick=next; $('#gSkip').hidden=true; } };
+    show('warm'); }
+  function renderEcho(i){ const d=doc(), p=d.profile, tn=d.teacherName||'your teacher', w=week(); const four=unl(d).has('echo4');
+    let mode; try{ mode=localStorage.getItem('stuckato.echoMode')||'sing'; }catch(e){ mode='sing'; }
+    let round=0, results=[], taps=[], busy=false; const seed=weekKey(w)+today();
+    const KEYS=[[62,'D'],[64,'E'],[66,'F♯'],[67,'G'],[69,'A'],[71,'B']];
+    const target=()=>Games.phraseFor(seed, round, four);
+    function paint(){ const v=$('#v-echo'); const n=target().length;
+      if(round>=3){ const right=results.filter(x=>x==='match').length; gamePre=gamePre||{}; gamePre.echo={right, of:3, mode, notes:n}; const st=Math.max(1,right);
+        v.innerHTML=`<div class="g-screen"><div class="eyebrow">Ear warm-up</div><h2 class="big">Echo it</h2><div class="g-stars">${'★'.repeat(st)}${'☆'.repeat(3-st)}</div><p style="margin:0">${right} of 3 echoed back. That is aural test practice, done.</p><button class="btn block" id="eGo">On to the practice</button></div>`;
+        $('#eGo').onclick=()=>toSession(i); show('echo'); return; }
+      v.innerHTML=`<div class="g-screen"><div class="eyebrow">Ear warm-up · round ${round+1} of 3</div><h2 class="big">Echo it</h2><p class="note" style="margin:0">Listen to ${n} notes, then echo them your way.</p>
+        <div class="chips" style="justify-content:center;margin:4px 0 0">${[['sing','Sing it'],['play','Play it'],['tap','Tap it']].map(([k,l])=>`<button type="button" class="chip ${mode===k?'on':''}" data-em="${k}">${l}</button>`).join('')}</div>
+        <p class="note" style="margin:0">${mode==='sing'?'Sing it back in any octave. Stuckato listens.':mode==='play'?'Play it on your '+h(p.instrument||'instrument')+'. Stuckato listens.':'No noise right now? Tap the notes.'}</p>
+        <button class="btn" id="eListen">▶ Listen</button>
+        <div class="g-slots">${Array.from({length:n},(_,k)=>`<span class="${taps[k]!=null?'on':''}">${taps[k]!=null?KEYS.find(x=>x[0]===taps[k])[1]:''}</span>`).join('')}</div>
+        ${mode==='tap'?`<div class="g-keys">${KEYS.map(([m,l])=>`<button type="button" data-ek="${m}">${l}</button>`).join('')}</div>`:`<button class="btn block" id="eRec">Record my echo</button>`}
+        <div class="g-fb" id="eFb" aria-live="polite"></div><div id="eAfter" style="width:100%"></div><button class="btn sm quiet" id="eSkip">Skip</button></div>`;
+      $$('[data-em]').forEach(b=>b.onclick=()=>{ mode=b.dataset.em; try{ localStorage.setItem('stuckato.echoMode',mode); }catch(e){} taps=[]; paint(); });
+      $('#eListen').onclick=()=>gPlay(target(), 0.55); $('#eSkip').onclick=()=>toSession(i);
+      $$('[data-ek]').forEach(b=>b.onclick=()=>{ if(taps.length>=n) return; const m=+b.dataset.ek; gTone(m,0.4); taps.push(m); paint(); if(taps.length===n) verdict(taps.every((x,k)=>x===target()[k])?'match':'close', null); });
+      const r=$('#eRec'); if(r) r.onclick=recordEcho;
+      show('echo'); }
+    function verdict(res, take){ const fb=$('#eFb'), after=$('#eAfter'), T=target();
+      fb.textContent=res==='match'?'Spot on!':res==='close'?'Close! Have another listen.':"I couldn't hear that clearly.";
+      if(res==='match'){ gFanfare(); confetti(); } results.push(res);
+      after.innerHTML=`${res==='close'?'<button class="btn sm quiet" id="eCmp">Hear the tune, then yours</button>':''}${res==='unsure'?`<p class="note" style="margin:6px 0">${take&&take.sent?'Sent to '+h(tn)+' to listen to.':'Try again, or tap it instead.'}</p>`:''}
+        <button class="btn block" id="eNext" style="margin-top:8px">${round<2?'Next round':'See my score'}</button>${res==='unsure'?'<button class="btn sm quiet" id="eAgain" style="margin-top:6px">Try again</button>':''}`;
+      const c=$('#eCmp'); if(c) c.onclick=()=>{ gPlay(T,0.5); const mine=take&&take.notes&&take.notes.length?take.notes.slice(0,T.length).map(x=>Math.round(x)):taps.slice(); if(mine.length) setTimeout(()=>gPlay(mine,0.5), T.length*500+500); };
+      $('#eNext').onclick=()=>{ round++; taps=[]; paint(); };
+      const a=$('#eAgain'); if(a) a.onclick=()=>{ results.pop(); taps=[]; paint(); };
+      const rec=$('#eRec'); if(rec) rec.hidden=true; $$('[data-ek]').forEach(b=>b.disabled=true); }
+    async function recordEcho(){ if(busy||!window.BackingAudio||!window.Passage) return; const n=target().length; busy=true; const b=$('#eRec'); b.disabled=true; b.textContent='Getting the microphone…'; let live=null, stopped=false;
+      const stop=async()=>{ if(stopped||!live) return; stopped=true; const r=live.stop(); busy=false; b.disabled=true; b.textContent='Listening back…';
+        const pcm16=Passage.resample(r.pcm, r.sr, 16000); const notes=Passage.notesFrom(Passage.pitchTrack(pcm16, 16000));
+        const res=Games.markEcho(target(), notes, mode).result; const take={notes:notes.filter(x=>x.d>=0.12).map(x=>x.m+(x.cents||0)/100)};
+        if(res==='unsure'&&(p.over13||p.adult)&&p.echoTakes){ try{ const blob=BackingAudio.toWav(r.pcm, r.sr); const where=await bkStore(blob, `echo-${uid()}.wav`); const w2=week(); w2.echoes=w2.echoes||[]; w2.echoes.push({id:uid(), at:new Date().toISOString(), target:target(), mode, ...where, heard:false}); saveCurrent(); take.sent=true; }catch(e){} }
+        verdict(res, take); };
+      try{ live=await BackingAudio.recordAlone({maxSec:n+3, onCap:()=>stop()}); }catch(e){ busy=false; b.disabled=false; b.textContent='Record my echo'; $('#eFb').textContent='The microphone is not available. Tap it instead.'; return; }
+      b.disabled=false; b.textContent='Stop'; b.onclick=stop; }
+    paint(); }
+  function renderReward(){ const w=week(); const d=(w.done||[]).find(x=>x.i===si); if(!d){ renderJourney(true); return; }
+    const D=doc(); const m=mysteryOf(w); const fx=factsOf(D); const first=!d.pressed; d.pressed=true; saveCurrent();
+    const nn=NOTE_NAMES[m.tune.notes[Math.min(6,Math.max(0,m.shown-1))]%12]; const card=fx&&fx.unlocked>0?fx.f.cards[fx.unlocked-1]:'';
+    $('#v-reward').innerHTML=`<div class="g-screen"><div class="eyebrow">Press your record</div><div class="g-record spin"><div>DAY ${si+1}<br>NOTE ${h(nn)}</div></div><h2 class="big">Day ${si+1}, pressed!</h2>
+      <div class="chips" style="justify-content:center"><span class="chip on">+${Games.POINTS.session} notes</span>${d.earned?'<span class="chip on">+1 token</span>':''}<span class="chip">Note ${Math.min(m.shown,7)} of 7</span></div>
+      <p class="note" style="margin:0">${m.revealed?'The mystery tune is complete.':'The mystery tune has a new note. Does it sound familiar yet?'}</p>
+      <button class="btn quiet" id="rPlay">▶ Play the tune so far</button>
+      ${card?`<button class="g-fact" id="rFact" type="button"><span class="label">Today's fact card · tap to turn it over</span><span class="g-fact-t" hidden>${h(card)}</span></button>`:''}
+      <button class="btn block" id="rTreat">${d.treat?'See your treat':'Open the treat box'}</button><button class="btn sm quiet" id="rHome">Back home</button></div>`;
+    $('#rPlay').onclick=()=>gPlay(m.tune.notes.slice(0, m.revealed?7:m.shown), 0.45);
+    const f=$('#rFact'); if(f) f.onclick=()=>{ const t=f.querySelector('.g-fact-t'); if(!t.hidden) return; t.hidden=false; f.classList.add('open'); f.querySelector('.label').textContent=`Today's fact card · ${fx.unlocked} of ${fx.f.cards.length}`; gTone(84,0.12); gTone(91,0.3,0.08); };
+    $('#rTreat').onclick=()=>renderTreat(d); $('#rHome').onclick=()=>renderJourney(true);
+    show('reward'); if(first){ gFanfare(); confetti(); setTimeout(()=>gPlay(m.tune.notes.slice(0,m.shown),0.45), 900); } }
+  const STICKERS=['Golden bow','Silver metronome','Treble clef star','Rosin crown','Fermata moon','Staccato sparks','Velvet case','Perfect fifth','Crescendo rocket','Tuning fork','Grand pause','Da capo loop'];
+  function treatPool(d){ const D=doc(), p=D.profile; const h0=Games.hash(weekKey(week())+':'+d.i);
+    const seen=new Set((D.weeks||[]).flatMap(w=>(w.done||[]).map(x=>x.treat&&x.treat.kind==='secret'?x.treat.text:null)).filter(Boolean));
+    const secrets=(p.secrets||[]).filter(x=>!seen.has(x)); const have=new Set(p.stickers||[]); const st=STICKERS.filter(x=>!have.has(x));
+    const ch=SURPRISES.filter(x=>x.k!=='Did you know?'), dk=SURPRISES.filter(x=>x.k==='Did you know?');
+    const pool=[{kind:'challenge', title:ch[h0%ch.length].k, text:ch[h0%ch.length].t}];
+    pool.push(st.length?{kind:'sticker', title:'New sticker', text:st[h0%st.length]}:{kind:'challenge', title:ch[(h0>>>4)%ch.length].k, text:ch[(h0>>>4)%ch.length].t});
+    pool.push(secrets.length?{kind:'secret', title:(D.teacherName||'Your teacher')+"'s secret", text:secrets[h0%secrets.length]}:{kind:'fact', title:'Did you know?', text:dk[h0%dk.length].t});
+    const r=h0%3; return pool.slice(r).concat(pool.slice(0,r)); }
+  function renderTreat(d){ const w=week(), D=doc(), tn=D.teacherName||'your teacher'; const pool=treatPool(d); const v=$('#v-treat');
+    function paint(){ const m=mysteryOf(w);
+      const cards=pool.map((c,k)=>{ const open=d.treat&&d.treat.k===k, other=d.treat&&!open; return `<button type="button" class="g-card ${open?'open':''}" data-tc="${k}" ${d.treat?'disabled':''} style="${other?'opacity:.35':''}">${open?`<b>${h(c.title)}</b><span>${h(c.text)}</span>`:'<b>♪</b><span>Tap me</span>'}</button>`; }).join('');
+      const guess=m.revealed?'':`<div class="card" style="margin-top:12px;text-align:left;width:100%"><div class="label">Name the mystery tune</div><p class="note" style="margin:0 0 8px">${m.shown} ${m.shown===1?'note':'notes'} in. A right guess now pays ${Games.payoutFor(m.shown)}× on lesson day; wait for more notes and it pays less.</p><div class="chips" style="margin:0">${m.options.map(o=>`<button type="button" class="chip ${m.guess===o?'on':''}" data-mg="${h(o)}">${h(o)}</button>`).join('')}</div><p class="note" style="margin:6px 0 0">${m.guess?'Locked in: '+h(m.guess)+' ('+m.pays+'×). The answer comes with the last note.':''}</p></div>`;
+      v.innerHTML=`<div class="g-screen"><div class="eyebrow">Treat box</div><h2 class="big">${d.treat?'Yours!':'Pick a card'}</h2><div class="g-cards">${cards}</div>${d.treat&&d.treat.kind==='secret'?`<p class="note" style="margin:0">Ask ${h(tn)} about it at the lesson!</p>`:''}${d.treat?guess:''}${d.treat?'<button class="btn block" id="tHome" style="margin-top:12px">See you tomorrow</button>':''}</div>`;
+      $$('[data-tc]').forEach(b=>b.onclick=()=>{ if(d.treat) return; const k=+b.dataset.tc, c=pool[k]; d.treat={k, kind:c.kind, title:c.title, text:c.text, at:new Date().toISOString()}; if(c.kind==='sticker') D.profile.stickers=[...(D.profile.stickers||[]), c.text]; saveCurrent(); gFanfare(); confetti(); paint(); });
+      $$('[data-mg]').forEach(b=>b.onclick=()=>{ w.mystery={guess:b.dataset.mg, shown:m.shown, at:new Date().toISOString()}; saveCurrent(); gTone(79,0.12); gTone(84,0.25,0.1); paint(); });
+      const th=$('#tHome'); if(th) th.onclick=()=>renderJourney(true); }
+    paint(); show('treat'); }
+  function renderQuiz(){ const D=doc(), w=week(), fx=factsOf(D); if(!fx||!w) return; const qs=(fx.f.quiz||[]).filter(q=>q.card<fx.unlocked); if(!qs.length){ toast('Practise to turn over more fact cards first.'); return; }
+    let qi=0, right=0, pick=null; const v=$('#v-quiz');
+    function paint(){
+      if(qi>=qs.length){ const medal=right===qs.length?'Gold':right>=Math.ceil(qs.length/2)?'Silver':'Bronze'; if(!w.quiz){ w.quiz={right, of:qs.length, medal, at:new Date().toISOString()}; saveCurrent(); } gFanfare(); if(medal!=='Bronze') confetti();
+        v.innerHTML=`<div class="g-screen"><div class="eyebrow">Lesson-day quiz · ${h(fx.f.piece||'')}</div><div class="g-record spin ${medal.toLowerCase()}"><div>${medal.toUpperCase()}</div></div><h2 class="big">${medal} record!</h2><p style="margin:0">${right} of ${qs.length} right. ${h(D.teacherName||'Your teacher')} sees your record.</p><button class="btn block" id="qHome">Back home</button></div>`;
+        $('#qHome').onclick=()=>renderJourney(true); return; }
+      const q=qs[qi];
+      v.innerHTML=`<div class="g-screen g-left"><div class="eyebrow">Lesson-day quiz · question ${qi+1} of ${qs.length}</div><h2 class="big" style="font-size:28px">${h(q.q)}</h2>
+        ${q.options.map((o,k)=>`<button type="button" class="g-opt ${pick!=null?(k===q.answer?'right':k===pick?'miss':''):''}" data-qo="${k}" ${pick!=null?'disabled':''}>${h(o)}</button>`).join('')}
+        ${pick!=null?`<p style="margin:8px 0 0">${pick===q.answer?'<b>Right!</b> ':'<b>Not this time.</b> '}${h(fx.f.cards[q.card]||'')}</p><button class="btn block" id="qNext">${qi<qs.length-1?'Next question':'See my record'}</button>`:''}</div>`;
+      $$('[data-qo]').forEach(b=>b.onclick=()=>{ pick=+b.dataset.qo; if(pick===q.answer){ right++; gTone(81,0.15); gTone(88,0.3,0.1); } else gTone(57,0.25); paint(); });
+      const n=$('#qNext'); if(n) n.onclick=()=>{ qi++; pick=null; paint(); }; }
+    paint(); show('quiz'); }
+  // teacher: games on or off, unlock everything, the fact cards (drafted by Claude, approved here), secret cards, and this week
+  function renderTeacherGames(){ const box=$('#tGames'); if(!box||!current||!window.Games) return; const d=current.data, p=d.profile, name=p.name||'this pupil';
+    const w=d.weeks.length?d.weeks[d.weeks.length-1]:null; const f=p.facts||null; const u=Games.unlocks(practisedAll(d), !!p.unlockAll);
+    const played=w?(w.done||[]).filter(x=>x.warm):[]; const ech=played.filter(x=>x.warm.echo); const m=w?mysteryOf(w):null; const takes=w?(w.echoes||[]):[];
+    box.innerHTML=`<div class="card"><h3>Games, fact cards and treats</h3>
+      <label class="switch" style="font-size:15px;color:var(--ink)"><input type="checkbox" id="gOnT" ${p.games!==false?'checked':''}> Games on for ${h(name)}</label>
+      <div class="note" style="margin:4px 0 8px">Warm-up games before each session, a record pressed and a treat box after it, a mystery tune across the week and a quiz on lesson day. Nothing marks a note wrong.</div>
+      <label class="switch" style="font-size:15px;color:var(--ink)"><input type="checkbox" id="gAllT" ${p.unlockAll?'checked':''}> Open every feature now</label>
+      <label class="switch" style="font-size:15px;color:var(--ink);margin-top:6px"><input type="checkbox" id="gEchoT" ${p.echoTakes?'checked':''} ${p.over13||p.adult?'':'disabled'}> Send me echoes Stuckato couldn't hear clearly</label>
+      <div class="note" style="margin:4px 0 0">${p.over13||p.adult?'Only if the family agreed to sound recordings. Otherwise nothing from the ear warm-up is saved: the microphone is listened to on the device and thrown away.':'Not for pupils under 13: their echoes are never saved.'}</div>
+      <div class="note" style="margin:4px 0 0">${p.unlockAll?'Everything is open.':u.next?`Features unlock as ${h(name)} practises. Next: ${h(u.next.name)}, in ${u.next.left} ${u.next.left===1?'practice':'practices'}.`:'Everything has unlocked.'}</div>
+      ${w?`<div class="label" style="margin-top:14px">This week</div><div class="note" style="margin:0">${played.length} warm-ups played${ech.length?` · echoes spot on: ${ech.reduce((a,x)=>a+x.warm.echo.right,0)} of ${ech.length*3}`:''}${w.quiz?` · quiz: ${h(w.quiz.medal)} (${w.quiz.right}/${w.quiz.of})`:''}${m&&m.guess?` · mystery tune guess: ${h(m.guess)}${m.revealed?(m.right?' (right)':' (not this time)'):''}`:''}</div>
+        ${takes.length?`<div class="label" style="margin-top:10px">Echoes Stuckato couldn't hear clearly</div>${takes.map(t=>`<div class="daybox"><p style="margin:0">${h(fmt(t.at.slice(0,10)))} ${h(timeOf(t.at))} · ${h(t.mode==='play'?'played':'sung')} · the tune was ${h(t.target.map(x=>NOTE_NAMES[x%12]).join(' '))}</p><div class="row" style="margin-top:6px"><button class="btn sm quiet" data-eh="${h(t.id)}">Listen</button>${t.heard?'<span class="note" style="margin:0">Heard</span>':''}</div></div>`).join('')}`:''}`:''}
+      <div class="label" style="margin-top:14px">Fact cards about the piece</div>
+      ${f&&(f.cards||[]).length?`<div class="note" style="margin:0 0 6px">${h(f.piece)}${f.composer?' · '+h(f.composer):''}: ${f.cards.length} cards and ${(f.quiz||[]).length} quiz questions approved. One card turns over each day ${h(name)} practises.</div>`:''}
+      <div class="grid2"><div><label class="l" for="fxPiece">Piece</label><input id="fxPiece" value="${h(f?.piece||'')}" placeholder="e.g. Minuet in G"></div><div><label class="l" for="fxComp">Composer</label><input id="fxComp" value="${h(f?.composer||'')}" placeholder="e.g. Petzold"></div></div>
+      <div class="row" style="margin-top:8px"><button class="btn sm" id="fxDraft">${f?'Draft new cards':'Draft cards with Claude'}</button><span class="status" id="fxSt" style="margin:0"></span></div>
+      <div class="note" style="margin:4px 0 0">Claude drafts; nothing reaches ${h(name)} until you tick it. Only the piece and composer are sent.</div><div id="fxBox"></div>
+      <div class="label" style="margin-top:14px">Your secret cards</div>
+      <textarea id="scT" placeholder="One per line, e.g.&#10;My first instrument was the recorder.&#10;I once practised one bar fifty times the night before a concert.">${h((p.secrets||[]).join('\n'))}</textarea>
+      <div class="row" style="margin-top:6px"><button class="btn sm" id="scSave">Save secret cards</button></div>
+      <div class="note" style="margin:4px 0 0">Light, true things about you. One can turn up in the treat box; ${h(name)} is told to ask you about it.</div></div>`;
+    $('#gOnT').onchange=e=>{ p.games=e.target.checked; saveCurrent(); toast(p.games?'Games are on.':'Games are off.'); };
+    $('#gAllT').onchange=e=>{ p.unlockAll=e.target.checked; saveCurrent(); renderTeacherGames(); };
+    $('#gEchoT').onchange=e=>{ p.echoTakes=e.target.checked; saveCurrent(); toast(p.echoTakes?'Unclear echoes will come to you.':'Echoes are never saved.'); };
+    $('#scSave').onclick=()=>{ p.secrets=$('#scT').value.split('\n').map(x=>x.trim()).filter(Boolean).slice(0,30); saveCurrent(); toast('Secret cards saved.'); };
+    $$('[data-eh]').forEach(b=>b.onclick=async()=>{ const t=takes.find(x=>x.id===b.dataset.eh); const blob=await bkBlob(t); if(!blob){ toast('Could not open it.'); return; } const a=new Audio(URL.createObjectURL(blob)); a.play().catch(()=>{}); t.heard=true; saveCurrent(); });
+    $('#fxDraft').onclick=async()=>{ const piece=$('#fxPiece').value.trim(), composer=$('#fxComp').value.trim(), st=$('#fxSt'); if(!piece){ st.textContent='Add the piece first.'; return; }
+      st.textContent='Drafting…'; let out; try{ const r=await fetch('/api/facts',{method:'POST',headers:{'content-type':'application/json',...(await authHeaders())},body:JSON.stringify({piece, composer, instrument:p.instrument||''})}); out=await r.json(); if(!r.ok) throw new Error(out.message||'Could not draft.'); }catch(e){ st.textContent=e.message||'Could not draft.'; return; }
+      st.textContent=''; const fb=$('#fxBox');
+      fb.innerHTML=`${out.unsure?`<p class="note">Claude was unsure about: ${h(out.unsure)}</p>`:''}${out.cards.length?out.cards.map((c,k)=>`<div class="daybox"><label class="switch" style="font-size:14px"><input type="checkbox" data-fc="${k}" checked> Card ${k+1}</label><textarea data-ft="${k}" style="min-height:60px;margin-top:4px">${h(c)}</textarea></div>`).join(''):'<p class="note">No cards: Claude did not know enough about this piece to be sure. Write your own as secret cards, or try the composer\'s full name.</p>'}
+        ${out.quiz.map((q,k)=>`<div class="daybox"><label class="switch" style="font-size:14px"><input type="checkbox" data-qc="${k}" checked> Quiz ${k+1} (from card ${q.card+1})</label><p style="margin:4px 0 0">${h(q.q)}</p><p class="note" style="margin:2px 0 0">${q.options.map((o,j)=>j===q.answer?'<b>'+h(o)+'</b>':h(o)).join(' · ')}</p></div>`).join('')}
+        ${out.cards.length?'<button class="btn sm" id="fxSave" style="margin-top:8px">Approve the ticked ones</button>':''}`;
+      const sv=$('#fxSave'); if(sv) sv.onclick=()=>{ const keep=out.cards.map((c,k)=>({k, ok:$(`[data-fc="${k}"]`).checked, text:$(`[data-ft="${k}"]`).value.trim()})).filter(x=>x.ok&&x.text); const map=new Map(keep.map((x,j)=>[x.k,j]));
+        const quiz=out.quiz.filter((q,k)=>$(`[data-qc="${k}"]`).checked&&map.has(q.card)).map(q=>({...q, card:map.get(q.card)}));
+        p.facts={piece, composer, cards:keep.map(x=>x.text), quiz, approvedAt:new Date().toISOString(), by:me?.name||''}; saveCurrent(); toast('Approved. One card turns over each day '+name+' practises.'); renderTeacherGames(); }; }; }
+
   // teacher: the switch and the settings on the pupil's page, and this week's free play underneath
   function renderTeacherFree(){ const box=$('#tFree'); if(!box||!current||!window.BackingAudio) return; const d=current.data, p=d.profile, name=p.name||'this pupil'; const s=fpSet(d);
     const w=d.weeks.length?d.weeks[d.weeks.length-1]:null; const fr=w?(w.done||[]).filter(x=>x.free&&x.free.sec).sort((a,b)=>a.i-b.i):[];
@@ -1434,7 +1683,7 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
   function drawCard(c){
     const ctx=c.getContext('2d'); const W=c.width; const p=doc().profile; const w=week(); const tn=doc().teacherName||'your teacher';
     const n=w?doneCount(w):0, tot=w?w.sessions.length:7; const mins=w?(w.done||[]).reduce((a,d)=>a+(w.sessions[d.i]?w.sessions[d.i].steps.reduce((x,y)=>x+(+y.minutes||0),0):0),0):0;
-    const F=(wt,px)=>`${wt} ${px}px "Plus Jakarta Sans", system-ui, sans-serif`;
+    const F=(wt,px)=>`${wt} ${px}px "Outfit", system-ui, sans-serif`;
     const lines=(t,mw,font)=>{ ctx.font=font; const words=String(t).split(' '); const out=[]; let line=''; for(const wd of words){ const test=line?line+' '+wd:wd; if(ctx.measureText(test).width>mw&&line){ out.push(line); line=wd; } else line=test; } if(line) out.push(line); return out; };
     const wrap=(t,x,y,mw,lh,font,col)=>{ const ls=lines(t,mw,font); ctx.font=font; ctx.fillStyle=col; ls.forEach((l,i)=>ctx.fillText(l,x,y+i*lh)); return y+ls.length*lh; };
     const box=(y,hh)=>{ ctx.fillStyle='#F5E4CA'; ctx.strokeStyle='#D4BF9E'; ctx.lineWidth=2; ctx.beginPath(); ctx.roundRect(40,y,W-80,hh,26); ctx.fill(); ctx.stroke(); };
@@ -1600,6 +1849,11 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
     ['passage_last_off','The same on the last take of the week. First minus last is the week\'s movement on the passage.'],
     ['freeplay_sessions','Sessions followed by free play, any length over five seconds. Blank if free play was never switched on for the pupil.'],
     ['freeplay_minutes','Minutes of free play across the week, to one decimal. Kept apart: never part of minutes_done.'],
+    ['warmups','Sessions that started with the warm-up games.'],
+    ['echo_right','Echoes spot on across the week (three tries per warm-up).'],
+    ['quiz_right','Lesson-day quiz: questions right. Blank if not taken.'],
+    ['mystery_right','Mystery tune: 1 if the guess was right, 0 if not, blank if no guess or not yet revealed.'],
+    ['treats_opened','Treat boxes opened after a session.'],
     ['exported_at','When the file was made.']];
   function weekRow(st, w, k, exportedAt){
     const d=st.data, p=d.profile||{}, b=d.baseline||{}; const done=(w.done||[]).filter(x=>x.at);
@@ -1607,7 +1861,7 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
     const doneMin=done.reduce((a,x)=>a+(x.minutes!=null?+x.minutes:(x.own?0:(planned[x.i]?planned[x.i].steps.reduce((m,y)=>m+(+y.minutes||0),0):0))),0);
     const days=new Set(done.map(x=>String(x.at).slice(0,10))).size; const short=done.filter(x=>x.short); const gl=goalLight(d);
     const o=w.outcome||{}, pu=w.pulse||{}; const r=(n,dn)=>dn?Math.round(n/dn*1000)/1000:'';
-    return [st.user_id, p.name||'', p.instrument||'', p.level||'', k+1, w.lessonDate||w.createdAt||'', w.nextLesson||'', planned.length, done.length, r(done.length,planned.length), planMin, doneMin, r(doneMin,planMin), days, short.length, short.map(x=>x.reason||'').join('|'), done.filter(x=>x.note).length, done.filter(x=>x.check==='ok').length, done.filter(x=>x.check==='no').length, w.recording?1:0, pu.ready||'', pu.want||'', o.attendance||'', o.prepared||'', o.progress||'', gl?gl.k:'', b.w1Days??'', b.w1Minutes??'', b.w2Days??'', b.w2Minutes??'', b.attendedOf4??'', b.prepared??'', b.progress??'', ...(w.passage?[(w.takes||[]).length, (()=>{ const t=takesOff(w).slice().sort((a,b)=>(a.at||'').localeCompare(b.at||'')); return [t.length?t[0].off:'', t.length?t[t.length-1].off:'']; })()].flat():['','','']), ...(()=>{ const fr=done.filter(x=>x.free&&x.free.sec); return (p.freeplay||fr.length)?[fr.length, Math.round(fr.reduce((a,x)=>a+x.free.sec,0)/6)/10]:['','']; })(), exportedAt];
+    return [st.user_id, p.name||'', p.instrument||'', p.level||'', k+1, w.lessonDate||w.createdAt||'', w.nextLesson||'', planned.length, done.length, r(done.length,planned.length), planMin, doneMin, r(doneMin,planMin), days, short.length, short.map(x=>x.reason||'').join('|'), done.filter(x=>x.note).length, done.filter(x=>x.check==='ok').length, done.filter(x=>x.check==='no').length, w.recording?1:0, pu.ready||'', pu.want||'', o.attendance||'', o.prepared||'', o.progress||'', gl?gl.k:'', b.w1Days??'', b.w1Minutes??'', b.w2Days??'', b.w2Minutes??'', b.attendedOf4??'', b.prepared??'', b.progress??'', ...(w.passage?[(w.takes||[]).length, (()=>{ const t=takesOff(w).slice().sort((a,b)=>(a.at||'').localeCompare(b.at||'')); return [t.length?t[0].off:'', t.length?t[t.length-1].off:'']; })()].flat():['','','']), ...(()=>{ const fr=done.filter(x=>x.free&&x.free.sec); return (p.freeplay||fr.length)?[fr.length, Math.round(fr.reduce((a,x)=>a+x.free.sec,0)/6)/10]:['','']; })(), ...(()=>{ const wm=done.filter(x=>x.warm); const m=window.Games?mysteryOf(w):null; return [wm.length, wm.reduce((a,x)=>a+((x.warm.echo||{}).right||0),0), w.quiz?w.quiz.right:'', m&&m.guess&&m.revealed?(m.right?1:0):'', done.filter(x=>x.treat).length]; })(), exportedAt];
   }
   function pilotCSV(){
     const now=new Date().toISOString(); const rows=[METRICS.map(m=>m[0])];
@@ -1677,7 +1931,7 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
       ${w?`<div class="card"><div class="label">This week</div>${staveWeek(w)}<div class="note" style="margin:0">${w.promise?`promised ${h(w.promise)} days · `:''}${(d.milestones||[]).length?`${h(Math.max(...d.milestones))} sessions all told · `:''}${doneCount(w)} of ${w.sessions.length} days done · felt: ${(w.done||[]).map(x=>x.feel).filter(Boolean).join(', ')||'nothing logged yet'} · next lesson ${h(fmt(w.nextLesson))}</div>
         ${workTally(w).length?`<div class="label" style="margin-top:12px">Worked on most this week</div><ul class="ticks" style="margin-top:4px">${workTally(w).map(([it,c])=>`<li style="cursor:default"><span style="flex:1">${h(it)}</span><span class="pill on">${c} ${c===1?'day':'days'}</span></li>`).join('')}</ul>`:'<div class="note">What the pupil ticks after each session appears here, most-worked first, so you can plan the lesson.</div>'}
         <div class="label" style="margin-top:12px">What they wrote, day by day</div>
-        ${(w.done||[]).length?(w.done||[]).slice().sort((a,b)=>a.i-b.i).map(x=>`<div class="daybox"><p style="margin:0"><b>Day ${x.i+1}${w.sessions[x.i]?' · '+h(w.sessions[x.i].title):''}</b> · ${h(fmt((x.at||'').slice(0,10)))}${x.at?' '+h(timeOf(x.at)):''}${x.feel?' · felt '+h(x.feel.toLowerCase()):''}${x.own?' · own time':''}${x.minutes?` · ${h(x.minutes)} of ${h(x.target||'?')} min`:''}${heardLine(x)}${x.free&&x.free.sec?` · free play ${fpTime(x.free.sec)}${x.free.liked?' ('+h(FP_LIKED[x.free.liked]||'')+')':''}`:''}${(x.worked||[]).length?' · '+h(x.worked.join(', ')):''}</p>
+        ${(w.done||[]).length?(w.done||[]).slice().sort((a,b)=>a.i-b.i).map(x=>`<div class="daybox"><p style="margin:0"><b>Day ${x.i+1}${w.sessions[x.i]?' · '+h(w.sessions[x.i].title):''}</b> · ${h(fmt((x.at||'').slice(0,10)))}${x.at?' '+h(timeOf(x.at)):''}${x.feel?' · felt '+h(x.feel.toLowerCase()):''}${x.own?' · own time':''}${x.minutes?` · ${h(x.minutes)} of ${h(x.target||'?')} min`:''}${heardLine(x)}${x.warm&&x.warm.beat?` · beat ${'★'.repeat(x.warm.beat.stars)}`:''}${x.warm&&x.warm.echo?` · echo ${x.warm.echo.right}/3 ${x.warm.echo.mode==='tap'?'tapped':x.warm.echo.mode==='play'?'played':'sung'}`:''}${x.treat?` · treat: ${h(x.treat.title)}`:''}${x.free&&x.free.sec?` · free play ${fpTime(x.free.sec)}${x.free.liked?' ('+h(FP_LIKED[x.free.liked]||'')+')':''}`:''}${(x.worked||[]).length?' · '+h(x.worked.join(', ')):''}</p>
           ${x.short?`<p class="note" style="margin:6px 0 0;color:var(--danger)">Stopped early: ${h(x.reason||'no reason given')}. Started ${h(timeOf(x.startedAt||x.at))}, finished ${h(timeOf(x.at))}.</p>`:''}
           ${x.note?`<p class="quote" style="margin:8px 0">“${h(x.note)}”${x.noteVia==='voice'?' <span class="note" style="margin:0">(spoken)</span>':''}</p>
           <div class="row"><button class="btn sm ${x.check==='ok'?'':'quiet'}" data-chk="ok" data-i="${x.i}">Sounds right${x.check==='ok'?' ✓':''}</button><button class="btn sm quiet" data-chk="query" data-i="${x.i}">Ask them</button><button class="btn sm ${x.check==='no'?'':'quiet'}" data-chk="no" data-i="${x.i}"${x.check==='no'?' style="background:var(--danger);color:#fff"':''}>Doesn't add up</button></div>
@@ -1721,6 +1975,7 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
       <div id="tAud"></div>
       <div id="tBack"></div>
       <div id="tFree"></div>
+      <div id="tGames"></div>
       <div class="card"><h3>Add a task this week</h3>
         <div class="row"><input id="xText" placeholder="e.g. Listen to the Bach three times before Thursday" style="flex:1"><button type="button" class="btn quiet mic" data-dictate="xText">Dictate</button><button class="btn sm" id="xAdd">Add</button></div>
         ${(d.extras||[]).filter(x=>!x.done).length?`<div style="margin-top:8px">${(d.extras||[]).filter(x=>!x.done).map(x=>`<div class="flag"><span>${h(x.text)} <span class="note" style="margin:0">· ${h(fmt(x.at.slice(0,10)))}</span></span><button class="btn sm quiet" data-xrm="${x.id}">Remove</button></div>`).join('')}</div>`:''}
@@ -1753,7 +2008,7 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
     $('#gen').onclick=generateWeek; wireScales();
     $$('[data-dictate]').forEach(b=>b.onclick=()=>dictate(b.dataset.dictate,b));
     if(w) wirePassageTeacher(w, d, p);
-    renderTeacherAud(); renderTeacherBacking(); renderTeacherFree();
+    renderTeacherAud(); renderTeacherBacking(); renderTeacherFree(); renderTeacherGames();
     if(preview) renderPreview();
   }
   async function generateWeek(){
@@ -1878,7 +2133,7 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
     const W=(title,intro,steps)=>({title,intro,steps:steps.map(([name,minutes,caption])=>({name,minutes,caption}))});
     const WORK=['D major scale, two octaves','Twinkle variation A, first phrase','Bow nearer the bridge','Long slow bows'];
     const day=(t,intro,a,b)=>W(t,intro,[['Warm-up',3,'Long slow bows on the open D, the way Ms Taylor showed you.'],[a,7,a+', slowly. Once through, then once more.'],[b,7,b+'. Stop before it gets messy.'],['Wind down',3,'One last open D. Then stop; that is the session.']]);
-    const emre={profile:{name:'Sam',instrument:'violin',part:'Second violin',level:'beginner',goalLabel:'Grade 1 exam',goalDate:addDays(today(),150),sessionsPerWeek:7,minutes:20,reminder:'push',reward:'a hot chocolate after the next lesson',freeplay:{on:true,key:{tonic:7,mode:'major'},style:'ballad',tempo:80,seconds:120,idea:'mix'}},teacherName:'Ms Taylor',notes:[],extras:[{id:uid(),text:'Listen to the Twinkle variations recording once before the next lesson',at:new Date().toISOString(),done:false,by:'Ms Taylor'}],
+    const emre={profile:{name:'Sam',instrument:'violin',part:'Second violin',level:'beginner',goalLabel:'Grade 1 exam',goalDate:addDays(today(),150),sessionsPerWeek:7,minutes:20,reminder:'push',reward:'a hot chocolate after the next lesson',freeplay:{on:true,key:{tonic:7,mode:'major'},style:'ballad',tempo:80,seconds:120,idea:'mix'},unlockAll:true,secrets:['My first instrument was the recorder. I was seven and I played it every day for a year.','I once practised one tricky bar fifty times the night before a concert. Ask me which bar!','My favourite composer is Bach. I listen to him in the car.'],facts:{piece:'Twinkle, Twinkle, Little Star variations',composer:'traditional tune; Suzuki violin book 1',approvedAt:'2000-01-01',cards:['The Twinkle tune is French. It started as a song called “Ah! vous dirai-je, maman” in the 1700s.','Mozart loved the tune too. He wrote 12 variations on it for piano.','The English words come from a poem by Jane Taylor, printed in 1806.','The Alphabet Song and Baa Baa Black Sheep use the very same tune.','Shinichi Suzuki put the Twinkle variations at the very start of his violin method, so pupils all over the world begin with them.','D major has two sharps: F sharp and C sharp. You play both in this week’s scale.'],quiz:[{q:'Which composer wrote 12 variations on the Twinkle tune?',options:['Mozart','Beethoven','Bach'],answer:0,card:1},{q:'The Twinkle tune first came from which country?',options:['Italy','France','Germany'],answer:1,card:0},{q:'Which other song uses the same tune?',options:['Happy Birthday','Jingle Bells','The Alphabet Song'],answer:2,card:3}]}},teacherName:'Ms Taylor',notes:[],extras:[{id:uid(),text:'Listen to the Twinkle variations recording once before the next lesson',at:new Date().toISOString(),done:false,by:'Ms Taylor'}],
       flags:[{id:uid(),text:'G string squeaks on down bows',at:new Date().toISOString(),resolved:false},{id:uid(),text:'Got the third-finger F sharp in tune three times in a row',at:new Date().toISOString(),resolved:false}],tokens:{earned:4,redeemed:0},
       weeks:[{id:uid(),createdAt:addDays(today(),-3),lessonDate:addDays(today(),-3),nextLesson:addDays(today(),4),workedOn:'D major scale, bow contact point nearer the bridge, first phrase of Twinkle variation A. Rushes the scale.',line:"Lovely tone today. Don't rush the scale.",encouragement:'A short session every day and the lesson takes care of itself.',
         sessions:[day('Slowly','Ms Taylor said: don\'t rush the scale. Everything slowly today.',WORK[0],WORK[1]),day('Nearer the bridge','Ms Taylor said: bow nearer the bridge. That is the whole of today.',WORK[2],WORK[1]),day('From memory','Music away today. Say the note names as you play.',WORK[0],WORK[3]),day('The F sharp','Ms Taylor said the F sharp was low in the lesson. Slowly, and listen for it yourself.',WORK[1],WORK[0]),day('Long notes','Ms Taylor said: nearer the bridge on the long notes. Nothing new today.',WORK[2],WORK[3]),day('Once through','Play each thing once, properly, as you would for Ms Taylor.',WORK[0],WORK[1]),day('Ready for Saturday','Short and tidy. Then rest.',WORK[1],WORK[2])],
@@ -1966,10 +2221,10 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
     sb.auth.onAuthStateChange(async(_e,sess)=>{ const was=!!sbUser; sbUser=sess?.user||null; if(sbUser&&!was){ $('#dlg').close(); await enterCloud(); } });
     if(sbUser) await enterCloud();
   })();
-  // deep link into the demo: ?demo=pupil|teacher|group|lessons|journey|goal|share|done|free (nothing is saved)
+  // deep link into the demo: ?demo=pupil|teacher|group|lessons|journey|goal|share|done|free|beat|echo|reward|treat|quiz (nothing is saved)
   (function(){ const q=new URLSearchParams(location.search).get('demo'); if(!q) return; enterDemo();
     const v=q.toLowerCase(); const wait=ms=>new Promise(r=>setTimeout(r,ms));
-    wait(50).then(()=>{ if(v==='teacher'){ setDemoRole('teacher'); } else if(v==='group'){ setDemoRole('teacher'); renderGroup(); } else if(v==='message'){ setDemoRole('teacher'); renderMessage(); } else if(v==='share'){ setDemoRole('share'); } else if(v==='pupilpage'){ setDemoRole('teacher'); current=students[0]; renderTStudent(); show('tstudent'); } else { setDemoRole('pupil'); if(v==='journey') renderJourney(); else if(v==='goal') renderGoal(); else if(v==='done'){ const w=week(); si=nextIndex(w); sess=w.sessions[si]; finish(true); } else if(v==='free'){ const w=week(); si=nextIndex(w); sess=w.sessions[si]; finish(true); fpIntro(); } else if(v==='fermata'){ $('#fermata').classList.add('on'); } else if(v==='pupil2'){ current=students[1]; renderToday(); } else if(v==='passage'){ renderToday(); const c=$('#pgCard'); if(c) wait(100).then(()=>c.scrollIntoView({block:'start'})); } } }); })();
+    wait(50).then(()=>{ if(v==='teacher'){ setDemoRole('teacher'); } else if(v==='group'){ setDemoRole('teacher'); renderGroup(); } else if(v==='message'){ setDemoRole('teacher'); renderMessage(); } else if(v==='share'){ setDemoRole('share'); } else if(v==='pupilpage'){ setDemoRole('teacher'); current=students[0]; renderTStudent(); show('tstudent'); } else { setDemoRole('pupil'); if(v==='journey') renderJourney(); else if(v==='goal') renderGoal(); else if(v==='done'){ const w=week(); si=nextIndex(w); sess=w.sessions[si]; finish(true); } else if(v==='free'){ const w=week(); si=nextIndex(w); sess=w.sessions[si]; finish(true); fpIntro(); } else if(v==='beat'){ renderBeat(nextIndex(week())); } else if(v==='echo'){ renderEcho(nextIndex(week())); } else if(v==='reward'||v==='treat'){ const w=week(); si=nextIndex(w); sess=w.sessions[si]; finish(true); const dd=w.done.find(x=>x.i===si); dd.note='Demo: slowed the top notes down and the F sharp settled.'; dd.earned=true; if(v==='reward') renderReward(); else renderTreat(dd); } else if(v==='quiz'){ renderQuiz(); } else if(v==='fermata'){ $('#fermata').classList.add('on'); } else if(v==='pupil2'){ current=students[1]; renderToday(); } else if(v==='passage'){ renderToday(); const c=$('#pgCard'); if(c) wait(100).then(()=>c.scrollIntoView({block:'start'})); } } }); })();
 })();
 </script>
 </body>

@@ -71,7 +71,7 @@ a{color:var(--ink); text-underline-offset:3px}
       Stuckato is used by children. This page is written to be read by a parent in five minutes, not by a
       lawyer. If anything here is unclear, that is our fault and we want to know.
     </p>
-    <p class="asof">Last updated 22 November 2026.</p>
+    <p class="asof">Last updated 23 November 2026.</p>
   </header>
 
   <section>
@@ -103,6 +103,7 @@ a{color:var(--ink); text-underline-offset:3px}
           <tr><td>Audio recordings</td><td>Only when someone chooses to record: the teacher's passage, or a pupil's play-through. Stored in the studio's folder.</td></tr>
           <tr><td>Backing tracks</td><td>Only if the teacher switches them on and the pupil keeps a track: the pupil's recording plus the chords and style chosen, in a private folder only the pupil, the account holder and their teacher can open. Up to five a week. The backing itself is made on the device; no audio is sent anywhere to make it. A teacher's exam accompaniment is stored privately too, for their studio only. If the teacher links a backing track on YouTube instead, it plays in YouTube's privacy-enhanced player (youtube-nocookie.com), so YouTube receives what any embedded video sends; nothing about the pupil is passed to it, and nothing is copied from YouTube. The pupil's recording with it (audio, or video for adults who choose it) is stored the same private way.</td></tr>
           <tr><td>Free play</td><td>Only if the teacher switches it on: on which day the pupil played over a backing loop, for how long, the key and style the teacher chose, and the pupil's answer to "Did you play anything you liked?". Nothing is recorded and the microphone is not used. The loop is made on the device.</td></tr>
+          <tr><td>Games and the ear warm-up</td><td>Scores from the warm-up games (stars, how many echoes matched), which treat card was picked, a guess at the week's mystery tune and lesson-day quiz scores, all kept with the day's practice. In "Echo it" the pupil can sing or play three or four notes back: the microphone is listened to on the device to compare the notes, and the sound is then thrown away. Only if the teacher switches it on, for a pupil aged 13 or over whose family agreed to sound recordings, is a take the app could not hear clearly saved for the teacher to listen to, the same private way as other recordings. Nothing in the games marks a note wrong.</td></tr>
           <tr><td>A cloned teaching voice</td><td>Only if a teacher opts in, and only of the teacher. Never of a pupil. Removable from the app.</td></tr>
         </tbody>
       </table>
@@ -148,7 +149,7 @@ a{color:var(--ink); text-underline-offset:3px}
           <tr><td>Supabase</td><td>The database, sign-in and audio storage. This is where your practice data actually sits.</td></tr>
           <tr><td>Vercel</td><td>Serves the website and runs the small functions behind it.</td></tr>
           <tr><td>Resend</td><td>Sends the sign-in link and reminder emails. It sees your email address.</td></tr>
-          <tr><td>Anthropic</td><td>Turns the teacher's note into the week's sessions. It sees the note and the pupil's first name, not your email or your history.</td></tr>
+          <tr><td>Anthropic</td><td>Turns the teacher's note into the week's sessions. It sees the note and the pupil's first name, not your email or your history. When a teacher asks, it also drafts fact cards about a piece: for that it sees only the piece's title, its composer and the instrument, nothing about the pupil, and the teacher approves every card before a pupil sees it.</td></tr>
           <tr><td>ElevenLabs</td><td>Only for teachers: if a teacher opts into a cloned voice, it sees that teacher's recordings; if a teacher dictates a lesson note in a browser without built-in dictation, it turns that recording into text. It never receives anything from a pupil.</td></tr>
         </tbody>
       </table>
