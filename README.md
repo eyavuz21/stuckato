@@ -14,6 +14,15 @@ Stuckato has two sides. The **teacher** writes a thirty-second note after each l
 
 **Why not Yousician?** Yousician is for people without a teacher: it listens through the phone, lights each note green or red against its own library, and covers guitar, piano, bass, ukulele and voice. Stuckato is for the six days between lessons, run by the teacher. The week is her note, in her voice, for the actual piece; the teacher sees what happened; violin, cello, wind, brass and choirs are in; the point is turning up on Wednesday, not scoring notes. Where Stuckato does listen (the week's passage, below), it compares the pupil to the teacher's own playing, points at the bars that differ, and leaves the judgement to her. Nobody else has the teacher in the loop.
 
+## What's in v0.13 (22 November 2026): free play
+
+Off for every pupil until the teacher switches it on in the pupil's page (keep it off for pilot pupils); `?demo=free` shows it in the demo. No SQL needed: the settings live on the pupil's profile and the time on the session.
+
+- **The teacher sets it.** A switch per pupil, then the key (match the piece or the scale of the week; the sounding key for transposing instruments), the backing (piano ballad, strings, acoustic, lo-fi beat), the speed, the length (1, 2 or 3 minutes) and a starting idea, with "Hear the backing" to try it. Stored as `profile.freeplay`.
+- **The pupil plays.** After the day's sentence, "Then free play" on the Done screen. The loop plays out loud with the same sampled instruments as the backing tracks; the screen shows the time left, the chord now and next with a beat counter, the seven notes of the key with the chord's notes filled in (spelt properly: F sharp in G major, the raised seventh in minor keys when the V chord is major), and an idea that changes every 30 seconds unless the teacher picked one (three notes only, short bursts, long notes, question and answer, borrow a rhythm, finish at home). Nothing is marked right or wrong and the microphone is not used.
+- **What is kept.** On the session's done entry, `free {sec, plays, liked, at, key, style}`, with one question at the end: "Did you play anything you liked?" It never adds practice minutes. The teacher sees it on the pupil's day lines and in the Free play card ("liked an idea: ask them to play it to you"); the CSV has `freeplay_sessions` and `freeplay_minutes`, kept apart from `minutes_done`.
+- **Also fixed.** The buttons under Done ("Then play with the backing track", "Then free play") now save the sentence first; before, they said "Write the sentence first" even when it was written.
+
 ## What's in v0.11 (4 October 2026): backing tracks
 
 Off for every pupil until the teacher switches it on in the pupil's page (pilot pupils stay as they were); add `?backing=1` to the URL to try it on any device. Pupils' tracks need the v0.10 SQL (the private bucket); the exam accompaniment also needs `supabase/v0.11-backing.sql` run once.

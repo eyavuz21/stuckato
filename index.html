@@ -190,6 +190,17 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
 .skill.getting{border-left:8px solid var(--win)}
 .feel button.on{background:var(--win) !important; color:var(--win-ink) !important; border-color:var(--ink) !important}
 .check li.on i, .ticks li.on i{background:var(--win) !important; border-color:var(--ink) !important} .ticks li.on{border-color:var(--ink) !important; background:var(--win-soft) !important}
+/* free play (22 Nov 2026): a minute or three of making it up over a backing loop, after the session */
+#fpStart{background:var(--win) !important; color:var(--win-ink) !important; border:2px solid var(--ink) !important}
+.fp-clock{display:flex; justify-content:space-between; align-items:baseline; gap:12px} .fp-time{font-size:52px; font-weight:800; line-height:1; font-variant-numeric:tabular-nums}
+.fp-prog{height:8px; border-radius:999px; background:var(--stave); overflow:hidden; margin:12px 0 16px} .fp-prog i{display:block; height:100%; width:0; background:var(--ink)}
+.fp-chord{display:flex; align-items:center; justify-content:space-between; gap:12px} .fp-now{font-size:60px; font-weight:800; line-height:1}
+.fp-dots{display:flex; gap:6px; justify-content:flex-end; margin-top:6px} .fp-dots span{width:10px; height:10px; border-radius:50%; background:var(--line)} .fp-dots span.on{background:var(--ink)}
+.fp-notes{display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:6px; margin-top:4px} .fp-note{display:grid; justify-items:center; gap:2px}
+.fp-note b{display:grid; place-items:center; width:100%; max-width:46px; aspect-ratio:1; border-radius:50%; border:1.5px solid var(--line); background:var(--paper); font-size:15px}
+.fp-note.tone b{background:var(--ink); color:var(--paper); border-color:var(--ink)} .fp-note small{font-size:11px; font-weight:700; color:var(--muted); min-height:14px}
+.fp-idea{border-left:6px solid var(--ink); padding:2px 0 2px 14px} .fp-idea b{display:block; font-size:19px}
+.fp-win{color:var(--win); font-size:52px; font-weight:800; line-height:1; font-variant-numeric:tabular-nums; animation:pop .5s ease-out both}
 </style>
 </head>
 <body>
@@ -265,8 +276,11 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
       <div id="tailor" hidden style="margin-top:10px"></div></div>
     <button class="btn block" id="doneBack" disabled>Write a sentence to finish</button>
     <button class="btn block quiet" id="donePassage" hidden style="margin-top:8px">Then record the week's passage</button>
+    <button class="btn block quiet" id="doneFree" hidden style="margin-top:8px">Then free play</button>
     <p class="note" style="text-align:center">Sleep on it. That's when it sticks.</p>
   </section>
+  <!-- STUDENT: FREE PLAY (after the session; the teacher switches it on) -->
+  <section class="view" id="v-free"></section>
   <!-- STUDENT: JOURNEY -->
   <section class="view" id="v-journey"></section>
   <!-- STUDENT: GOAL -->
@@ -356,7 +370,7 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
   }
 
   // ------------------------------------------------------------ routing
-  function show(v){ $$('.view').forEach(x=>x.classList.toggle('on', x.id==='v-'+v)); $$('#tabs button').forEach(b=>b.classList.toggle('on', b.dataset.v===v||(v==='trail'&&b.dataset.v==='today'))); const bar=$('#startbar'); bar.hidden=!(v==='trail'&&bar.innerHTML); window.scrollTo({top:0}); }
+  function show(v){ if(v!=='free'&&typeof fpHalt==='function') fpHalt(); $$('.view').forEach(x=>x.classList.toggle('on', x.id==='v-'+v)); $$('#tabs button').forEach(b=>b.classList.toggle('on', b.dataset.v===v||(v==='trail'&&b.dataset.v==='today'))); const bar=$('#startbar'); bar.hidden=!(v==='trail'&&bar.innerHTML); window.scrollTo({top:0}); }
   function setTabs(role){
     const t=$('#tabs');
     if(!role){ t.hidden=true; t.innerHTML=''; return; }
@@ -1140,7 +1154,7 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
     const w=week(); const d=(w.done||[]).find(x=>x.i===si)||{};
     $('#doneTitle').textContent=`Day ${doneCount(w)} of ${w.sessions.length}.`+(evCount(w)>1?` ${evCount(w)} this week.`:' Nicely done.'); $('#doneSub').textContent=(d.minutes?`${d.minutes} of ${d.target||planMinutes(sess)} minutes${d.own?', on your own':''}. `:(d.own?'Practised on your own. ':`${sess.steps.reduce((a,x)=>a+(+x.minutes||0),0)} minutes. `))+(d.short?'Shorter than planned; your teacher will see why. ':'')+(d.note?'':'Write what changed and the token is yours.');
     $('#reflWho').textContent=doc().teacherName||'your teacher'; $('#refl').value=d.note||''; $('#refl').dataset.via=d.noteVia||''; updateReflBtn();
-    renderWorked(); $$('#feel button').forEach(b=>{ b.classList.toggle('on', b.dataset.f===d.feel); }); $('#tailor').hidden=true; $('#donePassage').hidden=!(PASSAGE_ON?w.passage:w.accomp); $('#donePassage').textContent=PASSAGE_ON&&w.passage?"Then record the week's passage":'Then play with the backing track';
+    renderWorked(); $$('#feel button').forEach(b=>{ b.classList.toggle('on', b.dataset.f===d.feel); }); $('#tailor').hidden=true; $('#donePassage').hidden=!(PASSAGE_ON?w.passage:w.accomp); $('#donePassage').textContent=PASSAGE_ON&&w.passage?"Then record the week's passage":'Then play with the backing track'; $('#doneFree').hidden=!fpOn(); $('#doneFree').textContent=`Then free play · ${fpSet().seconds/60} min`;
     $('#doneJoy').innerHTML=thenNowHTML(w)+surpriseHTML(w, si); show('done'); if(!d.note) playFlourish();
   }
   function updateReflBtn(){ const ok=$('#refl').value.trim().length>=20; const b=$('#doneBack'); b.disabled=!ok; b.textContent=ok?'Done for today':'Write a sentence to finish'; $('#reflHint').textContent=ok?'':'A sentence or two, or tap Dictate and say it.'; }
@@ -1165,14 +1179,103 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
       t.innerHTML=`<div class="label">Which bit?</div><ul class="ticks" id="hardList">${items.map(it=>`<li class="${d?.hard===it?'on':''}" data-hb="${h(it)}"><i></i><span>${h(it)}</span></li>`).join('')}</ul><p class="note" id="hardNote" style="margin:6px 0 0">${d?.hard?'Noted for the next lesson. Hard days count double.':'Tap the one that was hard. It goes to '+h(doc().teacherName||'your teacher')+' for the next lesson.'}</p>`;
       $$('#hardList li').forEach(li=>li.onclick=()=>{ const it=li.dataset.hb; const f=doc().flags=doc().flags||[]; if(d.hard){ const old=f.find(x=>x.id===d.hardFlag); if(old) old.text='Hard: '+it; } else { const id=uid(); f.push({id, text:'Hard: '+it, at:new Date().toISOString(), resolved:false, by:'pupil'}); d.hardFlag=id; } d.hard=it; saveCurrent(); b.onclick(); }); }
     else t.innerHTML = b.dataset.f==='Easy'?'<b>Easy.</b> Good to know; your teacher will see it and can move you on.':'<b>Noted.</b> Steady is the point. Sleep does the rest.'; });
-  $('#donePassage').onclick=()=>{ const w=week(); const d=(w.done||[]).find(x=>x.i===si); if(d&&!d.note){ toast('Write the sentence first.'); return; } if(!(PASSAGE_ON&&w.passage)&&w.accomp){ (w.accomp.kind==='youtube'?bkStartYoutube:bkStartAccomp)(); return; } renderJourney(true); const c=$('#pgCard'); if(c) c.scrollIntoView({behavior:'smooth',block:'center'}); };
-  $('#doneBack').onclick=()=>{ const w=week(); const d=(w.done||[]).find(x=>x.i===si); const txt=$('#refl').value.trim(); if(!d||txt.length<20){ updateReflBtn(); return; }
+  // The buttons under Done save the sentence first (it used to say "Write the sentence first" even when it was written but not yet saved).
+  $('#donePassage').onclick=()=>{ const w=week(); if(!saveNote()){ toast('Write the sentence first.'); return; } if(!(PASSAGE_ON&&w.passage)&&w.accomp){ (w.accomp.kind==='youtube'?bkStartYoutube:bkStartAccomp)(); return; } renderJourney(true); const c=$('#pgCard'); if(c) c.scrollIntoView({behavior:'smooth',block:'center'}); };
+  $('#doneFree').onclick=()=>{ if(!saveNote()){ toast('Write the sentence first.'); return; } fpIntro(); };
+  $('#doneBack').onclick=()=>{ if(saveNote()) renderJourney(true); };
+  function saveNote(){ const w=week(); const d=(w.done||[]).find(x=>x.i===si); const txt=$('#refl').value.trim(); if(!d||txt.length<20){ updateReflBtn(); return false; }
     const first=!d.note; d.note=txt; d.noteVia=$('#refl').dataset.via||'typed'; d.noteAt=new Date().toISOString();
     const onBreak=!!breakInfo();
     if(!d.earned){ const t=doc().tokens||(doc().tokens={earned:0,redeemed:0}); t.earned=(t.earned||0)+(onBreak?2:1); d.earned=true; if(onBreak) d.breakBonus=true; }
     const bonus=maybeWeekBonus(w); saveCurrent(); if(first) notifyTeacher(d, w);
     if(first) setTimeout(checkMilestone, 900);
-    toast(bonus?'Week complete: two bonus tokens.':first?(onBreak?'Saved. Two tokens: it counts double over the break.':'Saved. Token earned.'):'Saved.'); renderJourney(true); };
+    toast(bonus?'Week complete: two bonus tokens.':first?(onBreak?'Saved. Two tokens: it counts double over the break.':'Saved. Token earned.'):'Saved.'); return true; }
+
+  // ------------------------------------------------------------ free play (22 Nov 2026): a minute or three of making it up over a backing loop, after the session.
+  // Off unless the teacher switches it on for the pupil (profile.freeplay.on); the key, backing, speed, length and starting idea are the teacher's.
+  // Nothing is marked right or wrong and nothing is recorded: the loop plays through BackingAudio and the pupil plays over it.
+  // The time goes on the session's done entry as d.free {sec, plays, liked, at, key, style} and never adds to practice minutes.
+  const FP_DEF={on:false, key:{tonic:7, mode:'major'}, style:'ballad', tempo:80, seconds:120, idea:'mix'};
+  const FP_IDEAS=[
+    {id:'three', k:'Three notes only', t:'Pick any three of the notes above and make a tune with just those.'},
+    {id:'short', k:'Short bursts', t:'Play everything short and bouncy, like staccato dots.'},
+    {id:'long', k:'Long notes', t:'Hold each note for the whole chord. Listen to how it changes when the chord moves.'},
+    {id:'qa', k:'Question and answer', t:'Play a short phrase, then answer it with a different one.'},
+    {id:'rhythm', k:'Borrow a rhythm', t:"Take a rhythm from this week's piece and play it on new notes."},
+    {id:'home', k:'Finish at home', t:'End each phrase on {HOME}, the home note.'}];
+  const FP_LIKED={yes:'liked an idea', bit:'liked it a bit', no:'not today'};
+  const fpSet=d=>Object.assign({}, FP_DEF, ((d||doc()).profile||{}).freeplay||{});
+  const fpOn=d=>!!window.BackingAudio&&!!(((d||doc()).profile||{}).freeplay||{}).on;
+  function fpTime(s){ s=Math.max(0,Math.ceil(s)); return Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); }
+  // the seven notes of the key, spelt by letter (F sharp in G major, B flat in F major); a minor key also carries its raised seventh for the major V chord
+  function fpScale(key){ const LET=['C','D','E','F','G','A','B'], NAT=[0,2,4,5,7,9,11]; const L=LET.indexOf(Backing.NAMES[key.tonic][0]);
+    const sp=(li,pcv)=>{ let df=((pcv-NAT[li])%12+12)%12; if(df>6) df-=12; return LET[li]+({'1':'♯','2':'𝄪','-1':'♭','-2':'𝄫'}[df]||''); };
+    const out=(key.mode==='minor'?[0,2,3,5,7,8,10]:[0,2,4,5,7,9,11]).map((s,i)=>{ const li=(L+i)%7, pcv=(key.tonic+s)%12; return {pc:pcv, name:sp(li,pcv), home:i===0}; });
+    if(key.mode==='minor'){ const li=(L+6)%7, pcv=(key.tonic+11)%12; out[6].alt={pc:pcv, name:sp(li,pcv)}; }
+    return out; }
+  function fpChordName(c, sc){ const alt=sc[6].alt; const hit=sc.find(n=>n.pc===c.r)||(alt&&alt.pc===c.r?alt:null); return (hit?hit.name:Backing.NAMES[c.r])+Backing.chordName(c).slice(Backing.NAMES[c.r].length); }
+  function fpIdea(set, sec){ const f=set.idea!=='mix'&&FP_IDEAS.find(x=>x.id===set.idea); return f||FP_IDEAS[Math.floor(sec/30)%FP_IDEAS.length]; }
+  const fpRecipe=(s, secs)=>({v:1, mode:'along', style:s.style, key:s.key, tempo:s.tempo, chords:Backing.loopChords(s.key, s.style, s.tempo, secs), volume:0.75});
+  let fp=null; // the free play under way: {p, set, sc, chords, ci, tick, done}
+  function fpIntro(){ const set=fpSet(), tn=doc().teacherName||'your teacher';
+    $('#v-free').innerHTML=`<div class="eyebrow">Practice done · one more thing</div><h2 class="big">Free play</h2>
+      <div class="card"><div class="label">${set.seconds/60} min · ${h(Backing.keyName(set.key))} · ${h(Backing.STYLE_LABEL[set.style]||'Backing')}</div>
+        <p style="margin:0">No right or wrong notes. Play anything you like over the backing. Stuckato shows you the notes that fit and gives you an idea to start with.</p>
+        <p class="note" style="margin:8px 0 0">Set by ${h(tn)}. Nothing is recorded. Let the backing play out loud.</p></div>
+      <button class="btn block" id="fpStart">Start free play</button><button class="btn block quiet" id="fpSkip" style="margin-top:8px">Not today</button><p class="note" id="fpSt" style="text-align:center"></p>`;
+    $('#fpStart').onclick=fpStart; $('#fpSkip').onclick=()=>renderJourney(true); show('free'); }
+  async function fpStart(){ const set=fpSet(), b=$('#fpStart'); b.disabled=true; b.textContent='Loading the backing…';
+    const sc=fpScale(set.key), recipe=fpRecipe(set, set.seconds); let p;
+    try{ p=await BackingAudio.preview({recipe}); }
+    catch(e){ b.disabled=false; b.textContent='Start free play'; $('#fpSt').textContent='The backing would not play ('+(e.message||e)+'). Check the sound is on, then try again.'; return; }
+    fp={p, set, sc, chords:recipe.chords, ci:-1, done:false};
+    $('#v-free').innerHTML=`<div class="eyebrow">Free play · ${h(Backing.keyName(set.key))}</div>
+      <div class="card"><div class="fp-clock"><span class="fp-time" id="fpTime">${fpTime(set.seconds)}</span><span class="note" style="margin:0">left of ${fpTime(set.seconds)}</span></div><div class="fp-prog"><i id="fpProg"></i></div>
+        <div class="fp-chord"><span class="fp-now" id="fpChord"></span><div style="text-align:right"><div class="note" style="margin:0" id="fpNext"></div><div class="fp-dots" id="fpDots"><span></span><span></span><span></span><span></span></div></div></div></div>
+      <div class="card"><div class="label">Notes that fit</div><div class="fp-notes" id="fpNotes"></div><p class="note" style="margin:8px 0 0">Dark notes are in the chord right now. Any of them sound good.</p></div>
+      <div class="card"><div class="fp-idea"><b id="fpIdeaT"></b><span id="fpIdeaD"></span></div></div>
+      <button class="btn block quiet" id="fpStop">I'm finished</button>`;
+    $('#fpStop').onclick=fpEnd; p.ended.then(fpEnd); fp.tick=setInterval(fpFrame, 100); fpFrame(); }
+  function fpFrame(){ if(!fp||fp.done) return; const set=fp.set, el=fp.p.started(); if(el>=set.seconds){ fpEnd(); return; }
+    if(!$('#fpTime')) return; let i=fp.chords.findIndex(c=>el>=c.t&&el<c.t+c.d); if(i<0) i=0; const c=fp.chords[i], n=fp.chords[Math.min(fp.chords.length-1,i+1)];
+    $('#fpTime').textContent=fpTime(set.seconds-el); $('#fpProg').style.width=(el/set.seconds*100).toFixed(1)+'%';
+    const pos=Math.min(3,Math.floor((el-c.t)/(60/set.tempo))); $$('#fpDots span').forEach((s,k)=>s.classList.toggle('on',k<=pos));
+    if(i!==fp.ci){ fp.ci=i; const pcs=Backing.chordPcs(c);
+      $('#fpChord').textContent=fpChordName(c, fp.sc); $('#fpNext').textContent='Next: '+fpChordName(n, fp.sc);
+      $('#fpNotes').innerHTML=fp.sc.map(x=>{ const u=x.alt&&pcs.includes(x.alt.pc)?x.alt:x; return `<div class="fp-note ${pcs.includes(u.pc)?'tone':''}"><b>${h(u.name)}</b><small>${x.home?'home':''}</small></div>`; }).join(''); }
+    const idea=fpIdea(set, el); $('#fpIdeaT').textContent=idea.k; $('#fpIdeaD').textContent=idea.t.replace('{HOME}', fp.sc[0].name); }
+  function fpHalt(){ // stop the loop and keep the time on today's session; returns the seconds played
+    if(!fp||fp.done) return null; fp.done=true; clearInterval(fp.tick); const sec=Math.round(Math.min(fp.set.seconds, fp.p.started())); try{ fp.p.stop(); }catch(e){}
+    const w=week(), d=w&&(w.done||[]).find(x=>x.i===si);
+    if(d&&sec>=5){ const f=d.free||(d.free={sec:0, plays:0}); f.sec+=sec; f.plays=(f.plays||0)+1; f.at=new Date().toISOString(); f.key=Backing.keyName(fp.set.key); f.style=fp.set.style; saveCurrent(); }
+    return {sec, d}; }
+  function fpEnd(){ const r=fpHalt(); if(!r) return; if(r.sec<5){ fpIntro(); return; } fpDone(r.sec, r.d); }
+  function fpDone(sec, d){ const tn=doc().teacherName||'your teacher'; const L=[['yes',"Yes, I'd play it again"],['bit','A bit'],['no','Not today']];
+    $('#v-free').innerHTML=`<div class="card joy"><div class="label">Free play</div><div class="fp-win">${fpTime(sec)}</div><p style="margin:8px 0 0">of free play. ${h(tn)} sees it next to today's practice, on its own line.</p></div>
+      <div class="card"><div class="label">Did you play anything you liked?</div><div class="chips" id="fpLike">${L.map(([v,l])=>`<button type="button" class="chip ${d&&d.free&&d.free.liked===v?'on':''}" data-like="${v}">${h(l)}</button>`).join('')}</div><p class="note" style="margin:0">Liked something? Play it to ${h(tn)} at your next lesson.</p></div>
+      <button class="btn block" id="fpFinish">Done</button><button class="btn block quiet" id="fpAgain" style="margin-top:8px">Play again</button>`;
+    $$('#fpLike [data-like]').forEach(b=>b.onclick=()=>{ if(d&&d.free){ d.free.liked=b.dataset.like; saveCurrent(); } $$('#fpLike button').forEach(x=>x.classList.toggle('on', x===b)); });
+    $('#fpFinish').onclick=()=>renderJourney(true); $('#fpAgain').onclick=fpIntro; show('free'); }
+  // teacher: the switch and the settings on the pupil's page, and this week's free play underneath
+  function renderTeacherFree(){ const box=$('#tFree'); if(!box||!current||!window.BackingAudio) return; const d=current.data, p=d.profile, name=p.name||'this pupil'; const s=fpSet(d);
+    const w=d.weeks.length?d.weeks[d.weeks.length-1]:null; const fr=w?(w.done||[]).filter(x=>x.free&&x.free.sec).sort((a,b)=>a.i-b.i):[];
+    box.innerHTML=`<div class="card"><h3>Free play</h3>
+      <label class="switch" style="font-size:15px;color:var(--ink)"><input type="checkbox" id="fpOnT" ${s.on?'checked':''}> Switch on for ${h(name)}</label>
+      <div class="note" style="margin:4px 0 10px">After each session ${h(name)} can make things up over a backing loop. Stuckato shows the notes that fit and an idea to start with. Nothing is marked right or wrong and nothing is recorded. It never adds practice minutes: you see it on its own line.</div>
+      <div class="grid2">
+        <div><label class="l" for="fpKey">Key</label><select id="fpKey">${keyOptions(s.key)}</select><div class="note" style="margin:4px 0 0">Match the piece or the scale of the week. For a clarinet, trumpet or saxophone pick the sounding key.</div></div>
+        <div><label class="l" for="fpStyle">Backing</label><select id="fpStyle">${Backing.STYLES.along.map(x=>`<option value="${x}" ${s.style===x?'selected':''}>${h(Backing.STYLE_LABEL[x])}</option>`).join('')}</select></div>
+        <div><label class="l" for="fpTempo">Speed, beats a minute</label><input type="number" id="fpTempo" min="50" max="140" step="5" value="${h(s.tempo)}"></div>
+        <div><label class="l" for="fpLen">How long</label><select id="fpLen">${[60,120,180].map(x=>`<option value="${x}" ${+s.seconds===x?'selected':''}>${x/60} min</option>`).join('')}</select></div>
+        <div style="grid-column:1/-1"><label class="l" for="fpIdeaSel">Starting idea</label><select id="fpIdeaSel"><option value="mix" ${s.idea==='mix'?'selected':''}>Mix it up (a new idea every 30 seconds)</option>${FP_IDEAS.map(i=>`<option value="${i.id}" ${s.idea===i.id?'selected':''}>${h(i.k)}</option>`).join('')}</select></div></div>
+      <div class="row" style="margin-top:10px"><button class="btn sm" id="fpSaveT">Save free play</button><button class="btn sm quiet" id="fpHearT">Hear the backing</button></div>
+      ${fr.length?`<div class="label" style="margin-top:14px">This week</div>${fr.map(x=>`<div class="daybox"><p style="margin:0">Day ${x.i+1} · ${fpTime(x.free.sec)} of free play${x.free.plays>1?' in '+x.free.plays+' goes':''}${x.free.liked?' · '+h(FP_LIKED[x.free.liked]||''):''}</p></div>`).join('')}${fr.some(x=>x.free.liked==='yes')?`<div class="note">${h(name)} liked an idea. Ask them to play it to you, then build on it together.</div>`:''}`:(s.on&&w?`<div class="note">Free play shows here once ${h(name)} has a go.</div>`:'')}</div>`;
+    const read=()=>{ const [t,m]=$('#fpKey').value.split(':'); return {on:$('#fpOnT').checked, key:{tonic:+t, mode:m}, style:$('#fpStyle').value, tempo:Math.max(50,Math.min(140,+$('#fpTempo').value||80)), seconds:+$('#fpLen').value||120, idea:$('#fpIdeaSel').value}; };
+    $('#fpOnT').onchange=()=>{ p.freeplay=read(); saveCurrent(); toast(p.freeplay.on?'Free play is on for '+name+'.':'Free play is off for '+name+'.'); };
+    $('#fpSaveT').onclick=()=>{ p.freeplay=read(); saveCurrent(); toast('Free play saved.'); };
+    let fpPrev=null; $('#fpHearT').onclick=async e=>{ const b=e.target; if(fpPrev){ fpPrev.stop(); fpPrev=null; b.textContent='Hear the backing'; return; }
+      b.textContent='Loading…'; try{ fpPrev=await BackingAudio.preview({recipe:fpRecipe(read(), 16)}); b.textContent='Stop'; fpPrev.ended.then(()=>{ fpPrev=null; b.textContent='Hear the backing'; }); }
+      catch(err){ fpPrev=null; b.textContent='Hear the backing'; toast('Could not play it: '+(err.message||err)); } }; }
 
   // ------------------------------------------------------------ journey
   let recBlob=null, recCap=null, recStartedAt=0;
@@ -1495,6 +1598,8 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
     ['passage_takes','Takes of the week\'s passage the pupil sent (one per day at most). Blank if the teacher set no passage.'],
     ['passage_first_off','Notes that differed from the teacher\'s passage on the first take of the week: wrong, missing and extra added together. Blank if no take.'],
     ['passage_last_off','The same on the last take of the week. First minus last is the week\'s movement on the passage.'],
+    ['freeplay_sessions','Sessions followed by free play, any length over five seconds. Blank if free play was never switched on for the pupil.'],
+    ['freeplay_minutes','Minutes of free play across the week, to one decimal. Kept apart: never part of minutes_done.'],
     ['exported_at','When the file was made.']];
   function weekRow(st, w, k, exportedAt){
     const d=st.data, p=d.profile||{}, b=d.baseline||{}; const done=(w.done||[]).filter(x=>x.at);
@@ -1502,7 +1607,7 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
     const doneMin=done.reduce((a,x)=>a+(x.minutes!=null?+x.minutes:(x.own?0:(planned[x.i]?planned[x.i].steps.reduce((m,y)=>m+(+y.minutes||0),0):0))),0);
     const days=new Set(done.map(x=>String(x.at).slice(0,10))).size; const short=done.filter(x=>x.short); const gl=goalLight(d);
     const o=w.outcome||{}, pu=w.pulse||{}; const r=(n,dn)=>dn?Math.round(n/dn*1000)/1000:'';
-    return [st.user_id, p.name||'', p.instrument||'', p.level||'', k+1, w.lessonDate||w.createdAt||'', w.nextLesson||'', planned.length, done.length, r(done.length,planned.length), planMin, doneMin, r(doneMin,planMin), days, short.length, short.map(x=>x.reason||'').join('|'), done.filter(x=>x.note).length, done.filter(x=>x.check==='ok').length, done.filter(x=>x.check==='no').length, w.recording?1:0, pu.ready||'', pu.want||'', o.attendance||'', o.prepared||'', o.progress||'', gl?gl.k:'', b.w1Days??'', b.w1Minutes??'', b.w2Days??'', b.w2Minutes??'', b.attendedOf4??'', b.prepared??'', b.progress??'', ...(w.passage?[(w.takes||[]).length, (()=>{ const t=takesOff(w).slice().sort((a,b)=>(a.at||'').localeCompare(b.at||'')); return [t.length?t[0].off:'', t.length?t[t.length-1].off:'']; })()].flat():['','','']), exportedAt];
+    return [st.user_id, p.name||'', p.instrument||'', p.level||'', k+1, w.lessonDate||w.createdAt||'', w.nextLesson||'', planned.length, done.length, r(done.length,planned.length), planMin, doneMin, r(doneMin,planMin), days, short.length, short.map(x=>x.reason||'').join('|'), done.filter(x=>x.note).length, done.filter(x=>x.check==='ok').length, done.filter(x=>x.check==='no').length, w.recording?1:0, pu.ready||'', pu.want||'', o.attendance||'', o.prepared||'', o.progress||'', gl?gl.k:'', b.w1Days??'', b.w1Minutes??'', b.w2Days??'', b.w2Minutes??'', b.attendedOf4??'', b.prepared??'', b.progress??'', ...(w.passage?[(w.takes||[]).length, (()=>{ const t=takesOff(w).slice().sort((a,b)=>(a.at||'').localeCompare(b.at||'')); return [t.length?t[0].off:'', t.length?t[t.length-1].off:'']; })()].flat():['','','']), ...(()=>{ const fr=done.filter(x=>x.free&&x.free.sec); return (p.freeplay||fr.length)?[fr.length, Math.round(fr.reduce((a,x)=>a+x.free.sec,0)/6)/10]:['','']; })(), exportedAt];
   }
   function pilotCSV(){
     const now=new Date().toISOString(); const rows=[METRICS.map(m=>m[0])];
@@ -1572,7 +1677,7 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
       ${w?`<div class="card"><div class="label">This week</div>${staveWeek(w)}<div class="note" style="margin:0">${w.promise?`promised ${h(w.promise)} days · `:''}${(d.milestones||[]).length?`${h(Math.max(...d.milestones))} sessions all told · `:''}${doneCount(w)} of ${w.sessions.length} days done · felt: ${(w.done||[]).map(x=>x.feel).filter(Boolean).join(', ')||'nothing logged yet'} · next lesson ${h(fmt(w.nextLesson))}</div>
         ${workTally(w).length?`<div class="label" style="margin-top:12px">Worked on most this week</div><ul class="ticks" style="margin-top:4px">${workTally(w).map(([it,c])=>`<li style="cursor:default"><span style="flex:1">${h(it)}</span><span class="pill on">${c} ${c===1?'day':'days'}</span></li>`).join('')}</ul>`:'<div class="note">What the pupil ticks after each session appears here, most-worked first, so you can plan the lesson.</div>'}
         <div class="label" style="margin-top:12px">What they wrote, day by day</div>
-        ${(w.done||[]).length?(w.done||[]).slice().sort((a,b)=>a.i-b.i).map(x=>`<div class="daybox"><p style="margin:0"><b>Day ${x.i+1}${w.sessions[x.i]?' · '+h(w.sessions[x.i].title):''}</b> · ${h(fmt((x.at||'').slice(0,10)))}${x.at?' '+h(timeOf(x.at)):''}${x.feel?' · felt '+h(x.feel.toLowerCase()):''}${x.own?' · own time':''}${x.minutes?` · ${h(x.minutes)} of ${h(x.target||'?')} min`:''}${heardLine(x)}${(x.worked||[]).length?' · '+h(x.worked.join(', ')):''}</p>
+        ${(w.done||[]).length?(w.done||[]).slice().sort((a,b)=>a.i-b.i).map(x=>`<div class="daybox"><p style="margin:0"><b>Day ${x.i+1}${w.sessions[x.i]?' · '+h(w.sessions[x.i].title):''}</b> · ${h(fmt((x.at||'').slice(0,10)))}${x.at?' '+h(timeOf(x.at)):''}${x.feel?' · felt '+h(x.feel.toLowerCase()):''}${x.own?' · own time':''}${x.minutes?` · ${h(x.minutes)} of ${h(x.target||'?')} min`:''}${heardLine(x)}${x.free&&x.free.sec?` · free play ${fpTime(x.free.sec)}${x.free.liked?' ('+h(FP_LIKED[x.free.liked]||'')+')':''}`:''}${(x.worked||[]).length?' · '+h(x.worked.join(', ')):''}</p>
           ${x.short?`<p class="note" style="margin:6px 0 0;color:var(--danger)">Stopped early: ${h(x.reason||'no reason given')}. Started ${h(timeOf(x.startedAt||x.at))}, finished ${h(timeOf(x.at))}.</p>`:''}
           ${x.note?`<p class="quote" style="margin:8px 0">“${h(x.note)}”${x.noteVia==='voice'?' <span class="note" style="margin:0">(spoken)</span>':''}</p>
           <div class="row"><button class="btn sm ${x.check==='ok'?'':'quiet'}" data-chk="ok" data-i="${x.i}">Sounds right${x.check==='ok'?' ✓':''}</button><button class="btn sm quiet" data-chk="query" data-i="${x.i}">Ask them</button><button class="btn sm ${x.check==='no'?'':'quiet'}" data-chk="no" data-i="${x.i}"${x.check==='no'?' style="background:var(--danger);color:#fff"':''}>Doesn't add up</button></div>
@@ -1615,6 +1720,7 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
         </div><button class="btn sm" id="pSave" style="margin-top:10px">Save profile</button></div>
       <div id="tAud"></div>
       <div id="tBack"></div>
+      <div id="tFree"></div>
       <div class="card"><h3>Add a task this week</h3>
         <div class="row"><input id="xText" placeholder="e.g. Listen to the Bach three times before Thursday" style="flex:1"><button type="button" class="btn quiet mic" data-dictate="xText">Dictate</button><button class="btn sm" id="xAdd">Add</button></div>
         ${(d.extras||[]).filter(x=>!x.done).length?`<div style="margin-top:8px">${(d.extras||[]).filter(x=>!x.done).map(x=>`<div class="flag"><span>${h(x.text)} <span class="note" style="margin:0">· ${h(fmt(x.at.slice(0,10)))}</span></span><button class="btn sm quiet" data-xrm="${x.id}">Remove</button></div>`).join('')}</div>`:''}
@@ -1647,7 +1753,7 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
     $('#gen').onclick=generateWeek; wireScales();
     $$('[data-dictate]').forEach(b=>b.onclick=()=>dictate(b.dataset.dictate,b));
     if(w) wirePassageTeacher(w, d, p);
-    renderTeacherAud(); renderTeacherBacking();
+    renderTeacherAud(); renderTeacherBacking(); renderTeacherFree();
     if(preview) renderPreview();
   }
   async function generateWeek(){
@@ -1772,7 +1878,7 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
     const W=(title,intro,steps)=>({title,intro,steps:steps.map(([name,minutes,caption])=>({name,minutes,caption}))});
     const WORK=['D major scale, two octaves','Twinkle variation A, first phrase','Bow nearer the bridge','Long slow bows'];
     const day=(t,intro,a,b)=>W(t,intro,[['Warm-up',3,'Long slow bows on the open D, the way Ms Taylor showed you.'],[a,7,a+', slowly. Once through, then once more.'],[b,7,b+'. Stop before it gets messy.'],['Wind down',3,'One last open D. Then stop; that is the session.']]);
-    const emre={profile:{name:'Sam',instrument:'violin',part:'Second violin',level:'beginner',goalLabel:'Grade 1 exam',goalDate:addDays(today(),150),sessionsPerWeek:7,minutes:20,reminder:'push',reward:'a hot chocolate after the next lesson'},teacherName:'Ms Taylor',notes:[],extras:[{id:uid(),text:'Listen to the Twinkle variations recording once before the next lesson',at:new Date().toISOString(),done:false,by:'Ms Taylor'}],
+    const emre={profile:{name:'Sam',instrument:'violin',part:'Second violin',level:'beginner',goalLabel:'Grade 1 exam',goalDate:addDays(today(),150),sessionsPerWeek:7,minutes:20,reminder:'push',reward:'a hot chocolate after the next lesson',freeplay:{on:true,key:{tonic:7,mode:'major'},style:'ballad',tempo:80,seconds:120,idea:'mix'}},teacherName:'Ms Taylor',notes:[],extras:[{id:uid(),text:'Listen to the Twinkle variations recording once before the next lesson',at:new Date().toISOString(),done:false,by:'Ms Taylor'}],
       flags:[{id:uid(),text:'G string squeaks on down bows',at:new Date().toISOString(),resolved:false},{id:uid(),text:'Got the third-finger F sharp in tune three times in a row',at:new Date().toISOString(),resolved:false}],tokens:{earned:4,redeemed:0},
       weeks:[{id:uid(),createdAt:addDays(today(),-3),lessonDate:addDays(today(),-3),nextLesson:addDays(today(),4),workedOn:'D major scale, bow contact point nearer the bridge, first phrase of Twinkle variation A. Rushes the scale.',line:"Lovely tone today. Don't rush the scale.",encouragement:'A short session every day and the lesson takes care of itself.',
         sessions:[day('Slowly','Ms Taylor said: don\'t rush the scale. Everything slowly today.',WORK[0],WORK[1]),day('Nearer the bridge','Ms Taylor said: bow nearer the bridge. That is the whole of today.',WORK[2],WORK[1]),day('From memory','Music away today. Say the note names as you play.',WORK[0],WORK[3]),day('The F sharp','Ms Taylor said the F sharp was low in the lesson. Slowly, and listen for it yourself.',WORK[1],WORK[0]),day('Long notes','Ms Taylor said: nearer the bridge on the long notes. Nothing new today.',WORK[2],WORK[3]),day('Once through','Play each thing once, properly, as you would for Ms Taylor.',WORK[0],WORK[1]),day('Ready for Saturday','Short and tidy. Then rest.',WORK[1],WORK[2])],
@@ -1860,10 +1966,10 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
     sb.auth.onAuthStateChange(async(_e,sess)=>{ const was=!!sbUser; sbUser=sess?.user||null; if(sbUser&&!was){ $('#dlg').close(); await enterCloud(); } });
     if(sbUser) await enterCloud();
   })();
-  // deep link into the demo: ?demo=pupil|teacher|group|lessons|journey|goal|share (nothing is saved)
+  // deep link into the demo: ?demo=pupil|teacher|group|lessons|journey|goal|share|done|free (nothing is saved)
   (function(){ const q=new URLSearchParams(location.search).get('demo'); if(!q) return; enterDemo();
     const v=q.toLowerCase(); const wait=ms=>new Promise(r=>setTimeout(r,ms));
-    wait(50).then(()=>{ if(v==='teacher'){ setDemoRole('teacher'); } else if(v==='group'){ setDemoRole('teacher'); renderGroup(); } else if(v==='message'){ setDemoRole('teacher'); renderMessage(); } else if(v==='share'){ setDemoRole('share'); } else if(v==='pupilpage'){ setDemoRole('teacher'); current=students[0]; renderTStudent(); show('tstudent'); } else { setDemoRole('pupil'); if(v==='journey') renderJourney(); else if(v==='goal') renderGoal(); else if(v==='done'){ const w=week(); si=nextIndex(w); sess=w.sessions[si]; finish(true); } else if(v==='fermata'){ $('#fermata').classList.add('on'); } else if(v==='pupil2'){ current=students[1]; renderToday(); } else if(v==='passage'){ renderToday(); const c=$('#pgCard'); if(c) wait(100).then(()=>c.scrollIntoView({block:'start'})); } } }); })();
+    wait(50).then(()=>{ if(v==='teacher'){ setDemoRole('teacher'); } else if(v==='group'){ setDemoRole('teacher'); renderGroup(); } else if(v==='message'){ setDemoRole('teacher'); renderMessage(); } else if(v==='share'){ setDemoRole('share'); } else if(v==='pupilpage'){ setDemoRole('teacher'); current=students[0]; renderTStudent(); show('tstudent'); } else { setDemoRole('pupil'); if(v==='journey') renderJourney(); else if(v==='goal') renderGoal(); else if(v==='done'){ const w=week(); si=nextIndex(w); sess=w.sessions[si]; finish(true); } else if(v==='free'){ const w=week(); si=nextIndex(w); sess=w.sessions[si]; finish(true); fpIntro(); } else if(v==='fermata'){ $('#fermata').classList.add('on'); } else if(v==='pupil2'){ current=students[1]; renderToday(); } else if(v==='passage'){ renderToday(); const c=$('#pgCard'); if(c) wait(100).then(()=>c.scrollIntoView({block:'start'})); } } }); })();
 })();
 </script>
 </body>
