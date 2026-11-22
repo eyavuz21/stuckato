@@ -191,6 +191,8 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
 .skill.getting{border-left:8px solid var(--win)}
 .feel button.on{background:var(--win) !important; color:var(--win-ink) !important; border-color:var(--ink) !important}
 .check li.on i, .ticks li.on i{background:var(--win) !important; border-color:var(--ink) !important} .ticks li.on{border-color:var(--ink) !important; background:var(--win-soft) !important}
+/* the teacher's three sections (23 Nov 2026) */
+.seg3{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:4px; padding:4px; border-radius:999px; background:var(--tintC); margin:0 0 16px} .seg3 button{border:none; border-radius:999px; padding:10px 6px; font-weight:700; font-size:15px; background:transparent; color:var(--ink)} .seg3 button.on{background:var(--ink); color:#fff}
 /* games (22 Nov 2026): the smiling quaver, the mystery tune and records, warm-ups, treat box, quiz */
 @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -336,6 +338,8 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
   <section class="view" id="v-teacher"></section>
   <section class="view" id="v-tstudent"></section>
   <section class="view" id="v-group"></section>
+  <section class="view" id="v-create"></section>
+  <section class="view" id="v-together"></section>
   <section class="view" id="v-message"></section>
 
   <div id="fermata" role="dialog" aria-label="Pause. Take a break."><svg viewBox="0 0 160 110" aria-hidden="true"><path d="M12 92 A68 68 0 0 1 148 92" fill="none" stroke="var(--ink)" stroke-width="7" stroke-linecap="round"/><circle cx="80" cy="82" r="9" fill="var(--ink)"/></svg><div class="quote">Pause.</div><p style="margin:6px 0 0">Take a break.</p><p class="note">Tap to carry on</p></div>
@@ -1496,7 +1500,7 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
     $('#scSave').onclick=()=>{ p.secrets=$('#scT').value.split('\n').map(x=>x.trim()).filter(Boolean).slice(0,30); saveCurrent(); toast('Secret cards saved.'); };
     $$('[data-eh]').forEach(b=>b.onclick=async()=>{ const t=takes.find(x=>x.id===b.dataset.eh); const blob=await bkBlob(t); if(!blob){ toast('Could not open it.'); return; } const a=new Audio(URL.createObjectURL(blob)); a.play().catch(()=>{}); t.heard=true; saveCurrent(); });
     $('#fxDraft').onclick=async()=>{ const piece=$('#fxPiece').value.trim(), composer=$('#fxComp').value.trim(), st=$('#fxSt'); if(!piece){ st.textContent='Add the piece first.'; return; }
-      st.textContent='Drafting…'; let out; try{ const r=await fetch('/api/facts',{method:'POST',headers:{'content-type':'application/json',...(await authHeaders())},body:JSON.stringify({piece, composer, instrument:p.instrument||''})}); out=await r.json(); if(!r.ok) throw new Error(out.message||'Could not draft.'); }catch(e){ st.textContent=e.message||'Could not draft.'; return; }
+      st.textContent='Drafting…'; let out; try{ const r=await fetch('/api/facts',{method:'POST',headers:{'content-type':'application/json',...(await authHeaders())},body:JSON.stringify({piece, composer, instrument:p.instrument||''})}); try{ out=await r.json(); }catch(x){ throw new Error('Drafting needs the live site, stuckato.app.'); } if(!r.ok) throw new Error(out.message||'Could not draft.'); }catch(e){ st.textContent=e.message||'Could not draft.'; return; }
       st.textContent=''; const fb=$('#fxBox');
       fb.innerHTML=`${out.unsure?`<p class="note">Claude was unsure about: ${h(out.unsure)}</p>`:''}${out.cards.length?out.cards.map((c,k)=>`<div class="daybox"><label class="switch" style="font-size:14px"><input type="checkbox" data-fc="${k}" checked> Card ${k+1}</label><textarea data-ft="${k}" style="min-height:60px;margin-top:4px">${h(c)}</textarea></div>`).join(''):'<p class="note">No cards: Claude did not know enough about this piece to be sure. Write your own as secret cards, or try the composer\'s full name.</p>'}
         ${out.quiz.map((q,k)=>`<div class="daybox"><label class="switch" style="font-size:14px"><input type="checkbox" data-qc="${k}" checked> Quiz ${k+1} (from card ${q.card+1})</label><p style="margin:4px 0 0">${h(q.q)}</p><p class="note" style="margin:2px 0 0">${q.options.map((o,j)=>j===q.answer?'<b>'+h(o)+'</b>':h(o)).join(' · ')}</p></div>`).join('')}
@@ -1504,6 +1508,55 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
       const sv=$('#fxSave'); if(sv) sv.onclick=()=>{ const keep=out.cards.map((c,k)=>({k, ok:$(`[data-fc="${k}"]`).checked, text:$(`[data-ft="${k}"]`).value.trim()})).filter(x=>x.ok&&x.text); const map=new Map(keep.map((x,j)=>[x.k,j]));
         const quiz=out.quiz.filter((q,k)=>$(`[data-qc="${k}"]`).checked&&map.has(q.card)).map(q=>({...q, card:map.get(q.card)}));
         p.facts={piece, composer, cards:keep.map(x=>x.text), quiz, approvedAt:new Date().toISOString(), by:me?.name||''}; saveCurrent(); toast('Approved. One card turns over each day '+name+' practises.'); renderTeacherGames(); }; }; }
+
+  // ------------------------------------------------------------ the teacher's three sections (23 Nov 2026): Practise, Create, Play together
+  // Practise is the pupil list as before. Create gathers the making-it-up side per pupil (free play, games). Play together is the
+  // group idea deviser: the teacher describes a group in general terms (instruments, levels, ages, length, focus; never names)
+  // and api/ideas.js suggests pieces, ensemble games and activities with a running order. The last result is kept on this device.
+  const FOCI=['Playing in time together','Listening and tuning','Ear training','Improvising','Composing','Sight-reading','Performing','Rhythm','Just for fun'];
+  function secNav(a){ return `<div class="seg3" role="tablist" aria-label="Sections">${[['practise','Practise'],['create','Create'],['together','Play together']].map(([k,l])=>`<button type="button" role="tab" data-sec="${k}" aria-selected="${a===k}" class="${a===k?'on':''}">${l}</button>`).join('')}</div>`; }
+  document.addEventListener('click', e=>{ const b=e.target.closest&&e.target.closest('[data-sec]'); if(!b) return; const k=b.dataset.sec; if(k==='practise'){ renderTeacher(); show('teacher'); } else if(k==='create') renderCreate(); else renderTogether(); });
+  function groupSummary(g){ const ms=students.filter(s=>g==='*'||groupsOf(s.data).includes(g)).map(s=>s.data.profile||{}); const inst={};
+    ms.forEach(p=>{ const k=String(p.instrument||'instrument').toLowerCase().trim(); inst[k]=(inst[k]||0)+1; });
+    return {size:ms.length, instruments:Object.entries(inst).map(([k,n])=>n+' '+(n>1&&!k.endsWith('s')?k+'s':k)).join(', '), levels:[...new Set(ms.map(p=>levelLabel(p.level)))].join(', '), ages:[...new Set(ms.map(p=>p.adult?'adults':p.over13?'13 to 17':'under 13'))].join(', ')}; }
+  function renderCreate(){ const v=$('#v-create');
+    const rows=students.map(st=>{ const p=st.data.profile||{}; const fp=p.freeplay||{}; return `<div class="flag"><span><b>${h(p.name||'Pupil')}</b><br><span class="note" style="margin:0">Free play ${fp.on?'on · '+h(window.Backing?Backing.keyName(fp.key||{tonic:7,mode:'major'}):'')+' · '+h((fp.seconds||120)/60)+' min':'off'} · games ${p.games===false?'off':'on'}</span></span><span class="row" style="gap:6px;flex-wrap:nowrap"><button class="btn sm quiet" data-cfp="${h(st.user_id)}">${fp.on?'Free play off':'Free play on'}</button><button class="btn sm quiet" data-copen="${h(st.user_id)}">Settings</button></span></div>`; }).join('');
+    v.innerHTML=`${secNav('create')}<div class="eyebrow" style="margin-top:10px">Create</div><h2 class="big">Making it up.</h2>
+      <div class="card"><p style="margin:0">Free play lets a pupil improvise over a backing loop for a minute or three after their practice, in the key you choose, with the notes that fit on screen and nothing marked right or wrong. Switch it on pupil by pupil; the key, backing, speed and starting idea are in each pupil's settings.</p></div>
+      <div class="card"><div class="label">Pupils</div>${rows||'<p class="note" style="margin:0">Pupils appear here when they join with your code.</p>'}</div>
+      <div class="card"><div class="label">For a group</div><p style="margin:0 0 8px">Composing and improvising together, call and response, soundscapes: Play together suggests creative activities for a whole class.</p><button class="btn sm" data-sec="together">Open Play together</button></div>`;
+    $$('[data-cfp]').forEach(b=>b.onclick=async()=>{ const st=students.find(x=>x.user_id===b.dataset.cfp); if(!st) return; const p=st.data.profile; p.freeplay=Object.assign({}, FP_DEF, p.freeplay||{}, {on:!(p.freeplay&&p.freeplay.on)}); try{ await saveStudent(st); }catch(e){ toast('Could not save.'); } renderCreate(); });
+    $$('[data-copen]').forEach(b=>b.onclick=()=>{ current=students.find(x=>x.user_id===b.dataset.copen); if(!current) return; renderTStudent(); show('tstudent'); });
+    show('create'); }
+  function ideasHTML(I){ return `<div class="card"><h3>Pieces</h3>${(I.pieces||[]).map(p=>`<div class="daybox"><p style="margin:0"><b>${h(p.title)}</b> · ${h(p.composer)}</p><p class="note" style="margin:4px 0 0">${h(p.why)}</p><p style="margin:4px 0 0;font-size:15px">${h(p.parts)}</p></div>`).join('')}</div>
+    <div class="card"><h3>Games</h3>${(I.games||[]).map(g=>`<div class="daybox"><p style="margin:0"><b>${h(g.name)}</b> · ${h(g.minutes)} min · ${h(g.skill)}</p><p style="margin:4px 0 0;font-size:15px">${h(g.how)}</p></div>`).join('')}</div>
+    <div class="card"><h3>Activities</h3>${(I.activities||[]).map(a=>`<div class="daybox"><p style="margin:0"><b>${h(a.name)}</b> · ${h(a.minutes)} min${a.create?' · create':''}</p><p style="margin:4px 0 0;font-size:15px">${h(a.how)}</p></div>`).join('')}</div>
+    <div class="card"><h3>Running order</h3><ol style="margin:0;padding-left:20px">${(I.plan||[]).map(x=>`<li><b>${h(x.minutes)} min</b> · ${h(x.what)}</li>`).join('')}</ol><div class="row" style="margin-top:10px"><button class="btn sm quiet" id="tgCopy">Copy as text</button></div></div>`; }
+  const ideasText=I=>['PIECES',...(I.pieces||[]).map(p=>`- ${p.title} (${p.composer}): ${p.why} ${p.parts}`),'','GAMES',...(I.games||[]).map(g=>`- ${g.name}, ${g.minutes} min (${g.skill}): ${g.how}`),'','ACTIVITIES',...(I.activities||[]).map(a=>`- ${a.name}, ${a.minutes} min: ${a.how}`),'','RUNNING ORDER',...(I.plan||[]).map(x=>`- ${x.minutes} min: ${x.what}`)].join('\n');
+  function renderTogether(){ const v=$('#v-together'); const groups=allGroups(); let saved=null; try{ saved=JSON.parse(localStorage.getItem('stuckato.together.last')||'null'); }catch(e){} const f=(saved&&saved.form)||{};
+    v.innerHTML=`${secNav('together')}<div class="eyebrow" style="margin-top:10px">Play together</div><h2 class="big">Ideas for a group.</h2>
+      <div class="card"><p style="margin:0 0 8px">Describe the group and get pieces, ensemble games and activities for it, with a running order. <b>No names or personal details:</b> instruments, levels and ages are enough.</p>
+        ${students.length?`<label class="l" for="tgFrom">Start from one of your groups (optional)</label><select id="tgFrom"><option value="">Choose…</option><option value="*">All my pupils</option>${groups.map(g=>`<option value="${h(g)}">${h(g)}</option>`).join('')}</select>`:''}
+        <div class="grid2"><div><label class="l" for="tgSize">How many players</label><input type="number" id="tgSize" min="2" max="80" value="${h(f.size||6)}"></div><div><label class="l" for="tgMin">Session length, minutes</label><input type="number" id="tgMin" min="10" max="180" step="5" value="${h(f.minutes||45)}"></div>
+          <div style="grid-column:1/-1"><label class="l" for="tgInst">Instruments</label><input id="tgInst" value="${h(f.instruments||'')}" placeholder="e.g. 4 violins, 2 cellos, 1 flute"></div>
+          <div><label class="l" for="tgLev">Levels</label><input id="tgLev" value="${h(f.levels||'')}" placeholder="e.g. beginner to grade 3"></div><div><label class="l" for="tgAge">Ages</label><input id="tgAge" value="${h(f.ages||'')}" placeholder="e.g. 8 to 11"></div>
+          <div style="grid-column:1/-1"><label class="l" for="tgOcc">Working towards (optional)</label><input id="tgOcc" value="${h(f.occasion||'')}" placeholder="e.g. the end of term concert in March"></div></div>
+        <label class="l">What to focus on</label><div class="chips" id="tgFocus">${FOCI.map(x=>`<button type="button" class="chip ${(f.focus||[]).includes(x)?'on':''}" data-fo="${h(x)}">${h(x)}</button>`).join('')}</div>
+        <label class="l" for="tgNotes">Anything else about the group (optional, nothing personal)</label><textarea id="tgNotes" placeholder="e.g. the cellos are on open strings only; the flute reads treble clef; they love film music">${h(f.notes||'')}</textarea>
+        <div class="row" style="margin-top:10px"><button class="btn" id="tgGo">Get ideas</button><span class="status" id="tgSt" style="margin:0"></span></div>
+        <div class="note">Suggestions to adapt, not a plan to follow. Check each piece and its parts before the session: Stuckato does not supply sheet music.</div></div>
+      <div id="tgOut">${saved&&saved.ideas?ideasHTML(saved.ideas):''}</div>`;
+    const wireCopy=I=>{ const c=$('#tgCopy'); if(c) c.onclick=()=>{ const t=ideasText(I); if(navigator.clipboard) navigator.clipboard.writeText(t).then(()=>toast('Copied.'),()=>toast('Could not copy.')); }; };
+    if(saved&&saved.ideas) wireCopy(saved.ideas);
+    $$('#tgFocus [data-fo]').forEach(b=>b.onclick=()=>b.classList.toggle('on'));
+    const fr=$('#tgFrom'); if(fr) fr.onchange=()=>{ if(!fr.value) return; const g=groupSummary(fr.value); if(!g.size){ toast('Nobody in that group yet.'); return; } $('#tgSize').value=Math.max(2,g.size); $('#tgInst').value=g.instruments; $('#tgLev').value=g.levels; $('#tgAge').value=g.ages; };
+    $('#tgGo').onclick=async()=>{ const form={size:+$('#tgSize').value||6, minutes:+$('#tgMin').value||45, instruments:$('#tgInst').value.trim(), levels:$('#tgLev').value.trim(), ages:$('#tgAge').value.trim(), occasion:$('#tgOcc').value.trim(), notes:$('#tgNotes').value.trim(), focus:$$('#tgFocus .chip.on').map(b=>b.dataset.fo)};
+      const st=$('#tgSt'); if(!form.instruments){ st.textContent='Say which instruments are in the group.'; return; } st.textContent='Thinking of ideas…'; $('#tgGo').disabled=true;
+      try{ const r=await fetch('/api/ideas',{method:'POST',headers:{'content-type':'application/json',...(await authHeaders())},body:JSON.stringify(form)}); let I; try{ I=await r.json(); }catch(x){ throw new Error('Ideas need the live site, stuckato.app.'); } if(!r.ok) throw new Error(I.message||'Could not get ideas.');
+        try{ localStorage.setItem('stuckato.together.last', JSON.stringify({form, ideas:I, at:new Date().toISOString()})); }catch(e){}
+        $('#tgOut').innerHTML=ideasHTML(I); wireCopy(I); st.textContent=''; $('#tgOut').scrollIntoView({behavior:'smooth',block:'start'}); }
+      catch(e){ st.textContent=e.message||'Could not get ideas.'; } finally{ $('#tgGo').disabled=false; } };
+    show('together'); }
 
   // teacher: the switch and the settings on the pupil's page, and this week's free play underneath
   function renderTeacherFree(){ const box=$('#tFree'); if(!box||!current||!window.BackingAudio) return; const d=current.data, p=d.profile, name=p.name||'this pupil'; const s=fpSet(d);
@@ -1891,7 +1944,7 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
         <div class="row" id="bkTo2" style="margin-top:8px"><label class="switch"><input type="checkbox" value="*" checked> Everyone</label>${groups.map(g=>`<label class="switch"><input type="checkbox" value="group:${h(g)}"> ${h(g)}</label>`).join('')}</div>
         <div class="row" style="margin-top:10px"><button class="btn sm" id="bkSet">Set the break</button><span class="status" id="bkStatus" style="margin:0"></span></div>
         <div class="note">Pupils see the break on their trail with your last "what you did well" line. Any gap of two weeks or more between lessons counts as a break even if you set nothing.</div></div>`:'';
-    v.innerHTML=`<h2 class="big">${students.length?'Your pupils.':'No pupils yet.'}</h2>${unplacedCard}
+    v.innerHTML=`${secNav('practise')}<h2 class="big">${students.length?'Your pupils.':'No pupils yet.'}</h2>${unplacedCard}
       <div class="grid2" style="align-items:start">
         <div>
           ${me?.code?`<div class="card"><div class="label">Code to give pupils</div><div class="quote" style="letter-spacing:.2em">${h(me.code)}</div><div class="note">They sign in, choose "I'm a pupil", enter it, and they're in your studio.</div></div>`:''}

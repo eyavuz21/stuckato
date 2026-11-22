@@ -14,6 +14,10 @@ Stuckato has two sides. The **teacher** writes a thirty-second note after each l
 
 **Why not Yousician?** Yousician is for people without a teacher: it listens through the phone, lights each note green or red against its own library, and covers guitar, piano, bass, ukulele and voice. Stuckato is for the six days between lessons, run by the teacher. The week is her note, in her voice, for the actual piece; the teacher sees what happened; violin, cello, wind, brass and choirs are in; the point is turning up on Wednesday, not scoring notes. Where Stuckato does listen (the week's passage, below), it compares the pupil to the teacher's own playing, points at the bars that differ, and leaves the judgement to her. Nobody else has the teacher in the loop.
 
+## Also in v0.14: the teacher's three sections
+
+The teacher's home now has **Practise** (the pupil list, as before), **Create** (free play and games, pupil by pupil, with a one-tap free-play switch) and **Play together**: the teacher describes a group in general terms (how many, instruments, levels, ages, length, what to focus on, what they are working towards; it can fill these in from one of their groups, using only instrument, level and age band) and `api/ideas.js` suggests 3 to 5 pieces (real, well-known, mostly out of copyright, with how to share the parts out; never an invented edition), 3 to 5 ensemble games, 2 to 4 activities (at least one creative) and a running order. No names are sent. The last result is kept on that device and can be copied as text.
+
 ## What's in v0.14 (23 November 2026): games, in black and white
 
 The whole app is now black and white, in Bricolage Grotesque and Outfit. On for every pupil unless the teacher switches games off; `?demo=pupil` shows it all (Sam has every feature open), and `?demo=beat|echo|reward|treat|quiz` jump to each screen. Pure rules in `games.js` (tested in `test/games.test.js`).
