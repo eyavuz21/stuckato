@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Stuckato</title>
 <meta name="description" content="Short bursts. Real progress. Couch to 5K for practising an instrument, in a choir or in an orchestra. Your teacher sets the week; Stuckato gets you to practise every day.">
-<link rel="icon" type="image/svg+xml" href="icon-tile.svg?v=13"><link rel="apple-touch-icon" href="icon-192.png?v=13"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#F7F7F5">
+<link rel="icon" type="image/svg+xml" href="icon-tile.svg?v=15"><link rel="apple-touch-icon" href="icon-192.png?v=15"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#F7F7F5">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Outfit:wght@400;500;600;700;800&display=swap">
 <style>
@@ -270,7 +270,7 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
 <div class="wrap">
   <div id="demoBar" hidden></div>
   <header class="top">
-    <div class="brand"><h1><img src="wordmark.svg?v=13" alt="Stuckato" style="height:30px;display:block"></h1></div>
+    <div class="brand"><h1><img src="wordmark.svg?v=15" alt="Stuckato" style="height:30px;display:block"></h1></div>
     <div class="auth" id="auth"></div>
   </header>
 
@@ -749,7 +749,7 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
       {name:'Begin', min:1, text:'Take one more slow breath. As soon as you\'re ready, please begin.'}]; }
   let audTimer=null;
   function runAudition(){ const d=doc(), a=d.profile.audition||{}, tn=d.teacherName||'your teacher'; const steps=auditionScript(a, tn); let k=0, left=0;
-    const ov=document.createElement('div'); ov.id='audOv'; ov.style.cssText='position:fixed;inset:0;z-index:60;background:var(--paper,#F5E4CA);overflow:auto;padding:calc(env(safe-area-inset-top,0px) + 20px) 20px 30px';
+    const ov=document.createElement('div'); ov.id='audOv'; ov.style.cssText='position:fixed;inset:0;z-index:60;background:var(--paper,#F7F7F5);overflow:auto;padding:calc(env(safe-area-inset-top,0px) + 20px) 20px 30px';
     document.body.appendChild(ov); const close=()=>{ clearInterval(audTimer); try{ speechSynthesis.cancel(); player.pause(); }catch(e){} ov.remove(); renderToday(); };
     const step=()=>{ const s=steps[k]; left=Math.round(s.min*60); ov.innerHTML=`<div style="max-width:560px;margin:0 auto"><div class="eyebrow">Audition prep · ${k+1} of ${steps.length}</div><h2 class="big">${h(s.name)}</h2><p class="quote">“${h(s.text)}”</p><p class="note" id="audClock"></p><div class="row"><button class="btn quiet" id="audSkip">Next</button><button class="btn quiet" id="audQuit">Stop</button></div></div>`;
       speak(s.text, (a.audio||[])[k]); $('#audSkip').onclick=()=>next(); $('#audQuit').onclick=close; tickA(); };
@@ -1779,7 +1779,7 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
     $('#dlBtn').onclick=()=>{ const c=$('#cardc'); c.toBlob(blob=>{ const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='stuckato-week.png'; a.click(); },'image/png'); };
     if(showIt!==false) show('share');
   }
-  const WM_IMG=new Image(); WM_IMG.src='wordmark.svg?v=13'; // the wordmark on the shared card
+  const WM_IMG=new Image(); WM_IMG.src='wordmark.svg?v=15'; // the wordmark on the shared card
   function drawCard(c){
     const ctx=c.getContext('2d'); const W=c.width; const p=doc().profile; const w=week(); const tn=doc().teacherName||'your teacher';
     const n=w?doneCount(w):0, tot=w?w.sessions.length:7; const mins=w?(w.done||[]).reduce((a,d)=>a+(w.sessions[d.i]?w.sessions[d.i].steps.reduce((x,y)=>x+(+y.minutes||0),0):0),0):0;

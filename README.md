@@ -137,7 +137,7 @@ Two kinds of account: teacher and pupil. There is no parent login. A young pupil
 
 ## Stack
 
-- `index.html`: the whole app, no build step, one Google Font (Plus Jakarta Sans)
+- `index.html`: the whole app, no build step, two Google Fonts (Bricolage Grotesque for headings, Outfit for text; black and white since 23 Nov 2026)
 - `api/plan.js`: a Vercel function. Takes the teacher's note, the pupil's profile and last week's tally (or a conductor's rehearsal note and the parts it is for), calls Claude (`claude-opus-5`, structured JSON output, effort `medium`, server-side refusal fallbacks) and returns the week: one session per day with steps, minutes and captions, a work list, a checklist, one line of encouragement
 - `api/voice.js`: creates the teacher's cloned voice from the recorded sample (ElevenLabs), or deletes it. Teacher only, verified server-side against Supabase
 - `api/speak.js`: turns one caption into audio in the studio's voice and stores it in the `melodigo-audio` bucket under the studio's folder, using the teacher's own session so storage policies apply

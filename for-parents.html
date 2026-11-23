@@ -6,23 +6,23 @@
 <meta name="robots" content="noindex, nofollow">
 <title>Stuckato &middot; what progress really looks like</title>
 <meta name="description" content="A short guide for parents: how children really progress on an instrument, and how to help without pushing.">
-<link rel="icon" type="image/svg+xml" href="icon-tile.svg?v=13">
-<link rel="apple-touch-icon" href="icon-192.png?v=13">
-<meta name="theme-color" content="#F5E4CA">
+<link rel="icon" type="image/svg+xml" href="icon-tile.svg?v=15">
+<link rel="apple-touch-icon" href="icon-192.png?v=15">
+<meta name="theme-color" content="#F7F7F5">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,800&family=Outfit:wght@400;500;600;700;800&display=swap">
 <style>
 /* The app's one theme: black ink on beige paper, ruled like a manuscript pad. */
 :root{
-  --paper:#F5E4CA; --stave:#E6D2B2; --card:#FBF1E0; --ink:#000000;
-  --muted:#6F6350; --faint:#948872; --line:#D4BF9E;
+  --paper:#F7F7F5; --stave:#EFEFEB; --card:#FFFFFF; --ink:#000000;
+  --muted:#5A5A5A; --faint:#6B6B6B; --line:#E2E2DE;
   color-scheme: light;
 }
 *{box-sizing:border-box}
 html,body{margin:0}
 body{
-  background:var(--paper) repeating-linear-gradient(0deg, transparent 0 34px, var(--stave) 34px 35px);
-  color:var(--ink); font-family:"Plus Jakarta Sans", system-ui, sans-serif;
+  background:var(--paper) ;
+  color:var(--ink); font-family:"Outfit", system-ui, sans-serif;
   font-size:17px; line-height:1.45; font-weight:500; min-height:100vh;
   -webkit-font-smoothing:antialiased;
 }
@@ -61,21 +61,22 @@ footer{margin-top:46px; padding-top:18px; border-top:1px solid var(--line); colo
 footer p+p{margin-top:6px}
 .groups{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:14px; margin-top:16px}
 .group{border:1px solid var(--line); border-radius:18px; padding:20px; background:var(--card); border-top:5px solid var(--line)}
-.group.app{border-top-color:#2E6B44}
-.group.diary{border-top-color:#A8372A}
+.group.app{border-top-color:#1F5C3A}
+.group.diary{border-top-color:#9B2C2C}
 .group h3{margin:8px 0 0}
 .group p{margin-top:10px}
 .group ul{margin-top:10px}
 .chip{display:inline-block; font-size:.66rem; font-weight:800; letter-spacing:.1em; text-transform:uppercase; padding:4px 10px; border-radius:999px; color:var(--paper)}
-.group.app .chip{background:#2E6B44}
-.group.diary .chip{background:#A8372A}
+.group.app .chip{background:#1F5C3A}
+.group.diary .chip{background:#9B2C2C}
 .steps{display:flex; flex-direction:column; gap:14px; margin-top:16px}
 .step{display:flex; gap:14px; align-items:flex-start}
 .step .n{flex:none; width:34px; height:34px; border-radius:999px; background:var(--ink); color:var(--paper); font-weight:800; display:flex; align-items:center; justify-content:center; font-size:.95rem}
 .step p{color:var(--muted)} .step h3{margin-bottom:4px}
-.yes .x{color:#2E6B44} .no .x{color:#A8372A}
+.yes .x{color:#1F5C3A} .no .x{color:#9B2C2C}
 .chart{margin-top:16px} .chart svg{width:100%; height:auto; display:block}
 .cap{font-size:.85rem; color:var(--faint); margin-top:8px}
+h1,h2,h3{font-family:"Bricolage Grotesque","Outfit",system-ui,sans-serif}
 </style>
 </head>
 <body>
@@ -102,13 +103,13 @@ footer p+p{margin-top:6px}
     </p>
     <div class="card chart">
       <svg viewBox="0 0 600 200" role="img" aria-label="A dotted straight line rising steadily, and a solid stepped line that rises in bursts with flat stretches between, ending higher">
-        <line x1="40" y1="170" x2="580" y2="170" stroke="#D4BF9E" stroke-width="2"/>
-        <line x1="40" y1="170" x2="40" y2="20" stroke="#D4BF9E" stroke-width="2"/>
-        <path d="M40 160 L560 40" stroke="#948872" stroke-width="3" stroke-dasharray="7 7" fill="none"/>
+        <line x1="40" y1="170" x2="580" y2="170" stroke="#E2E2DE" stroke-width="2"/>
+        <line x1="40" y1="170" x2="40" y2="20" stroke="#E2E2DE" stroke-width="2"/>
+        <path d="M40 160 L560 40" stroke="#6B6B6B" stroke-width="3" stroke-dasharray="7 7" fill="none"/>
         <path d="M40 160 L110 160 L140 132 L230 130 L255 104 L360 102 L385 70 L470 68 L500 36 L580 34" stroke="#000" stroke-width="4" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
-        <text x="420" y="132" font-size="15" fill="#6F6350" font-family="Plus Jakarta Sans, sans-serif">What parents expect</text>
-        <text x="60" y="56" font-size="15" fill="#000" font-weight="700" font-family="Plus Jakarta Sans, sans-serif">What actually happens</text>
-        <text x="40" y="192" font-size="13" fill="#948872" font-family="Plus Jakarta Sans, sans-serif">Months of lessons</text>
+        <text x="420" y="132" font-size="15" fill="#5A5A5A" font-family="Outfit, sans-serif">What parents expect</text>
+        <text x="60" y="56" font-size="15" fill="#000" font-weight="700" font-family="Outfit, sans-serif">What actually happens</text>
+        <text x="40" y="192" font-size="13" fill="#6B6B6B" font-family="Outfit, sans-serif">Months of lessons</text>
       </svg>
       <p class="cap">Both lines end up in the same place. Only one of them feels like progress every week.</p>
     </div>
