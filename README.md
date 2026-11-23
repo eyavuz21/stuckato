@@ -23,7 +23,7 @@ Stuckato has two sides. The **teacher** writes a thirty-second note after each l
 - **Teacher voice note** (Tonic Notes, Lami, Arco, CLARA record the whole lesson): up to a minute after the lesson, stored in the studio's private teacher folder (`w.voiceNote`), played from the quaver's speech bubble; the teacher sees "heard".
 - **Listen back** (Modacity): two takes of the tricky bit, played side by side on the device and discarded; only the pupil's pick is kept (`w.listens`).
 - **Sight-reading** (unlocks after 8 practice days): `games.js sightFor` makes a short excerpt at the pupil's level (from the profile) and clef (treble, alto for viola, bass for cello and low brass), drawn as SVG two bars a line; thirty seconds to look, one try. Recorded to the private bucket only if the teacher switches `profile.sightTakes` on (grown-up check under 13), otherwise self-rated; kept on `w.sight`; the teacher listens and sends one line back as news.
-- **New logo**: "Stuckat" with the o as a smiling semibreve (a whole note: no stem, so it reads as an o); the icon is that semibreve; the in-app mascot is the smiling crotchet.
+- **New logo**: "Stuckat" with the o as the round smiling face with a short stem (a hint of a note, not a d); the icon is the same; the in-app mascot is the smiling crotchet.
 - **Task library** (Sweetnote, Practice Space): save "for next lesson" lines and tap them into any pupil's week. Kept in the teacher's browser (`localStorage stuckato.library.v1`) until there is a teacher record on the server. Not for us: marking every note; rooms or leagues with strangers. The full list is in the workshop's `docs/Stuckato-Competitor-Features.md`.
 
 ## Also in v0.14: the teacher's three sections
@@ -161,7 +161,7 @@ Two kinds of account: teacher and pupil. There is no parent login. A young pupil
 - `sw.js`, `manifest.webmanifest`, `icon-192.png`, `icon-512.png`: the installable app and its notifications
 - `api/config.js`: public Supabase config for the page, plus which features are configured
 - `supabase/schema.sql`: studios, members, one JSON document per pupil that the pupil and their teacher can both read and write, row-level security, the RPCs. Every database object is prefixed `practicigo_` (renamed from `melodigo_` on 16 September 2026 by `supabase/migrate-practicigo.sql`; the audio bucket keeps its id `melodigo-audio` because stored caption and recording URLs embed it).
-- `logo.svg` and `wordmark.svg`: "Stuckat" in Bricolage Grotesque ExtraBold with the o as a smiling semibreve (since 23 Nov 2026); `mark.svg`, `icon-tile.svg`: the smiling semibreve. Outlines, no font needed. Built by the workshop's `brand/build_logo_quaver_o.py`
+- `logo.svg` and `wordmark.svg`: "Stuckat" in Bricolage Grotesque ExtraBold with the o as the round smiling face with a short stem (since 23 Nov 2026); `mark.svg`, `icon-tile.svg`: the same face and stem. Outlines, no font needed. Built by the workshop's `brand/build_logo_quaver_o.py`
 
 ## Deploying
 
