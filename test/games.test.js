@@ -57,6 +57,15 @@ test('unlocks: two early, then spaced out; the teacher can open them all', () =>
   assert.equal(G.markEcho([62, 64, 66, 67], [62, 64, 66, 67].map(m => ({ m, d: 0.4 })), 'sing').result, 'match');
 });
 
+test('spaced review: gaps grow with practice and ratings; picks the most overdue', () => {
+  assert.equal(G.reviewGap({ n: 1 }), 2); assert.equal(G.reviewGap({ n: 4 }), 5); assert.equal(G.reviewGap({ n: 9 }), 10);
+  assert.equal(G.reviewGap({ n: 4, rating: 'easy' }), 10); assert.equal(G.reviewGap({ n: 4, rating: 'hard' }), 3);
+  const items = [{ name: 'Scale', last: '2026-11-10', n: 9 }, { name: 'Minuet', last: '2026-11-18', n: 1 }, { name: 'Bowing', last: '2026-11-21', n: 1 }];
+  assert.equal(G.reviewPick(items, '2026-11-22').name, 'Minuet'); // 4 days / gap 2 beats 12 / 10
+  assert.equal(G.reviewPick([{ name: 'X', last: '2026-11-21', n: 1 }], '2026-11-22'), null);
+  assert.equal(G.reviewPick([], '2026-11-22'), null);
+});
+
 test('readiness and levels', () => {
   assert.equal(G.readiness(3, 7, 60, 140), 43); assert.equal(G.readiness(7, 7, 200, 140), 100);
   assert.deepEqual(G.levelOf(340), { level: 3, into: 40, of: 150 });

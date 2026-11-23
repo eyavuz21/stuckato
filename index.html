@@ -212,6 +212,7 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
 .g-go{font-size:21px !important; padding:20px !important}
 .g-alt{display:flex; justify-content:center; gap:18px; margin-top:10px} .g-alt button{border:none; background:none; font-weight:700; font-size:14px; color:var(--muted); text-decoration:underline; text-underline-offset:3px}
 .g-unlock{display:flex; align-items:center; gap:8px; font-size:14px; color:var(--muted); margin:0 2px 14px} .g-lock{flex:none; color:var(--ink)}
+.g-review{display:flex; flex-direction:column; align-items:center; gap:4px; border:2px solid var(--ink); border-radius:22px; padding:18px 22px; width:100%} .g-review b{font-family:var(--display); font-size:26px; line-height:1.1} .g-review small{color:var(--muted); font-weight:600}
 .g-skill{display:flex; flex-direction:column; align-items:center; gap:2px; border:2px solid var(--ink); border-radius:18px; padding:10px 16px} .g-skill span{font-size:12px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--muted)} .g-skill b{font-size:18px} .g-skill small{color:var(--muted); font-weight:600}
 .g-lede{font-size:18px; font-weight:600; margin:-6px 0 16px; color:var(--sage)}
 /* the teacher's three sections (23 Nov 2026) */
@@ -347,6 +348,7 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
   <!-- STUDENT: GAMES (22 Nov 2026): warm-ups before the session, the record and the treat box after it, the lesson-day quiz -->
   <section class="view" id="v-warm"></section>
   <section class="view" id="v-echo"></section>
+  <section class="view" id="v-review"></section>
   <section class="view" id="v-reward"></section>
   <section class="view" id="v-treat"></section>
   <section class="view" id="v-quiz"></section>
@@ -1385,7 +1387,7 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
     else if(m.guess) guess=`<button class="g-guess" id="gGuess">${h(m.guess)}? · ${m.pays}×</button>`;
     else if(m.shown>0) guess=`<button class="g-guess hot" id="gGuess">Guess it · ${Games.payoutFor(m.shown)}×</button>`;
     const tune=`<div class="card g-tune"><div class="row" style="justify-content:space-between;align-items:center"><b>Mystery tune</b>${guess}</div><button type="button" class="g-stave-btn" id="gStave" aria-label="Play the notes so far">${tuneStaveHTML(w)}</button>${shelfHTML(w,i,doneToday)}</div>`;
-    const steps=[u.has('beat')?['♩','Beat']:null, u.has('echo')?['♪','Echo']:null, ['♫','Practise'], ['◉','Record'], ['★','Treat']].filter(Boolean);
+    const steps=[u.has('beat')?['♩','Beat']:null, u.has('echo')?['♪','Echo']:null, reviewDue()?['↺','Review']:null, ['♫','Practise'], ['◉','Record'], ['★','Treat']].filter(Boolean);
     const hook=m.revealed?'Press today’s record and open a treat.':`Unlock note ${Math.min(7,m.shown+1)} of the mystery tune and a treat box.`;
     const todayG=s&&!doneToday?`<div class="card g-today"><div class="g-today-top"><span>Day ${i+1}</span><span>${planMinutes(s)} min</span></div><h2 class="g-title">${h(s.title)}</h2><p class="g-hook">${hook}</p>
         <div class="g-track">${steps.map(([ic,l])=>`<span><i>${ic}</i>${l}</span>`).join('')}</div>
@@ -1414,13 +1416,29 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
       const nx=$('#gBubNext'); if(nx) nx.onclick=()=>{ k++; paint(); };
       const dn=b.querySelector('[data-bdone]'); if(dn) dn.onclick=()=>{ const e=extras().find(y=>y.id===dn.dataset.bdone); if(e){ e.done=true; e.doneAt=new Date().toISOString(); } saveCurrent(); toast('Done. Nice.'); renderTrail(false); }; };
     paint(); }
-  function startWithGames(i){ gamePre={}; const u=unl(); if(u.has('beat')) renderBeat(i); else if(u.has('echo')) renderEcho(i); else ready(()=>startSession(i)); }
+  function startWithGames(i){ gamePre={}; const u=unl(); if(u.has('beat')) renderBeat(i); else if(u.has('echo')) renderEcho(i); else afterWarm(i); }
+  // spaced review (23 Nov 2026, the idea from Better Practice, done our way): one thing from an earlier week comes back for a minute,
+  // chosen by games.js reviewPick (gaps of 2, 5, then 10 days; longer after "easy", shorter after "tricky"). The pupil rates it; nothing is marked.
+  function reviewItems(d){ d=d||doc(); const w=week(); const now=new Set([...((w&&w.work)||[]), ...((w&&w.checklist)||[])].map(x=>String(x).trim().toLowerCase())); const M=new Map();
+    for(const wk of (d.weeks||[])) for(const x of (wk.done||[])){ const at=(x.at||'').slice(0,10); if(!at) continue;
+      for(const it of (x.worked||[])){ const k=String(it).trim().toLowerCase(); const m=M.get(k)||{name:String(it).trim(), n:0, last:''}; m.n++; if(at>m.last) m.last=at; M.set(k,m); }
+      const rv=x.warm&&x.warm.review; if(rv&&rv.name){ const k=String(rv.name).trim().toLowerCase(); const m=M.get(k)||{name:rv.name, n:0, last:''}; if(at>=m.last){ m.last=at; m.rating=rv.rating; } M.set(k,m); } }
+    return [...M.values()].filter(m=>!now.has(m.name.toLowerCase())); }
+  function reviewDue(){ try{ return Games.reviewPick(reviewItems(), today()); }catch(e){ return null; } }
+  function afterWarm(i){ const r=reviewDue(); if(r) renderReview(i, r); else toSession(i); }
+  function renderReview(i, r){ const v=$('#v-review'); const ago=r.since<14?r.since+' days ago':Math.round(r.since/7)+' weeks ago';
+    v.innerHTML=`<div class="g-screen"><div class="eyebrow">Quick review · one minute</div><h2 class="big">Remember this?</h2><div class="g-review"><b>${h(r.name)}</b><small>Last played ${ago}</small></div>
+      <p style="margin:0">Play it once, from memory. How did it go?</p>
+      <div class="chips" style="justify-content:center;margin:0">${[['easy','Easy'],['ok','OK'],['hard','Tricky']].map(([k,l])=>`<button type="button" class="chip" data-rv="${k}">${l}</button>`).join('')}</div>
+      <p class="note" style="margin:0">Easy and it comes back later. Tricky and it comes back sooner.</p><button class="btn sm quiet" id="rvSkip">Skip</button></div>`;
+    $$('[data-rv]').forEach(b=>b.onclick=()=>{ gamePre=gamePre||{}; gamePre.review={name:r.name, rating:b.dataset.rv}; gTone(b.dataset.rv==='hard'?72:84,0.15); toSession(i); });
+    $('#rvSkip').onclick=()=>toSession(i); show('review'); }
   function toSession(i){ beatStop(); ready(()=>startSession(i)); }
   function renderBeat(i){ const bpm=unl().has('beatfast')?104:80, ms=60000/bpm; let t0=0, taps=[], running=false; const v=$('#v-warm');
     v.innerHTML=`<div class="g-screen"><div class="eyebrow">Rhythm warm-up</div><h2 class="big">Catch the beat</h2><p class="note" style="margin:0">Tap the big dot exactly on the click. Eight taps; perfect ones score double.</p>
       <button class="g-pad" id="gPad" aria-label="Tap on the beat">Start</button><div class="g-fb" id="gFb" aria-live="polite"></div><div class="g-dots" id="gDots">${'<i></i>'.repeat(8)}</div><div id="gEnd" style="width:100%"></div>
       <button class="btn sm quiet" id="gSkip">Skip</button></div>`;
-    const pad=$('#gPad'), fb=$('#gFb'); const next=()=>{ beatStop(); if(unl().has('echo')) renderEcho(i); else toSession(i); };
+    const pad=$('#gPad'), fb=$('#gFb'); const next=()=>{ beatStop(); if(unl().has('echo')) renderEcho(i); else afterWarm(i); };
     $('#gSkip').onclick=next;
     pad.onclick=()=>{
       if(!running&&taps.length<8){ running=true; t0=performance.now(); let k=0; const tick=()=>{ gTone(k%4===0?96:91,0.05,0,'square',0.06); k++; pad.classList.add('hit'); setTimeout(()=>pad.classList.remove('hit'),110); }; tick(); beatStop(); beatIv=setInterval(tick, ms); pad.textContent='Tap!'; return; }
@@ -1438,7 +1456,7 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
     function paint(){ const v=$('#v-echo'); const n=target().length;
       if(round>=3){ const right=results.filter(x=>x==='match').length; gamePre=gamePre||{}; gamePre.echo={right, of:3, mode, notes:n}; const st=Math.max(1,right);
         v.innerHTML=`<div class="g-screen"><div class="eyebrow">Ear warm-up</div><h2 class="big">Echo it</h2><div class="g-stars">${'★'.repeat(st)}${'☆'.repeat(3-st)}</div><p style="margin:0">${right} of 3 echoed back. That is aural test practice, done.</p><button class="btn block" id="eGo">On to the practice</button></div>`;
-        $('#eGo').onclick=()=>toSession(i); show('echo'); return; }
+        $('#eGo').onclick=()=>afterWarm(i); show('echo'); return; }
       v.innerHTML=`<div class="g-screen"><div class="eyebrow">Ear warm-up · round ${round+1} of 3</div><h2 class="big">Echo it</h2><p class="note" style="margin:0">Listen to ${n} notes, then echo them your way.</p>
         <div class="chips" style="justify-content:center;margin:4px 0 0">${[['sing','Sing it'],['play','Play it'],['tap','Tap it']].map(([k,l])=>`<button type="button" class="chip ${mode===k?'on':''}" data-em="${k}">${l}</button>`).join('')}</div>
         <p class="note" style="margin:0">${mode==='sing'?'Sing it back in any octave. Stuckato listens.':mode==='play'?'Play it on your '+h(p.instrument||'instrument')+'. Stuckato listens.':'No noise right now? Tap the notes.'}</p>
@@ -1447,7 +1465,7 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
         ${mode==='tap'?`<div class="g-keys">${KEYS.map(([m,l])=>`<button type="button" data-ek="${m}">${l}</button>`).join('')}</div>`:`<button class="btn block" id="eRec">Record my echo</button>`}
         <div class="g-fb" id="eFb" aria-live="polite"></div><div id="eAfter" style="width:100%"></div><button class="btn sm quiet" id="eSkip">Skip</button></div>`;
       $$('[data-em]').forEach(b=>b.onclick=()=>{ mode=b.dataset.em; try{ localStorage.setItem('stuckato.echoMode',mode); }catch(e){} taps=[]; paint(); });
-      $('#eListen').onclick=()=>gPlay(target(), 0.55); $('#eSkip').onclick=()=>toSession(i);
+      $('#eListen').onclick=()=>gPlay(target(), 0.55); $('#eSkip').onclick=()=>afterWarm(i);
       $$('[data-ek]').forEach(b=>b.onclick=()=>{ if(taps.length>=n) return; const m=+b.dataset.ek; gTone(m,0.4); taps.push(m); paint(); if(taps.length===n) verdict(taps.every((x,k)=>x===target()[k])?'match':'close', null); });
       const r=$('#eRec'); if(r) r.onclick=recordEcho;
       show('echo'); }
@@ -1855,8 +1873,10 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
         <p>On the mornings a session is due, ${h(doc().teacherName||'your teacher')} sends one short note: what you did last time, what is on today, and how long. Never twice in a day, never once the week is done.</p>
         <div class="row" id="remRow"><label class="switch" style="font-size:14px;color:var(--ink)"><input type="radio" name="rem" value="push" ${(p.reminder||'push')==='push'?'checked':''}> Notification on this phone</label><label class="switch" style="font-size:14px;color:var(--ink)"><input type="radio" name="rem" value="email" ${p.reminder==='email'?'checked':''}> Email${doc().contactEmail?' ('+h(doc().contactEmail)+')':''}</label><label class="switch" style="font-size:14px;color:var(--ink)"><input type="radio" name="rem" value="off" ${p.reminder==='off'?'checked':''}> Off</label></div>
         <div class="row" style="margin-top:10px"><button class="btn sm" id="pushOn">${doc().push?'Notifications are on for this phone':'Turn on notifications'}</button><button class="btn sm quiet" id="remTest">Send me today\'s message now</button><span class="status" id="remStatus" style="margin:0"></span></div>
+        <label class="switch" style="font-size:15px;color:var(--ink);margin-top:10px"><input type="checkbox" id="wkSum" ${p.weeklySummary!==false?'checked':''}> Weekly summary by email on lesson day${doc().contactEmail?' ('+h(doc().contactEmail)+')':''}</label>
         <div class="note">${mode==='cloud'?'On an iPhone, add Stuckato to your Home Screen first (Share, then "Add to Home Screen"), then turn notifications on from there.':'Notifications need the live site with an account.'}</div></div>`;
     $('#backG').onclick=()=>renderTrail(true);
+    const ws=$('#wkSum'); if(ws) ws.onchange=()=>{ p.weeklySummary=ws.checked; saveCurrent(); toast(ws.checked?'Weekly summary on.':'Weekly summary off.'); };
     $('#gSave').onclick=()=>{ p.goalLabel=$('#gLabel').value.trim(); p.goalDate=$('#gDate').value; p.part=$('#gPart').value.trim(); saveCurrent(); toast('Saved.'); renderTrail(true); };
     $('#plSave').onclick=()=>{ p.plan={when:$('#plWhen').value, where:$('#plWhere').value.trim()}; saveCurrent(); toast('Plan saved. It shows on your trail.'); };
     $('#gSelfSave').onclick=()=>{ const base=+(p.minutes||levelMinutes(p.level)); let v=Math.round(+$('#gSelf').value||base); if(v<base) v=base; const was=+(p.selfMinutes||base); if(v===was){ toast('That is already your target.'); return; } logTarget(doc(),'pupil',was,v); p.selfMinutes=v>base?v:null; saveCurrent(); toast('Your target: '+v+' minutes a day.'); renderGoal(true); };
@@ -2030,7 +2050,7 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
       ${w?`<div class="card"><div class="label">This week</div>${staveWeek(w)}<div class="note" style="margin:0">${w.promise?`promised ${h(w.promise)} days · `:''}${(d.milestones||[]).length?`${h(Math.max(...d.milestones))} sessions all told · `:''}${doneCount(w)} of ${w.sessions.length} days done · felt: ${(w.done||[]).map(x=>x.feel).filter(Boolean).join(', ')||'nothing logged yet'} · next lesson ${h(fmt(w.nextLesson))}</div>
         ${workTally(w).length?`<div class="label" style="margin-top:12px">Worked on most this week</div><ul class="ticks" style="margin-top:4px">${workTally(w).map(([it,c])=>`<li style="cursor:default"><span style="flex:1">${h(it)}</span><span class="pill on">${c} ${c===1?'day':'days'}</span></li>`).join('')}</ul>`:'<div class="note">What the pupil ticks after each session appears here, most-worked first, so you can plan the lesson.</div>'}
         <div class="label" style="margin-top:12px">What they wrote, day by day</div>
-        ${(w.done||[]).length?(w.done||[]).slice().sort((a,b)=>a.i-b.i).map(x=>`<div class="daybox"><p style="margin:0"><b>Day ${x.i+1}${w.sessions[x.i]?' · '+h(w.sessions[x.i].title):''}</b> · ${h(fmt((x.at||'').slice(0,10)))}${x.at?' '+h(timeOf(x.at)):''}${x.feel?' · felt '+h(x.feel.toLowerCase()):''}${x.own?' · own time':''}${x.minutes?` · ${h(x.minutes)} of ${h(x.target||'?')} min`:''}${heardLine(x)}${x.warm&&x.warm.beat?` · beat ${'★'.repeat(x.warm.beat.stars)}`:''}${x.warm&&x.warm.echo?` · echo ${x.warm.echo.right}/3 ${x.warm.echo.mode==='tap'?'tapped':x.warm.echo.mode==='play'?'played':'sung'}`:''}${x.treat?` · treat: ${h(x.treat.title)}`:''}${x.free&&x.free.sec?` · free play ${fpTime(x.free.sec)}${x.free.liked?' ('+h(FP_LIKED[x.free.liked]||'')+')':''}`:''}${(x.worked||[]).length?' · '+h(x.worked.join(', ')):''}</p>
+        ${(w.done||[]).length?(w.done||[]).slice().sort((a,b)=>a.i-b.i).map(x=>`<div class="daybox"><p style="margin:0"><b>Day ${x.i+1}${w.sessions[x.i]?' · '+h(w.sessions[x.i].title):''}</b> · ${h(fmt((x.at||'').slice(0,10)))}${x.at?' '+h(timeOf(x.at)):''}${x.feel?' · felt '+h(x.feel.toLowerCase()):''}${x.own?' · own time':''}${x.minutes?` · ${h(x.minutes)} of ${h(x.target||'?')} min`:''}${heardLine(x)}${x.warm&&x.warm.beat?` · beat ${'★'.repeat(x.warm.beat.stars)}`:''}${x.warm&&x.warm.echo?` · echo ${x.warm.echo.right}/3 ${x.warm.echo.mode==='tap'?'tapped':x.warm.echo.mode==='play'?'played':'sung'}`:''}${x.warm&&x.warm.review?` · review: ${h(x.warm.review.name)} (${h(x.warm.review.rating==='hard'?'tricky':x.warm.review.rating)})`:''}${x.treat?` · treat: ${h(x.treat.title)}`:''}${x.free&&x.free.sec?` · free play ${fpTime(x.free.sec)}${x.free.liked?' ('+h(FP_LIKED[x.free.liked]||'')+')':''}`:''}${(x.worked||[]).length?' · '+h(x.worked.join(', ')):''}</p>
           ${x.short?`<p class="note" style="margin:6px 0 0;color:var(--danger)">Stopped early: ${h(x.reason||'no reason given')}. Started ${h(timeOf(x.startedAt||x.at))}, finished ${h(timeOf(x.at))}.</p>`:''}
           ${x.note?`<p class="quote" style="margin:8px 0">“${h(x.note)}”${x.noteVia==='voice'?' <span class="note" style="margin:0">(spoken)</span>':''}</p>
           <div class="row"><button class="btn sm ${x.check==='ok'?'':'quiet'}" data-chk="ok" data-i="${x.i}">Sounds right${x.check==='ok'?' ✓':''}</button><button class="btn sm quiet" data-chk="query" data-i="${x.i}">Ask them</button><button class="btn sm ${x.check==='no'?'':'quiet'}" data-chk="no" data-i="${x.i}"${x.check==='no'?' style="background:var(--danger);color:#fff"':''}>Doesn't add up</button></div>

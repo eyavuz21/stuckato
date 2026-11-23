@@ -94,5 +94,18 @@
     return { have, has: id => have.includes(id), next: nx ? { id: nx.id, name: nx.name, what: nx.what, left: nx.at - practised } : null };
   }
 
-  return { UNLOCKS, unlocks, TUNES, staffNote, tuneFor, optionsFor, payoutFor, revealed, PHRASES, phraseFor, markEcho, rateTap, beatStars, readiness, POINTS, levelOf, hash };
+  // ------------------------------------------------------------ spaced review: bring back something from earlier weeks
+  // items: [{name, last:'YYYY-MM-DD', n (sessions worked on), rating:'easy'|'ok'|'hard'|undefined}]. The gap before an item
+  // comes back grows with how often it has been worked on (2, 5, then 10 days), doubles after "easy" and halves after "hard".
+  // Returns the most overdue item, or null. Anything worked on in the last day never comes back yet.
+  const dayDiff = (a, b) => Math.round((Date.parse(b + 'T12:00:00Z') - Date.parse(a + 'T12:00:00Z')) / 86400000);
+  function reviewGap(it) { let g = it.n >= 7 ? 10 : it.n >= 3 ? 5 : 2; if (it.rating === 'easy') g *= 2; if (it.rating === 'hard') g = Math.max(1, Math.round(g / 2)); return g; }
+  function reviewPick(items, today) {
+    let best = null;
+    for (const it of items || []) { if (!it || !it.name || !it.last) continue; const since = dayDiff(it.last, today); if (since < 2) continue;
+      const over = since / reviewGap(it); if (over >= 1 && (!best || over > best.over)) best = { ...it, over, since }; }
+    return best;
+  }
+
+  return { UNLOCKS, unlocks, reviewPick, reviewGap, TUNES, staffNote, tuneFor, optionsFor, payoutFor, revealed, PHRASES, phraseFor, markEcho, rateTap, beatStars, readiness, POINTS, levelOf, hash };
 });

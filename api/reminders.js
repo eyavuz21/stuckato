@@ -33,6 +33,38 @@ function compose(data, today) {
   return { title: `${tn}, this morning`, body, next, minutes, url: process.env.APP_URL || "https://stuckato.app" };
 }
 
+// The weekly summary (23 Nov 2026, the idea from Better Practice): on the morning of the lesson, the account holder (a parent,
+// for a pupil under 13) gets the week in a few lines: days and minutes, what was worked on, the teacher's line, the quiz.
+// Once per week, only by email, never if the pupil switched it off (profile.weeklySummary === false).
+function composeSummary(data, today) {
+  const p = data.profile || {}; if (p.weeklySummary === false) return null;
+  const w = data.weeks && data.weeks.length ? data.weeks[data.weeks.length - 1] : null;
+  if (!w || !w.sessions || w.nextLesson !== today) return null;
+  const key = String(w.id || w.createdAt || w.lessonDate || today);
+  if ((data.summaries || []).some((x) => x.week === key)) return null;
+  const tn = data.teacherName || "the teacher"; const name = p.name || "Your child";
+  const ev = (w.done || []).filter((d) => d && d.check !== "no" && (d.note || String(d.at || "") < "2026-09-16"));
+  const days = new Set(ev.map((d) => String(d.at || "").slice(0, 10))).size; const mins = ev.reduce((a, d) => a + (Number(d.minutes) || 0), 0);
+  const tally = {}; ev.forEach((d) => (d.worked || []).forEach((x) => { tally[x] = (tally[x] || 0) + 1; }));
+  const top = Object.entries(tally).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([k]) => k);
+  const lines = [
+    `${name}'s week with ${tn}, before today's lesson:`, "",
+    days ? `Practised on ${days} ${days === 1 ? "day" : "days"}, ${mins} minutes in all (${ev.length} of ${w.sessions.length} sessions).` : "No practice was logged this week. Today's lesson is a fresh start.",
+    top.length ? `Worked on: ${top.join(", ")}.` : "",
+    w.quiz ? `The week's quiz: ${w.quiz.medal} record, ${w.quiz.right} of ${w.quiz.of}.` : "",
+    (w.line || w.encouragement) ? `Last lesson, ${tn} said: "${w.line || w.encouragement}"` : "",
+    "", "A good question to ask tonight: what did you play for your teacher, and what are you working on next?",
+  ].filter((x, i, a) => x !== "" || (a[i - 1] && a[i - 1] !== ""));
+  return { key, subject: `${name}'s week: ${days} ${days === 1 ? "day" : "days"}, ${mins} minutes`, text: lines.join("\n") };
+}
+async function sendSummary(to, sm) {
+  const key = process.env.RESEND_API_KEY; if (!key) throw new Error("email_not_configured");
+  const url = process.env.APP_URL || "https://stuckato.app";
+  const r = await fetch("https://api.resend.com/emails", { method: "POST", headers: { authorization: `Bearer ${key}`, "content-type": "application/json" },
+    body: JSON.stringify({ from: process.env.REMINDER_FROM || "Stuckato <onboarding@resend.dev>", to: [to], subject: sm.subject, text: `${sm.text}\n\nOpen Stuckato: ${url}\n\nYou get this once a week, on lesson day. To stop it, untick "Weekly summary" in the app under Goal.` }) });
+  if (!r.ok) throw new Error(`resend ${r.status}: ${(await r.text()).slice(0, 200)}`);
+}
+
 async function sendPush(sub, msg) {
   webpush.setVapidDetails(process.env.VAPID_SUBJECT || "mailto:emre@talktalk.net", process.env.VAPID_PUBLIC_KEY, process.env.VAPID_PRIVATE_KEY);
   await webpush.sendNotification(sub, JSON.stringify({ title: msg.title, body: msg.body, url: msg.url }), { TTL: 6 * 3600 });
@@ -90,9 +122,13 @@ export default async function handler(req, res) {
   const secret = process.env.CRON_SECRET;
   if (!secret || req.headers.authorization !== `Bearer ${secret}`) return res.status(401).json({ error: "unauthorised" });
 
-  const rows = await admin.all(); const out = { date: today, considered: rows.length, sent: 0, skipped: 0, failed: 0, channels: {} };
+  const rows = await admin.all(); const out = { date: today, considered: rows.length, sent: 0, skipped: 0, failed: 0, channels: {}, summaries: 0 };
   for (const row of rows) {
     const data = row.data || {};
+    const sm = composeSummary(data, today);
+    if (sm && data.contactEmail) {
+      try { await sendSummary(data.contactEmail, sm); data.summaries = [...(data.summaries || []).slice(-30), { week: sm.key, date: today }]; await admin.save(row.user_id, data); out.summaries++; } catch (e) { out.failed++; }
+    }
     const already = (data.reminders || []).some((r) => r.date === today);
     const msg = already ? null : compose(data, today);
     if (!msg) { out.skipped++; continue; }
@@ -105,3 +141,5 @@ export default async function handler(req, res) {
   }
   return res.status(200).json(out);
 }
+
+export { composeSummary };
