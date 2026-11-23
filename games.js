@@ -107,5 +107,24 @@
     return best;
   }
 
-  return { UNLOCKS, unlocks, reviewPick, reviewGap, TUNES, staffNote, tuneFor, optionsFor, payoutFor, revealed, PHRASES, phraseFor, markEcho, rateTap, beatStars, readiness, POINTS, levelOf, hash };
+  // ------------------------------------------------------------ weekly quests (the idea from Tonic's challenges, done our way)
+  // Three small goals a week, tracked from what the pupil already does: no leagues, no rankings, nothing to lose.
+  // s: {days, guessed, ladderTop, echoBest, beatBest, hasEcho}. Each quest: {id, name, have, need, done}.
+  const QUEST_NOTES = 30;
+  function questsFor(s) {
+    s = s || {};
+    const q = [
+      { id: 'days', name: 'Practise on 3 different days', have: Math.min(3, s.days || 0), need: 3 },
+      { id: 'ladder', name: 'Climb the tempo ladder once', have: s.ladderTop ? 1 : 0, need: 1 },
+      s.hasEcho ? { id: 'echo', name: 'Echo three notes spot on', have: Math.min(1, s.echoBest || 0), need: 1 } : { id: 'beat', name: 'Get two stars in Catch the beat', have: (s.beatBest || 0) >= 2 ? 1 : 0, need: 1 },
+      { id: 'guess', name: 'Guess the mystery tune', have: s.guessed ? 1 : 0, need: 1 }
+    ];
+    return q.map(x => ({ ...x, done: x.have >= x.need }));
+  }
+  // ------------------------------------------------------------ the tempo ladder (slow practice, as in Modacity, Flowkey, Yousician; self-rated)
+  // Rungs from a slow start to performance speed. The pupil plays the tricky bit at each rung and says "got it" or "not yet".
+  function ladderRungs(target, start) { target = Math.max(60, Math.min(200, Math.round(target || 100))); start = Math.max(40, Math.round(start || target * 0.6));
+    const out = []; for (let b = start; b < target; b += Math.max(4, Math.round((target - start) / 5))) out.push(b); out.push(target); return [...new Set(out)]; }
+
+  return { UNLOCKS, unlocks, reviewPick, reviewGap, questsFor, QUEST_NOTES, ladderRungs, TUNES, staffNote, tuneFor, optionsFor, payoutFor, revealed, PHRASES, phraseFor, markEcho, rateTap, beatStars, readiness, POINTS, levelOf, hash };
 });

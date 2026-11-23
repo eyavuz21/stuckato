@@ -66,6 +66,19 @@ test('spaced review: gaps grow with practice and ratings; picks the most overdue
   assert.equal(G.reviewPick([], '2026-11-22'), null);
 });
 
+test('quests: three-plus small goals tracked from the week; nothing lost', () => {
+  const q = G.questsFor({ days: 2, guessed: true, hasEcho: true, echoBest: 1 });
+  assert.deepEqual(q.map(x => x.id), ['days', 'ladder', 'echo', 'guess']);
+  assert.deepEqual(q.map(x => x.done), [false, false, true, true]);
+  assert.equal(G.questsFor({ beatBest: 2 })[2].id, 'beat'); assert.equal(G.questsFor({ beatBest: 2 })[2].done, true);
+});
+
+test('tempo ladder: rungs climb from slow to the target and end on it', () => {
+  const r = G.ladderRungs(100); assert.equal(r[0], 60); assert.equal(r[r.length - 1], 100); assert.ok(r.every((x, i) => i === 0 || x > r[i - 1]));
+  assert.ok(r.length >= 4 && r.length <= 7);
+  assert.equal(G.ladderRungs(500).slice(-1)[0], 200);
+});
+
 test('readiness and levels', () => {
   assert.equal(G.readiness(3, 7, 60, 140), 43); assert.equal(G.readiness(7, 7, 200, 140), 100);
   assert.deepEqual(G.levelOf(340), { level: 3, into: 40, of: 150 });
