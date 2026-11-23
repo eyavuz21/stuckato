@@ -162,9 +162,9 @@ dialog::backdrop{background:rgba(0,0,0,.65)} dialog .in{padding:22px} dialog h2{
 canvas.cardc{width:100%; max-width:420px; border-radius:16px; border:1px solid var(--line); display:block; margin:10px auto}
 @media (prefers-reduced-motion: reduce){ .rec .blink{animation:none} }
 @media (prefers-reduced-motion: reduce){ .toast{transition:none} }
-details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:14px;padding:16px 18px;background:var(--ink);color:var(--paper);border-radius:22px;box-shadow:var(--shadow)} details.more>summary::-webkit-details-marker{display:none}
+details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:14px;padding:16px 18px;background:var(--card);color:var(--ink);border:1.5px solid var(--line);border-radius:22px} details.more>summary::-webkit-details-marker{display:none}
 .more-ic{font-size:26px;flex:none} .more-txt{display:flex;flex-direction:column;gap:6px;flex:1;min-width:0} .more-txt b{font-size:19px;font-weight:800}
-.more-stats{display:flex;flex-wrap:wrap;gap:6px} .more-stats span{font-size:14px;font-weight:700;padding:3px 10px;border-radius:999px;border:1.5px solid var(--paper)} .more-stats .more-win{background:var(--win);color:var(--win-ink);border-color:var(--win)}
+.more-stats{display:flex;flex-wrap:wrap;gap:6px} .more-stats span{font-size:14px;font-weight:700;padding:3px 10px;border-radius:999px;border:1.5px solid var(--ink)} .more-stats .more-win{background:var(--win);color:var(--win-ink);border-color:var(--win)}
 .more-chev{font-size:30px;font-weight:800;flex:none;transition:transform .2s} details.more[open] .more-chev{transform:rotate(90deg)} details.more[open]>summary{margin-bottom:14px}
 .joy{border-color:var(--ink)} .joy-big{font-size:20px;font-weight:800;margin:0 0 8px;line-height:1.3} .surprise{background:var(--ink);color:var(--paper);border-color:var(--ink)} .surprise .label{color:var(--paper)} .surprise a{color:var(--paper);text-decoration:underline}
 .skills{display:flex;flex-direction:column;gap:8px;margin-top:6px} .skill{display:flex;gap:12px;align-items:center;padding:10px 12px;border:1.5px solid var(--line);border-radius:16px;background:var(--paper)} .skill-dot{flex:none;min-width:44px;text-align:center;font-weight:800;font-size:18px} .skill.strong,.skill.shown{border-color:var(--ink)} .skill.shown{background:var(--ink);color:var(--paper)} .skill.shown .note{color:var(--paper)} .skill.new{opacity:.7}
@@ -191,6 +191,23 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
 .skill.getting{border-left:8px solid var(--win)}
 .feel button.on{background:var(--win) !important; color:var(--win-ink) !important; border-color:var(--ink) !important}
 .check li.on i, .ticks li.on i{background:var(--win) !important; border-color:var(--ink) !important} .ticks li.on{border-color:var(--ink) !important; background:var(--win-soft) !important}
+#tabs[hidden],#startbar[hidden]{display:none !important} /* the tab bar's display:flex used to override hidden: an empty white strip at the bottom */
+/* home, simpler (23 Nov 2026): the quaver speaks, the tune card guesses, the practice card punches */
+.g-meta{display:flex; flex-wrap:wrap; gap:6px; margin:4px 0 0} .g-meta span{font-size:13px; font-weight:700; color:var(--muted)} .g-meta span+span::before{content:'·'; margin-right:6px}
+.g-quizchip{border:none; border-radius:999px; background:var(--ink); color:#fff; font-size:13px; font-weight:800; padding:4px 10px; animation:gpulse 1.6s ease-out infinite}
+.g-bubble{position:relative; margin-top:8px; background:var(--card); border:1.5px solid var(--ink); border-radius:16px 16px 16px 4px; padding:9px 12px; font-size:15px; line-height:1.35; display:flex; flex-direction:column; gap:6px}
+.g-bub-act{display:flex; gap:8px; justify-content:flex-end} .g-bub-act button{border:none; background:none; font-weight:800; font-size:13px; padding:2px 4px; color:var(--ink); text-decoration:underline; text-underline-offset:3px}
+.g-guess{border:1.5px solid var(--ink); background:var(--card); color:var(--ink); border-radius:999px; font-size:13px; font-weight:800; padding:5px 12px} .g-guess.hot{background:var(--ink); color:#fff; animation:gpulse 1.6s ease-out infinite}
+.g-stave-btn{display:block; width:100%; border:none; background:none; padding:0; text-align:left; cursor:pointer}
+.g-today{border:2px solid var(--ink)} .g-today-top{display:flex; justify-content:space-between; font-size:13px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:var(--muted)}
+.g-today .g-title{font-size:30px; line-height:1.02; margin:6px 0 6px} .g-hook{margin:0 0 14px; font-weight:600}
+.g-track{display:flex; justify-content:space-between; margin:0 0 16px; position:relative} .g-track::before{content:''; position:absolute; left:16px; right:16px; top:16px; height:2px; background:var(--line)}
+.g-track span{position:relative; display:flex; flex-direction:column; align-items:center; gap:4px; font-size:12px; font-weight:700; color:var(--muted)} .g-track i{font-style:normal; width:34px; height:34px; border-radius:50%; background:var(--card); border:2px solid var(--ink); display:grid; place-items:center; color:var(--ink); font-size:16px}
+.g-go{font-size:21px !important; padding:20px !important}
+.g-alt{display:flex; justify-content:center; gap:18px; margin-top:10px} .g-alt button{border:none; background:none; font-weight:700; font-size:14px; color:var(--muted); text-decoration:underline; text-underline-offset:3px}
+.g-unlock{display:flex; align-items:center; gap:8px; font-size:14px; color:var(--muted); margin:0 2px 14px} .g-lock{flex:none; color:var(--ink)}
+.g-skill{display:flex; flex-direction:column; align-items:center; gap:2px; border:2px solid var(--ink); border-radius:18px; padding:10px 16px} .g-skill span{font-size:12px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--muted)} .g-skill b{font-size:18px} .g-skill small{color:var(--muted); font-weight:600}
+.g-lede{font-size:18px; font-weight:600; margin:-6px 0 16px; color:var(--sage)}
 /* the teacher's three sections (23 Nov 2026) */
 .seg3{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:4px; padding:4px; border-radius:999px; background:var(--tintC); margin:0 0 16px} .seg3 button{border:none; border-radius:999px; padding:10px 6px; font-weight:700; font-size:15px; background:transparent; color:var(--ink)} .seg3 button.on{background:var(--ink); color:#fff}
 /* games (22 Nov 2026): the smiling quaver, the mystery tune and records, warm-ups, treat box, quiz */
@@ -610,14 +627,15 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
     const recCard = recordingDue(w) ? `<div class="card" id="recCard" style="border-color:var(--ink)"><div class="label" style="color:var(--ink)">Before the lesson · play it through</div><p style="margin:0 0 10px">Play this week's piece once, all the way through, and send it to ${h(tn)}. Not a performance: just where it is today. The week's two bonus tokens come once ${h(tn)} can hear it.</p>
         <div class="row"><button class="btn" id="recBtn">Record</button><button class="btn quiet" id="recPlay" hidden>Listen back</button><button class="btn" id="recSend" hidden>Send to ${h(tn)}</button></div><p class="note" id="recStatus" style="margin:8px 0 0">Up to five minutes. Phone on a chair, a metre away.</p><audio id="recAudio" controls hidden style="width:100%;margin-top:8px"></audio></div>`
       : (w.recording ? `<div class="card"><div class="label">Play-through sent · ${h(fmt(w.recording.at.slice(0,10)))}</div><p style="margin:0">${w.recording.heard?h(tn)+' has heard it.':'Waiting for '+h(tn)+' to listen.'}${w.recording.reply?` <b>${h(tn)} says:</b> “${h(w.recording.reply)}”`:''}</p></div>` : '');
+    const G_ON=gamesOn();
+    const lessonBox=`<div class="box says"><div class="label">Lesson · ${h(fmt(w.lessonDate||w.createdAt))} · from ${h(tn)}</div><p style="margin:0"><b>What you did well:</b> ${h(w.line||w.encouragement||'Turn up every day and the lesson takes care of itself.')}</p>${(w.checklist||[]).length?`<p style="margin:8px 0 0"><b>What to work on:</b> ${h(w.checklist.join(' · '))}.</p>`:''}
+        ${openExtras().map(x=>`<div class="row" style="margin:4px 0 0;justify-content:space-between;flex-wrap:nowrap;align-items:flex-start"><p style="margin:0"><b>News from ${h(tn)}:</b> ${h(x.text)} (${h(fmt(x.at.slice(0,10)))})</p><button class="btn sm quiet" data-xdone="${x.id}" style="flex:none">Done</button></div>`).join('')}</div>`;
     v.innerHTML=`
-      <div class="chips"><span class="chip">${h(fmt(today()))}</span><span class="chip">Day <b>${Math.min(n+1,w.sessions.length)} of ${w.sessions.length}</b></span><span class="chip">${h(mins)} min <b>set by ${h(tn)}</b></span>${+p.selfMinutes>mins?`<span class="chip">you aim for <b>${h(p.selfMinutes)} min</b></span>`:''}${p.goalDate?`<span class="chip">${h(p.goalLabel||'Goal')} <b>${weeksBetween(today(),p.goalDate)} weeks</b>${goalLight()?' · '+lightHTML():''}</span>`:''}${w.group?`<span class="chip">${h(w.group.name||'Group')} week${p.part?' · '+h(p.part):''}</span>`:''}</div>
+      ${G_ON?'':`<div class="chips"><span class="chip">${h(fmt(today()))}</span><span class="chip">Day <b>${Math.min(n+1,w.sessions.length)} of ${w.sessions.length}</b></span><span class="chip">${h(mins)} min <b>set by ${h(tn)}</b></span>${+p.selfMinutes>mins?`<span class="chip">you aim for <b>${h(p.selfMinutes)} min</b></span>`:''}${p.goalDate?`<span class="chip">${h(p.goalLabel||'Goal')} <b>${weeksBetween(today(),p.goalDate)} weeks</b>${goalLight()?' · '+lightHTML():''}</span>`:''}${w.group?`<span class="chip">${h(w.group.name||'Group')} week${p.part?' · '+h(p.part):''}</span>`:''}</div>`}
       ${pendCard}${gamesOn()?gameHomeHTML(w,i,s,todayCard):todayCard}${pulseCard}${s?'':recCard}${s?recCard:''}
-      ${backingCardHTML(w)}${passagePupilHTML(w, tn)}${breakCard}${habitsHTML(w)}<div id="socialBox"></div><div class="box says"><div class="label">Lesson · ${h(fmt(w.lessonDate||w.createdAt))} · from ${h(tn)}</div><p style="margin:0"><b>What you did well:</b> ${h(w.line||w.encouragement||'Turn up every day and the lesson takes care of itself.')}</p>${(w.checklist||[]).length?`<p style="margin:8px 0 0"><b>What to work on:</b> ${h(w.checklist.join(' · '))}.</p>`:''}
-        ${openExtras().map(x=>`<div class="row" style="margin:4px 0 0;justify-content:space-between;flex-wrap:nowrap;align-items:flex-start"><p style="margin:0"><b>News from ${h(tn)}:</b> ${h(x.text)} (${h(fmt(x.at.slice(0,10)))})</p><button class="btn sm quiet" data-xdone="${x.id}" style="flex:none">Done</button></div>`).join('')}</div>
-      ${skillsHTML()}
-      <details class="more" id="trailMore"${trailMoreOpen?' open':''}><summary><span class="more-ic">📖</span><span class="more-txt"><b>Your week at a glance</b><span class="more-stats"><span>Day ${Math.min(n+1,w.sessions.length)}/${w.sessions.length}</span><span class="more-win">${Math.min(6,tk.avail%6||(tk.avail>=6?6:0))}/6 tokens</span>${p.goalDate?`<span>${weeksBetween(today(),p.goalDate)} wks to ${h(p.goalLabel||'goal')}</span>`:''}</span></span><span class="more-chev">›</span></summary>
-      <div class="card"><div class="label">${w.sessions.length} days, then ${h(tn)}</div>
+      ${backingCardHTML(w)}${passagePupilHTML(w, tn)}${breakCard}${habitsHTML(w)}<div id="socialBox"></div>${G_ON?'':lessonBox+skillsHTML()}
+      <details class="more" id="trailMore"${trailMoreOpen?' open':''}><summary><span class="more-ic" aria-hidden="true">♫</span><span class="more-txt"><b>Your week at a glance</b><span class="more-stats"><span>Day ${Math.min(n+1,w.sessions.length)}/${w.sessions.length}</span><span class="more-win">${Math.min(6,tk.avail%6||(tk.avail>=6?6:0))}/6 tokens</span>${p.goalDate?`<span>${weeksBetween(today(),p.goalDate)} wks to ${h(p.goalLabel||'goal')}</span>`:''}</span></span><span class="more-chev">›</span></summary>
+      ${G_ON?lessonBox+skillsHTML():''}<div class="card"><div class="label">${w.sessions.length} days, then ${h(tn)}</div>
         ${s?journeyMap(w, flags, 'top'):''}${s?journeyMap(w, flags, 'bottom'):journeyMap(w, flags, 'all')}
         <div class="label" style="margin-top:10px">At the lesson: show ${h(tn)}</div>
         <ul class="check" id="prep">${(w.checklist||[]).map((c,k)=>`<li class="${(w.ticks||[]).includes(k)?'on':''}" data-k="${k}"><i></i><span>${h(c)}</span></li>`).join('')||'<li><i></i><span style="color:var(--muted)">No checklist this week</span></li>'}</ul>
@@ -649,8 +667,8 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
     $('#flagForm').onsubmit=e=>{ e.preventDefault(); const t=$('#flagText').value.trim(); if(!t) return; doc().flags=doc().flags||[]; doc().flags.push({id:uid(), text:t, at:new Date().toISOString(), resolved:false}); saveCurrent(); renderTrail(false); toast('Flagged for the lesson.'); };
     $$('[data-unflag]').forEach(b=>b.onclick=()=>{ doc().flags=doc().flags.filter(f=>f.id!==b.dataset.unflag); saveCurrent(); renderTrail(false); });
     // the pinned bar: today, one tap, wherever you have scrolled
-    bar.innerHTML = s ? `<button class="btn block" id="barStart">${gamesOn()?"Let's go":'Start today'} · ${h(s.title)} · ${s.steps.reduce((a,x)=>a+(+x.minutes||0),0)} min</button>` : recordingDue(w) ? `<button class="btn block" id="barStart">Record the play-through for ${h(tn)}</button>` : `<button class="btn block quiet" id="barStart">Week complete · next lesson ${h(fmt(w.nextLesson))}</button>`;
-    $('#barStart').onclick=()=>{ if(s){ if(gamesOn()) startWithGames(i); else startSession(i); } else if(recordingDue(w)&&$('#recCard')) $('#recCard').scrollIntoView({behavior:'smooth',block:'center'}); else window.scrollTo({top:0,behavior:'smooth'}); };
+    bar.innerHTML = gamesOn() ? '' : s ? `<button class="btn block" id="barStart">${gamesOn()?"Let's go":'Start today'} · ${h(s.title)} · ${s.steps.reduce((a,x)=>a+(+x.minutes||0),0)} min</button>` : recordingDue(w) ? `<button class="btn block" id="barStart">Record the play-through for ${h(tn)}</button>` : `<button class="btn block quiet" id="barStart">Week complete · next lesson ${h(fmt(w.nextLesson))}</button>`;
+    if($('#barStart')) $('#barStart').onclick=()=>{ if(s){ if(gamesOn()) startWithGames(i); else startSession(i); } else if(recordingDue(w)&&$('#recCard')) $('#recCard').scrollIntoView({behavior:'smooth',block:'center'}); else window.scrollTo({top:0,behavior:'smooth'}); };
     if(showIt!==false) show('trail');
   }
 
@@ -1350,29 +1368,42 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
     const ready=Games.readiness(evCount(w), w.sessions.length, weekMinutes(w), planMin); const lv=Games.levelOf(pointsOf(d)); const m=mysteryOf(w); const fx=factsOf(d);
     const doneToday=(w.done||[]).some(x=>evidenced(x)&&(x.at||'').slice(0,10)===today());
     const lessonDay=w.nextLesson?new Date(w.nextLesson+'T12:00').toLocaleDateString('en-GB',{weekday:'long'}):'the lesson';
+    const quizOk=!!fx&&!w.quiz&&u.has('quiz')&&(fx.f.quiz||[]).some(q=>q.card<fx.unlocked);
     const hero=`<div class="g-hero"><div class="g-ring"><svg viewBox="0 0 92 92" width="92" height="92" role="img" aria-label="${ready} percent ready for the lesson"><circle cx="46" cy="46" r="40" fill="none" stroke="var(--line)" stroke-width="7"/><circle class="g-arc" cx="46" cy="46" r="40" fill="none" stroke="var(--ink)" stroke-width="7" stroke-linecap="round" stroke-dasharray="251.3" stroke-dashoffset="${(251.3*(1-ready/100)).toFixed(1)}" transform="rotate(-90 46 46)"/></svg><span class="g-mascot">${mascotSVG(48, doneToday)}</span></div>
-      <div style="min-width:0"><h2 class="g-hi">${doneToday?`See you tomorrow, ${h(p.name||'you')}!`:s?`Hi ${h(p.name||'there')}! Day ${i+1} is ready`:`Nice week, ${h(p.name||'you')}!`}</h2><div class="note" style="margin:2px 0 0">${ready}% ready for ${h(lessonDay)}'s lesson · level ${lv.level} · ${lv.into}/${lv.of} notes</div></div></div>`;
-    const tune=`<div class="card g-tune"><div class="row" style="justify-content:space-between"><b>Mystery tune</b><span class="note" style="margin:0">${m.revealed?'complete':m.shown+' of 7 notes'}</span></div>${tuneStaveHTML(w)}${shelfHTML(w,i)}</div>`;
-    const steps=[u.has('beat')?'Catch the beat':null, u.has('echo')?'Echo it':null, `Practise ${s?planMinutes(s):''} min`, 'Press your record', 'Treat box'].filter(Boolean);
-    const todayG=s&&!doneToday?`<div class="card g-today"><div class="label">Today · day ${i+1} of ${w.sessions.length}</div><h2 class="g-title">${h(s.title)}</h2><div class="g-steps">${steps.map((x,k)=>`<span>${k+1} · ${h(x)}</span>`).join('')}</div>
-        <button class="btn block" id="start">Let's go</button><div class="row" style="justify-content:space-between;margin-top:8px"><button class="btn sm quiet" id="ownStart">Practise on my own</button>${u.has('beat')||u.has('echo')?'<button class="btn sm quiet" id="startNoWarm">Skip the warm-ups</button>':''}</div></div>`:fallbackToday;
-    let cliff='';
-    if(m.revealed) cliff=`<div class="card g-cliff"><b>The mystery tune was ${h(m.tune.name)}.</b><div class="note" style="margin:2px 0 8px">${m.guess?(m.right?`You guessed it: +${Games.POINTS.mystery*m.pays} notes (${m.pays}×).`:`You said ${h(m.guess)}. A new tune starts after the lesson.`):'A new tune starts after the lesson.'}</div><button class="btn sm quiet" id="gTunePlay">▶ Play it</button></div>`;
-    else if(m.guess) cliff=`<div class="card g-cliff"><b>Your guess: ${h(m.guess)} (pays ${m.pays}×)</b><div class="note" style="margin:2px 0 0">Note ${m.shown+1} arrives with your next practice. If it surprises you, you can change your guess, for ${Games.payoutFor(m.shown+1)}×.</div></div>`;
-    else if(m.shown>0) cliff=`<div class="card g-cliff"><b>${m.shown} ${m.shown===1?'note':'notes'} in. Can you name the tune?</b><div class="note" style="margin:2px 0 8px">Guess now for ${Games.payoutFor(m.shown)}× notes on lesson day, or practise for another clue.</div><button class="btn sm quiet" id="gGuess">Guess the tune</button></div>`;
-    else cliff=`<div class="card g-cliff"><b>A mystery tune is hiding in this week.</b><div class="note" style="margin:2px 0 0">Every day you practise reveals one note. Guess it early for triple notes.</div></div>`;
-    let deck='';
-    if(fx){ const quizOk=u.has('quiz')&&(fx.f.quiz||[]).some(q=>q.card<fx.unlocked); const nxt=fx.unlocked<fx.f.cards.length?fx.f.cards[fx.unlocked].split(/\s+/).slice(0,4).join(' '):'';
-      deck=`<div class="card g-deck"><div style="min-width:0"><b>Fact deck · ${fx.unlocked} of ${fx.f.cards.length} cards</b><div class="note" style="margin:2px 0 0">${w.quiz?`Lesson-day quiz: ${h(w.quiz.medal||'')} record, ${w.quiz.right} of ${w.quiz.of}.`:nxt?`Next card: “${h(nxt)}…”`:'Every card turned over. Try the quiz!'}</div></div>${quizOk&&!w.quiz?'<button class="btn sm" id="gQuiz">Quiz</button>':''}</div>`; }
-    const nx=u.next?`<div class="g-unlock">Next unlock in ${u.next.left} ${u.next.left===1?'practice':'practices'}: <b>${h(u.next.name)}</b>. ${h(u.next.what)}.</div>`:'';
-    return hero+tune+(todayG||'')+cliff+deck+nx; }
+      <div style="min-width:0;flex:1"><h2 class="g-hi">${doneToday?`See you tomorrow, ${h(p.name||'you')}!`:s?`Hi ${h(p.name||'there')}!`:`Nice week, ${h(p.name||'you')}!`}</h2><div class="g-meta"><span>${ready}% ready for ${h(lessonDay)}</span><span>Level ${lv.level}</span>${quizOk?'<button class="g-quizchip" id="gQuiz">Quiz ready ›</button>':w.quiz?`<span>${h(w.quiz.medal)} record</span>`:''}</div>
+      <div class="g-bubble" id="gBubble" aria-live="polite"></div></div></div>`;
+    let guess='';
+    if(m.revealed) guess=`<button class="g-guess" id="gTunePlay">It was ${h(m.tune.name)} ▶</button>`;
+    else if(m.guess) guess=`<button class="g-guess" id="gGuess">${h(m.guess)}? · ${m.pays}×</button>`;
+    else if(m.shown>0) guess=`<button class="g-guess hot" id="gGuess">Guess it · ${Games.payoutFor(m.shown)}×</button>`;
+    const tune=`<div class="card g-tune"><div class="row" style="justify-content:space-between;align-items:center"><b>Mystery tune</b>${guess}</div><button type="button" class="g-stave-btn" id="gStave" aria-label="Play the notes so far">${tuneStaveHTML(w)}</button>${shelfHTML(w,i)}</div>`;
+    const steps=[u.has('beat')?['♩','Beat']:null, u.has('echo')?['♪','Echo']:null, ['♫','Practise'], ['◉','Record'], ['★','Treat']].filter(Boolean);
+    const hook=m.revealed?'Press today’s record and open a treat.':`Unlock note ${Math.min(7,m.shown+1)} of the mystery tune and a treat box.`;
+    const todayG=s&&!doneToday?`<div class="card g-today"><div class="g-today-top"><span>Day ${i+1}</span><span>${planMinutes(s)} min</span></div><h2 class="g-title">${h(s.title)}</h2><p class="g-hook">${hook}</p>
+        <div class="g-track">${steps.map(([ic,l])=>`<span><i>${ic}</i>${l}</span>`).join('')}</div>
+        <button class="btn block g-go" id="start">Let's go</button><div class="g-alt"><button type="button" id="ownStart">My own way</button>${u.has('beat')||u.has('echo')?'<button type="button" id="startNoWarm">Skip warm-ups</button>':''}</div></div>`:fallbackToday;
+    const nx=u.next?`<div class="g-unlock"><svg class="g-lock" width="16" height="18" viewBox="0 0 16 18" aria-hidden="true"><rect x="1.5" y="8" width="13" height="9" rx="2" fill="currentColor"/><path d="M4.5 8V5.5a3.5 3.5 0 0 1 7 0V8" stroke="currentColor" stroke-width="2" fill="none"/></svg><span>Unlocks in ${u.next.left} ${u.next.left===1?'practice':'practices'}: <b>${h(u.next.name)}</b></span></div>`:'';
+    return hero+(todayG||'')+tune+nx; }
+  function bubbleItems(w){ const d=doc(), tn=d.teacherName||'Your teacher'; const L=[];
+    if(w.line||w.encouragement) L.push({t:`${tn}: “${w.line||w.encouragement}”`});
+    if((w.checklist||[]).length) L.push({t:`For the lesson: ${w.checklist[0]}${w.checklist.length>1?` (+${w.checklist.length-1} more)`:''}`});
+    openExtras().forEach(x=>L.push({t:`News from ${tn}: ${x.text}`, x:x.id}));
+    return L; }
   function wireGameHome(w, i){
     const nw=$('#startNoWarm'); if(nw) nw.onclick=()=>{ gamePre=null; ready(()=>startSession(i)); };
+    const st=$('#gStave'); if(st) st.onclick=()=>{ const m=mysteryOf(w); gPlay(m.tune.notes.slice(0,m.revealed?7:Math.max(1,m.shown)),0.45); };
     const tp=$('#gTunePlay'); if(tp) tp.onclick=()=>gPlay(mysteryOf(w).tune.notes,0.45);
     const gq=$('#gQuiz'); if(gq) gq.onclick=renderQuiz;
     const gg=$('#gGuess'); if(gg) gg.onclick=()=>{ const m=mysteryOf(w); gPlay(m.tune.notes.slice(0,m.shown),0.45);
-      modal({label:'Mystery tune', title:'Which tune is it?', text:`${m.shown} ${m.shown===1?'note':'notes'} in. A right guess now pays ${Games.payoutFor(m.shown)}× on lesson day.`,
-        buttons:[...m.options.map(o=>({label:o, onClick:()=>{ w.mystery={guess:o, shown:m.shown, at:new Date().toISOString()}; saveCurrent(); gTone(79,0.12); gTone(84,0.25,0.1); renderTrail(false); toast('Locked in. The answer comes with the last note.'); }})), {label:'Not yet', cls:'quiet', onClick:()=>{}}]}); }; }
+      modal({label:'Mystery tune', title:'Which tune is it?', text:`${m.shown} ${m.shown===1?'note':'notes'} in. Right now a correct guess pays ${Games.payoutFor(m.shown)}× on lesson day.`,
+        buttons:[...m.options.map(o=>({label:o, onClick:()=>{ w.mystery={guess:o, shown:m.shown, at:new Date().toISOString()}; saveCurrent(); gTone(79,0.12); gTone(84,0.25,0.1); renderTrail(false); toast('Locked in. Find out with the last note.'); }})), {label:'Not yet', cls:'quiet', onClick:()=>{}}]}); };
+    // the quaver speaks: the teacher's line, what to work on, any news; tap for the next one
+    const b=$('#gBubble'); const items=bubbleItems(w); let k=0;
+    const paint=()=>{ if(!b) return; if(!items.length){ b.hidden=true; return; } const it=items[k%items.length];
+      b.innerHTML=`<span>${h(it.t)}</span><span class="g-bub-act">${it.x?`<button type="button" data-bdone="${h(it.x)}">Done</button>`:''}${items.length>1?`<button type="button" id="gBubNext" aria-label="Next message">${k%items.length+1}/${items.length} ›</button>`:''}</span>`;
+      const nx=$('#gBubNext'); if(nx) nx.onclick=()=>{ k++; paint(); };
+      const dn=b.querySelector('[data-bdone]'); if(dn) dn.onclick=()=>{ const e=extras().find(y=>y.id===dn.dataset.bdone); if(e){ e.done=true; e.doneAt=new Date().toISOString(); } saveCurrent(); toast('Done. Nice.'); renderTrail(false); }; };
+    paint(); }
   function startWithGames(i){ gamePre={}; const u=unl(); if(u.has('beat')) renderBeat(i); else if(u.has('echo')) renderEcho(i); else ready(()=>startSession(i)); }
   function toSession(i){ beatStop(); ready(()=>startSession(i)); }
   function renderBeat(i){ const bpm=unl().has('beatfast')?104:80, ms=60000/bpm; let t0=0, taps=[], running=false; const v=$('#v-warm');
@@ -1431,11 +1462,16 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
   function renderReward(){ const w=week(); const d=(w.done||[]).find(x=>x.i===si); if(!d){ renderJourney(true); return; }
     const D=doc(); const m=mysteryOf(w); const fx=factsOf(D); const first=!d.pressed; d.pressed=true; saveCurrent();
     const nn=NOTE_NAMES[m.tune.notes[Math.min(6,Math.max(0,m.shown-1))]%12]; const card=fx&&fx.unlocked>0?fx.f.cards[fx.unlocked-1]:'';
+    const worked=(d.worked||[]).map(x=>String(x).trim().toLowerCase()); const sk=skillsList().filter(x=>worked.includes(x.name.toLowerCase())).sort((a,b)=>b.n-a.n)[0];
+    const skLvl=sk?(sk.shown?'shown at a lesson':sk.n>=7?'strong':sk.n>=3?'getting there':'started'):'';
+    const nextCard=fx&&fx.unlocked<fx.f.cards.length?fx.f.cards[fx.unlocked].split(/\s+/).slice(0,4).join(' '):'';
     $('#v-reward').innerHTML=`<div class="g-screen"><div class="eyebrow">Press your record</div><div class="g-record spin"><div>DAY ${si+1}<br>NOTE ${h(nn)}</div></div><h2 class="big">Day ${si+1}, pressed!</h2>
       <div class="chips" style="justify-content:center"><span class="chip on">+${Games.POINTS.session} notes</span>${d.earned?'<span class="chip on">+1 token</span>':''}<span class="chip">Note ${Math.min(m.shown,7)} of 7</span></div>
       <p class="note" style="margin:0">${m.revealed?'The mystery tune is complete.':'The mystery tune has a new note. Does it sound familiar yet?'}</p>
       <button class="btn quiet" id="rPlay">▶ Play the tune so far</button>
       ${card?`<button class="g-fact" id="rFact" type="button"><span class="label">Today's fact card · tap to turn it over</span><span class="g-fact-t" hidden>${h(card)}</span></button>`:''}
+      ${sk?`<div class="g-skill"><span>Skill up</span><b>${h(sk.name)}</b><small>${h(skLvl)} · ${sk.n} ${sk.n===1?'session':'sessions'}</small></div>`:''}
+      ${nextCard?`<p class="note" style="margin:0">Tomorrow's card: “${h(nextCard)}…”</p>`:''}
       <button class="btn block" id="rTreat">${d.treat?'See your treat':'Open the treat box'}</button><button class="btn sm quiet" id="rHome">Back home</button></div>`;
     $('#rPlay').onclick=()=>gPlay(m.tune.notes.slice(0, m.revealed?7:m.shown), 0.45);
     const f=$('#rFact'); if(f) f.onclick=()=>{ const t=f.querySelector('.g-fact-t'); if(!t.hidden) return; t.hidden=false; f.classList.add('open'); f.querySelector('.label').textContent=`Today's fact card · ${fx.unlocked} of ${fx.f.cards.length}`; gTone(84,0.12); gTone(91,0.3,0.08); };
@@ -1521,10 +1557,10 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
     return {size:ms.length, instruments:Object.entries(inst).map(([k,n])=>n+' '+(n>1&&!k.endsWith('s')?k+'s':k)).join(', '), levels:[...new Set(ms.map(p=>levelLabel(p.level)))].join(', '), ages:[...new Set(ms.map(p=>p.adult?'adults':p.over13?'13 to 17':'under 13'))].join(', ')}; }
   function renderCreate(){ const v=$('#v-create');
     const rows=students.map(st=>{ const p=st.data.profile||{}; const fp=p.freeplay||{}; return `<div class="flag"><span><b>${h(p.name||'Pupil')}</b><br><span class="note" style="margin:0">Free play ${fp.on?'on · '+h(window.Backing?Backing.keyName(fp.key||{tonic:7,mode:'major'}):'')+' · '+h((fp.seconds||120)/60)+' min':'off'} · games ${p.games===false?'off':'on'}</span></span><span class="row" style="gap:6px;flex-wrap:nowrap"><button class="btn sm quiet" data-cfp="${h(st.user_id)}">${fp.on?'Free play off':'Free play on'}</button><button class="btn sm quiet" data-copen="${h(st.user_id)}">Settings</button></span></div>`; }).join('');
-    v.innerHTML=`${secNav('create')}<div class="eyebrow" style="margin-top:10px">Create</div><h2 class="big">Making it up.</h2>
-      <div class="card"><p style="margin:0">Free play lets a pupil improvise over a backing loop for a minute or three after their practice, in the key you choose, with the notes that fit on screen and nothing marked right or wrong. Switch it on pupil by pupil; the key, backing, speed and starting idea are in each pupil's settings.</p></div>
+    v.innerHTML=`${secNav('create')}<div class="eyebrow" style="margin-top:10px">Create</div><h2 class="big">Let them make it up.</h2>
+      <p class="g-lede">Two minutes of improvising over a backing after practice. Your key, your groove. Nothing to get wrong.</p>
       <div class="card"><div class="label">Pupils</div>${rows||'<p class="note" style="margin:0">Pupils appear here when they join with your code.</p>'}</div>
-      <div class="card"><div class="label">For a group</div><p style="margin:0 0 8px">Composing and improvising together, call and response, soundscapes: Play together suggests creative activities for a whole class.</p><button class="btn sm" data-sec="together">Open Play together</button></div>`;
+      <div class="card"><div class="label">Whole class</div><p style="margin:0 0 8px">Soundscapes, call and response, a piece written together.</p><button class="btn sm" data-sec="together">Get group ideas</button></div>`;
     $$('[data-cfp]').forEach(b=>b.onclick=async()=>{ const st=students.find(x=>x.user_id===b.dataset.cfp); if(!st) return; const p=st.data.profile; p.freeplay=Object.assign({}, FP_DEF, p.freeplay||{}, {on:!(p.freeplay&&p.freeplay.on)}); try{ await saveStudent(st); }catch(e){ toast('Could not save.'); } renderCreate(); });
     $$('[data-copen]').forEach(b=>b.onclick=()=>{ current=students.find(x=>x.user_id===b.dataset.copen); if(!current) return; renderTStudent(); show('tstudent'); });
     show('create'); }
@@ -1534,8 +1570,9 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
     <div class="card"><h3>Running order</h3><ol style="margin:0;padding-left:20px">${(I.plan||[]).map(x=>`<li><b>${h(x.minutes)} min</b> · ${h(x.what)}</li>`).join('')}</ol><div class="row" style="margin-top:10px"><button class="btn sm quiet" id="tgCopy">Copy as text</button></div></div>`; }
   const ideasText=I=>['PIECES',...(I.pieces||[]).map(p=>`- ${p.title} (${p.composer}): ${p.why} ${p.parts}`),'','GAMES',...(I.games||[]).map(g=>`- ${g.name}, ${g.minutes} min (${g.skill}): ${g.how}`),'','ACTIVITIES',...(I.activities||[]).map(a=>`- ${a.name}, ${a.minutes} min: ${a.how}`),'','RUNNING ORDER',...(I.plan||[]).map(x=>`- ${x.minutes} min: ${x.what}`)].join('\n');
   function renderTogether(){ const v=$('#v-together'); const groups=allGroups(); let saved=null; try{ saved=JSON.parse(localStorage.getItem('stuckato.together.last')||'null'); }catch(e){} const f=(saved&&saved.form)||{};
-    v.innerHTML=`${secNav('together')}<div class="eyebrow" style="margin-top:10px">Play together</div><h2 class="big">Ideas for a group.</h2>
-      <div class="card"><p style="margin:0 0 8px">Describe the group and get pieces, ensemble games and activities for it, with a running order. <b>No names or personal details:</b> instruments, levels and ages are enough.</p>
+    v.innerHTML=`${secNav('together')}<div class="eyebrow" style="margin-top:10px">Play together</div><h2 class="big">Plan a group session in a minute.</h2>
+      <p class="g-lede">Pieces, ensemble games and a running order, made for your group.</p>
+      <div class="card"><p class="note" style="margin:0 0 4px">Instruments, levels and ages are enough. No names.</p>
         ${students.length?`<label class="l" for="tgFrom">Start from one of your groups (optional)</label><select id="tgFrom"><option value="">Choose…</option><option value="*">All my pupils</option>${groups.map(g=>`<option value="${h(g)}">${h(g)}</option>`).join('')}</select>`:''}
         <div class="grid2"><div><label class="l" for="tgSize">How many players</label><input type="number" id="tgSize" min="2" max="80" value="${h(f.size||6)}"></div><div><label class="l" for="tgMin">Session length, minutes</label><input type="number" id="tgMin" min="10" max="180" step="5" value="${h(f.minutes||45)}"></div>
           <div style="grid-column:1/-1"><label class="l" for="tgInst">Instruments</label><input id="tgInst" value="${h(f.instruments||'')}" placeholder="e.g. 4 violins, 2 cellos, 1 flute"></div>
@@ -1544,7 +1581,7 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
         <label class="l">What to focus on</label><div class="chips" id="tgFocus">${FOCI.map(x=>`<button type="button" class="chip ${(f.focus||[]).includes(x)?'on':''}" data-fo="${h(x)}">${h(x)}</button>`).join('')}</div>
         <label class="l" for="tgNotes">Anything else about the group (optional, nothing personal)</label><textarea id="tgNotes" placeholder="e.g. the cellos are on open strings only; the flute reads treble clef; they love film music">${h(f.notes||'')}</textarea>
         <div class="row" style="margin-top:10px"><button class="btn" id="tgGo">Get ideas</button><span class="status" id="tgSt" style="margin:0"></span></div>
-        <div class="note">Suggestions to adapt, not a plan to follow. Check each piece and its parts before the session: Stuckato does not supply sheet music.</div></div>
+        <div class="note">Ideas to adapt. Check each piece's parts before you play: Stuckato doesn't supply sheet music.</div></div>
       <div id="tgOut">${saved&&saved.ideas?ideasHTML(saved.ideas):''}</div>`;
     const wireCopy=I=>{ const c=$('#tgCopy'); if(c) c.onclick=()=>{ const t=ideasText(I); if(navigator.clipboard) navigator.clipboard.writeText(t).then(()=>toast('Copied.'),()=>toast('Could not copy.')); }; };
     if(saved&&saved.ideas) wireCopy(saved.ideas);
@@ -1944,7 +1981,7 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
         <div class="row" id="bkTo2" style="margin-top:8px"><label class="switch"><input type="checkbox" value="*" checked> Everyone</label>${groups.map(g=>`<label class="switch"><input type="checkbox" value="group:${h(g)}"> ${h(g)}</label>`).join('')}</div>
         <div class="row" style="margin-top:10px"><button class="btn sm" id="bkSet">Set the break</button><span class="status" id="bkStatus" style="margin:0"></span></div>
         <div class="note">Pupils see the break on their trail with your last "what you did well" line. Any gap of two weeks or more between lessons counts as a break even if you set nothing.</div></div>`:'';
-    v.innerHTML=`${secNav('practise')}<h2 class="big">${students.length?'Your pupils.':'No pupils yet.'}</h2>${unplacedCard}
+    v.innerHTML=`${secNav('practise')}<h2 class="big">${students.length?'Your pupils.':'No pupils yet.'}</h2>${students.length?'<p class="g-lede">Who practised, who\'s stuck, who needs a nudge.</p>':''}${unplacedCard}
       <div class="grid2" style="align-items:start">
         <div>
           ${me?.code?`<div class="card"><div class="label">Code to give pupils</div><div class="quote" style="letter-spacing:.2em">${h(me.code)}</div><div class="note">They sign in, choose "I'm a pupil", enter it, and they're in your studio.</div></div>`:''}
@@ -2277,7 +2314,7 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
   // deep link into the demo: ?demo=pupil|teacher|group|lessons|journey|goal|share|done|free|beat|echo|reward|treat|quiz (nothing is saved)
   (function(){ const q=new URLSearchParams(location.search).get('demo'); if(!q) return; enterDemo();
     const v=q.toLowerCase(); const wait=ms=>new Promise(r=>setTimeout(r,ms));
-    wait(50).then(()=>{ if(v==='teacher'){ setDemoRole('teacher'); } else if(v==='group'){ setDemoRole('teacher'); renderGroup(); } else if(v==='message'){ setDemoRole('teacher'); renderMessage(); } else if(v==='share'){ setDemoRole('share'); } else if(v==='pupilpage'){ setDemoRole('teacher'); current=students[0]; renderTStudent(); show('tstudent'); } else { setDemoRole('pupil'); if(v==='journey') renderJourney(); else if(v==='goal') renderGoal(); else if(v==='done'){ const w=week(); si=nextIndex(w); sess=w.sessions[si]; finish(true); } else if(v==='free'){ const w=week(); si=nextIndex(w); sess=w.sessions[si]; finish(true); fpIntro(); } else if(v==='beat'){ renderBeat(nextIndex(week())); } else if(v==='echo'){ renderEcho(nextIndex(week())); } else if(v==='reward'||v==='treat'){ const w=week(); si=nextIndex(w); sess=w.sessions[si]; finish(true); const dd=w.done.find(x=>x.i===si); dd.note='Demo: slowed the top notes down and the F sharp settled.'; dd.earned=true; if(v==='reward') renderReward(); else renderTreat(dd); } else if(v==='quiz'){ renderQuiz(); } else if(v==='fermata'){ $('#fermata').classList.add('on'); } else if(v==='pupil2'){ current=students[1]; renderToday(); } else if(v==='passage'){ renderToday(); const c=$('#pgCard'); if(c) wait(100).then(()=>c.scrollIntoView({block:'start'})); } } }); })();
+    wait(50).then(()=>{ if(v==='teacher'){ setDemoRole('teacher'); } else if(v==='group'){ setDemoRole('teacher'); renderGroup(); } else if(v==='message'){ setDemoRole('teacher'); renderMessage(); } else if(v==='share'){ setDemoRole('share'); } else if(v==='pupilpage'){ setDemoRole('teacher'); current=students[0]; renderTStudent(); show('tstudent'); } else { setDemoRole('pupil'); if(v==='journey') renderJourney(); else if(v==='goal') renderGoal(); else if(v==='done'){ const w=week(); si=nextIndex(w); sess=w.sessions[si]; finish(true); } else if(v==='free'){ const w=week(); si=nextIndex(w); sess=w.sessions[si]; finish(true); fpIntro(); } else if(v==='beat'){ renderBeat(nextIndex(week())); } else if(v==='echo'){ renderEcho(nextIndex(week())); } else if(v==='reward'||v==='treat'){ const w=week(); si=nextIndex(w); sess=w.sessions[si]; finish(true); const dd=w.done.find(x=>x.i===si); dd.note='Demo: slowed the top notes down and the F sharp settled.'; dd.earned=true; dd.worked=['D major scale, two octaves']; if(v==='reward') renderReward(); else renderTreat(dd); } else if(v==='quiz'){ renderQuiz(); } else if(v==='fermata'){ $('#fermata').classList.add('on'); } else if(v==='pupil2'){ current=students[1]; renderToday(); } else if(v==='passage'){ renderToday(); const c=$('#pgCard'); if(c) wait(100).then(()=>c.scrollIntoView({block:'start'})); } } }); })();
 })();
 </script>
 </body>
