@@ -53,7 +53,8 @@ Everything must work for these levels and ages. Respond with JSON only.`;
     const text = response.content.filter((x) => x.type === "text").map((x) => x.text).join("");
     let p; try { p = JSON.parse(text); } catch { return res.status(502).json({ error: "bad_json", message: "The model returned something that was not JSON." }); }
     const plain = (t) => String(t || "").replace(/\s*[—–]\s*/g, ", ").replace(/,\s*,/g, ",").trim();
-    const clean = (o) => Object.fromEntries(Object.entries(o).map(([k, v]) => [k, typeof v === "string" ? plain(v) : v]));
+    const junk = (v) => /placeholder|do_not_use|^x_|^\s*(n\/?a|tbc|todo)\s*$/i.test(v); // the model now and then leaves a stub in a field
+    const clean = (o) => Object.fromEntries(Object.entries(o).map(([k, v]) => [k, typeof v === "string" ? (junk(v) ? "" : plain(v)) : v]));
     return res.status(200).json({ pieces: (p.pieces || []).slice(0, 5).map(clean), games: (p.games || []).slice(0, 5).map(clean), activities: (p.activities || []).slice(0, 4).map(clean), plan: (p.plan || []).slice(0, 12).map(clean) });
   } catch (err) {
     if (err instanceof Anthropic.RateLimitError) return res.status(429).json({ error: "rate_limited", message: "Too many requests just now. Try again in a minute." });
