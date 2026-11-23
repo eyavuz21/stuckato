@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Stuckato</title>
 <meta name="description" content="Short bursts. Real progress. Couch to 5K for practising an instrument, in a choir or in an orchestra. Your teacher sets the week; Stuckato gets you to practise every day.">
-<link rel="icon" type="image/svg+xml" href="icon-tile.svg?v=19"><link rel="apple-touch-icon" href="icon-192.png?v=19"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#F7F7F5">
+<link rel="icon" type="image/svg+xml" href="icon-tile.svg?v=20"><link rel="apple-touch-icon" href="icon-192.png?v=20"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#F7F7F5">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Outfit:wght@400;500;600;700;800&display=swap">
 <style>
@@ -276,14 +276,14 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
 <div class="wrap">
   <div id="demoBar" hidden></div>
   <header class="top">
-    <div class="brand"><h1><img src="wordmark.svg?v=19" alt="Stuckato" style="height:30px;display:block"></h1></div>
+    <div class="brand"><h1><img src="wordmark.svg?v=20" alt="Stuckato" style="height:30px;display:block"></h1></div>
     <div class="auth" id="auth"></div>
   </header>
 
   <!-- LANDING -->
   <section class="view on" id="v-landing">
     <p class="slogan">Short bursts. Real progress.</p>
-    <div class="land-hero"><svg class="bob" width="62" height="72" viewBox="0 0 48 56" aria-hidden="true"><rect x="33.4" y="13" width="3.4" height="21" rx="1.7" fill="#0A0A0A"/><circle cx="21" cy="37" r="16" fill="#0A0A0A"/><circle cx="15" cy="34" r="4" fill="#fff"/><circle cx="27" cy="34" r="4" fill="#fff"/><circle cx="16" cy="35" r="2" fill="#111"/><circle cx="28" cy="35" r="2" fill="#111"/><path d="M13 42 Q21 50 29 42" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round"/></svg>
+    <div class="land-hero"><svg class="bob" width="62" height="72" viewBox="0 0 48 56" aria-hidden="true"><rect x="34.8" y="3.8" width="2.6" height="26.6" rx="1.3" fill="#9A9A9A"/><rect x="19.8" y="40.9" width="1.8" height="6.5" rx="0.9" fill="#0A0A0A"/><ellipse cx="19.7" cy="47.4" rx="3.5" ry="1.7" fill="#0A0A0A" transform="rotate(10 19.7 47.4)"/><rect x="25.6" y="40.9" width="1.8" height="6.5" rx="0.9" fill="#0A0A0A"/><ellipse cx="27.5" cy="47.4" rx="3.5" ry="1.7" fill="#0A0A0A" transform="rotate(-10 27.5 47.4)"/><circle cx="23.6" cy="30.5" r="13.0" fill="#0A0A0A"/><circle cx="18.9" cy="28.1" r="2.5" fill="#fff"/><circle cx="28.3" cy="28.1" r="2.5" fill="#fff"/><circle cx="19.4" cy="28.5" r="1.2" fill="#0A0A0A"/><circle cx="28.8" cy="28.5" r="1.2" fill="#0A0A0A"/><path d="M18.2 33.3 Q23.6 39.3 29.0 33.3" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/></svg>
       <div><h2 class="land-h">Practise every day. Your teacher sees it.</h2><p class="land-p">Short sessions in your teacher's words, with games and a mystery tune.</p></div></div>
     <button class="btn block" id="landSignin">Sign in</button>
     <div class="land-two"><button class="btn quiet" id="landDemo">See how it works</button><button class="btn quiet" id="landLocal">Try it here</button></div>
@@ -1364,7 +1364,7 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
   function quizDue(w, d){ if(!quizReady(w, d)) return false; return w.nextLesson?today()>=addDays(w.nextLesson,-1):nextIndex(w)<0; }
   function factsOf(d){ const f=((d||doc()).profile||{}).facts; if(!f||!(f.cards||[]).length) return null; const since=f.approvedAt||'';
     const got=((d||doc()).weeks||[]).reduce((a,w)=>a+(w.done||[]).filter(x=>evidenced(x)&&(x.at||'')>=since).length,0); return {f, unlocked:Math.min(f.cards.length, got)}; }
-  function mascotSVG(px, grin){ return `<svg class="bob" width="${px}" height="${Math.round(px*56/48)}" viewBox="0 0 48 56" aria-hidden="true"><rect x="33.4" y="13" width="3.4" height="21" rx="1.7" fill="#0A0A0A"/><circle cx="21" cy="37" r="16" fill="#0A0A0A"/><circle cx="15" cy="34" r="4" fill="#fff"/><circle cx="27" cy="34" r="4" fill="#fff"/><circle cx="16" cy="35" r="2" fill="#111"/><circle cx="28" cy="35" r="2" fill="#111"/><path d="${grin?'M13 42 Q21 50 29 42':'M15 43 Q21 47 27 43'}" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round"/></svg>`; }
+  function mascotSVG(px, grin){ return `<svg class="bob" width="${px}" height="${Math.round(px*56/48)}" viewBox="0 0 48 56" aria-hidden="true">${grin?`<rect x="34.8" y="3.8" width="2.6" height="26.6" rx="1.3" fill="#9A9A9A"/><rect x="19.8" y="40.9" width="1.8" height="6.5" rx="0.9" fill="#0A0A0A"/><ellipse cx="19.7" cy="47.4" rx="3.5" ry="1.7" fill="#0A0A0A" transform="rotate(10 19.7 47.4)"/><rect x="25.6" y="40.9" width="1.8" height="6.5" rx="0.9" fill="#0A0A0A"/><ellipse cx="27.5" cy="47.4" rx="3.5" ry="1.7" fill="#0A0A0A" transform="rotate(-10 27.5 47.4)"/><circle cx="23.6" cy="30.5" r="13.0" fill="#0A0A0A"/><circle cx="18.9" cy="28.1" r="2.5" fill="#fff"/><circle cx="28.3" cy="28.1" r="2.5" fill="#fff"/><circle cx="19.4" cy="28.5" r="1.2" fill="#0A0A0A"/><circle cx="28.8" cy="28.5" r="1.2" fill="#0A0A0A"/><path d="M18.2 33.3 Q23.6 39.3 29.0 33.3" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/>`:`<rect x="34.8" y="3.8" width="2.6" height="26.6" rx="1.3" fill="#9A9A9A"/><rect x="19.8" y="40.9" width="1.8" height="6.5" rx="0.9" fill="#0A0A0A"/><ellipse cx="19.7" cy="47.4" rx="3.5" ry="1.7" fill="#0A0A0A" transform="rotate(10 19.7 47.4)"/><rect x="25.6" y="40.9" width="1.8" height="6.5" rx="0.9" fill="#0A0A0A"/><ellipse cx="27.5" cy="47.4" rx="3.5" ry="1.7" fill="#0A0A0A" transform="rotate(-10 27.5 47.4)"/><circle cx="23.6" cy="30.5" r="13.0" fill="#0A0A0A"/><circle cx="18.9" cy="28.1" r="2.5" fill="#fff"/><circle cx="28.3" cy="28.1" r="2.5" fill="#fff"/><circle cx="19.4" cy="28.5" r="1.2" fill="#0A0A0A"/><circle cx="28.8" cy="28.5" r="1.2" fill="#0A0A0A"/><path d="M18.9 33.3 Q23.6 38.5 28.3 33.3" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/>`}</svg>`; }
   function gCtx(){ try{ const C=window.AudioContext||window.webkitAudioContext; if(!C) return null; if(!gAc||gAc.state==='closed') gAc=new C(); if(gAc.resume) gAc.resume(); return gAc; }catch(e){ return null; } }
   function gTone(m, dur, at, type, vol){ const ac=gCtx(); if(!ac) return; const t=ac.currentTime+(at||0)+0.02; const o=ac.createOscillator(), g=ac.createGain(); o.type=type||'triangle'; o.frequency.value=440*Math.pow(2,(m-69)/12);
     g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(vol||0.22,t+0.015); g.gain.exponentialRampToValueAtTime(0.0001,t+dur); o.connect(g); g.connect(ac.destination); o.start(t); o.stop(t+dur+0.05); }
@@ -1919,7 +1919,7 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
     $('#dlBtn').onclick=()=>{ const c=$('#cardc'); c.toBlob(blob=>{ const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='stuckato-week.png'; a.click(); },'image/png'); };
     if(showIt!==false) show('share');
   }
-  const WM_IMG=new Image(); WM_IMG.src='wordmark.svg?v=19'; // the wordmark on the shared card
+  const WM_IMG=new Image(); WM_IMG.src='wordmark.svg?v=20'; // the wordmark on the shared card
   function drawCard(c){
     const ctx=c.getContext('2d'); const W=c.width; const p=doc().profile; const w=week(); const tn=doc().teacherName||'your teacher';
     const n=w?doneCount(w):0, tot=w?w.sessions.length:7; const mins=w?(w.done||[]).reduce((a,d)=>a+(w.sessions[d.i]?w.sessions[d.i].steps.reduce((x,y)=>x+(+y.minutes||0),0):0),0):0;
