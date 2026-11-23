@@ -84,6 +84,7 @@
     { id: 'beat', at: 0, name: 'Catch the beat', what: 'A rhythm warm-up game' },
     { id: 'echo', at: 3, name: 'Echo it', what: 'Ear training: sing or play back three notes' },
     { id: 'quiz', at: 6, name: 'The lesson-day quiz', what: 'Questions from your fact cards; win a gold record' },
+    { id: 'sight', at: 8, name: 'Sight-reading', what: 'A short new piece to read, as in your exams' },
     { id: 'echo4', at: 20, name: 'Echo it: four notes', what: 'Longer echoes, like the harder aural tests' },
     { id: 'beatfast', at: 38, name: 'Catch the beat: faster', what: 'The beat game at a quicker tempo' },
     { id: 'collector', at: 56, name: 'Sticker album', what: 'See every sticker you have won, and the ones still to find' }
@@ -126,5 +127,34 @@
   function ladderRungs(target, start) { target = Math.max(60, Math.min(200, Math.round(target || 100))); start = Math.max(40, Math.round(start || target * 0.6));
     const out = []; for (let b = start; b < target; b += Math.max(4, Math.round((target - start) / 5))) out.push(b); out.push(target); return [...new Set(out)]; }
 
-  return { UNLOCKS, unlocks, reviewPick, reviewGap, questsFor, QUEST_NOTES, ladderRungs, TUNES, staffNote, tuneFor, optionsFor, payoutFor, revealed, PHRASES, phraseFor, markEcho, rateTap, beatStars, readiness, POINTS, levelOf, hash };
+  // ------------------------------------------------------------ sight-reading: a short excerpt at the pupil's level, as in graded exams
+  // sightFor(seed, level 0..2, clef 'treble'|'alto'|'bass') -> {key, clef, time:[4,4], sig:[{acc,pos}], bars:[[{deg,midi,pos,d}]]}.
+  // Major keys only, stepwise with the odd small leap, ending on the home note. pos = steps above the bottom line of the staff.
+  const SKEYS = { C: { tl: 0, acc: [] }, G: { tl: 4, acc: [['#', 3]] }, F: { tl: 3, acc: [['b', 6]] }, D: { tl: 1, acc: [['#', 3], ['#', 0]] } };
+  const SEMI = [0, 2, 4, 5, 7, 9, 11], BASE = { treble: 30, alto: 24, bass: 18 }, LETTER_SEMI = [0, 2, 4, 5, 7, 9, 11];
+  const TONIC_OCT = { treble: { C: 4, G: 4, F: 4, D: 4 }, alto: { C: 4, G: 3, F: 3, D: 4 }, bass: { C: 3, G: 2, F: 3, D: 3 } };
+  const SIG_OCT = { treble: { '#': 5, b: 4 }, alto: { '#': 4, b: 3 }, bass: { '#': 3, b: 2 } };
+  function rng(seed) { let a = hash(seed) || 1; return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+  function sightFor(seed, level, clef) {
+    level = Math.max(0, Math.min(2, level | 0)); clef = BASE[clef] != null ? clef : 'treble'; const r = rng(seed + ':' + level + ':' + clef);
+    const keys = [['C'], ['G', 'F'], ['D', 'G', 'F']][level]; const kn = keys[Math.floor(r() * keys.length)]; const K = SKEYS[kn];
+    const oct = TONIC_OCT[clef][kn], tdn = K.tl + 7 * oct, tm = 12 * (oct + 1) + LETTER_SEMI[K.tl];
+    const lo = [0, -2, -3][level], hi = [4, 5, 7][level];
+    const R = [[[2, 2], [1, 1, 2], [2, 1, 1], [1, 1, 1, 1], [1, 1, 2]], [[2, 2], [1, 1, 2], [1, 1, 1, 1], [1, 0.5, 0.5, 2], [0.5, 0.5, 1, 2]], [[1.5, 0.5, 2], [1, 1, 1, 1], [1, 0.5, 0.5, 1, 1], [1, 1.5, 0.5, 1], [2, 1, 1]]][level];
+    const nBars = level === 0 ? 4 : level === 1 ? 4 : 6; let deg = 0; const bars = [];
+    const note = (dg, d) => ({ deg: dg, d, midi: tm + 12 * Math.floor(dg / 7) + SEMI[((dg % 7) + 7) % 7], pos: tdn + dg - BASE[clef] });
+    for (let b = 0; b < nBars; b++) {
+      if (b === nBars - 1) { bars.push([note(deg, 2), note(0, 2)]); break; }
+      const pat = R[Math.floor(r() * R.length)]; const bar = [];
+      for (const d of pat) { if (b + bar.length > 0) { const x = r(); const step = x < 0.35 ? 1 : x < 0.7 ? -1 : x < 0.82 ? 2 : x < 0.94 ? -2 : 0; deg = Math.max(lo, Math.min(hi, deg + step)); } bar.push(note(deg, d)); }
+      bars.push(bar);
+    }
+    const last = bars[bars.length - 1]; if (Math.abs(last[0].deg) > 2) last[0] = note(last[0].deg > 0 ? 2 : -1, 2);
+    const sig = K.acc.map(([acc, li]) => ({ acc, pos: li + 7 * SIG_OCT[clef][acc] - BASE[clef] }));
+    return { key: kn + ' major', clef, time: [4, 4], sig, bars };
+  }
+  const sightLevel = lvl => { const m = String(lvl || '').match(/(\d+)/); const g = m ? +m[1] : 0; return g >= 3 ? 2 : g >= 1 ? 1 : 0; };
+  const sightClef = inst => /cello|double ?bass|bassoon|trombone|tuba|euphonium/i.test(inst || '') ? 'bass' : /viola/i.test(inst || '') ? 'alto' : 'treble';
+
+  return { UNLOCKS, unlocks, reviewPick, reviewGap, questsFor, QUEST_NOTES, ladderRungs, sightFor, sightLevel, sightClef, TUNES, staffNote, tuneFor, optionsFor, payoutFor, revealed, PHRASES, phraseFor, markEcho, rateTap, beatStars, readiness, POINTS, levelOf, hash };
 });

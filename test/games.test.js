@@ -51,7 +51,7 @@ test('beat: taps rated and starred', () => {
 
 test('unlocks: two early, then spaced out; the teacher can open them all', () => {
   assert.deepEqual(G.unlocks(0).have, ['beat']); assert.equal(G.unlocks(0).next.id, 'echo'); assert.equal(G.unlocks(0).next.left, 3);
-  assert.ok(G.unlocks(6).has('quiz')); assert.ok(!G.unlocks(6).has('echo4')); assert.equal(G.unlocks(6).next.left, 14);
+  assert.ok(G.unlocks(6).has('quiz')); assert.ok(!G.unlocks(6).has('echo4')); assert.equal(G.unlocks(6).next.id, 'sight'); assert.equal(G.unlocks(6).next.left, 2);
   assert.equal(G.unlocks(0, true).have.length, G.UNLOCKS.length); assert.equal(G.unlocks(0, true).next, null);
   assert.equal(G.phraseFor('x', 0, true).length, 4); assert.equal(G.phraseFor('x', 0).length, 3);
   assert.equal(G.markEcho([62, 64, 66, 67], [62, 64, 66, 67].map(m => ({ m, d: 0.4 })), 'sing').result, 'match');
@@ -77,6 +77,23 @@ test('tempo ladder: rungs climb from slow to the target and end on it', () => {
   const r = G.ladderRungs(100); assert.equal(r[0], 60); assert.equal(r[r.length - 1], 100); assert.ok(r.every((x, i) => i === 0 || x > r[i - 1]));
   assert.ok(r.length >= 4 && r.length <= 7);
   assert.equal(G.ladderRungs(500).slice(-1)[0], 200);
+});
+
+test('sight-reading: 4/4 bars that add up, ending on the home note, right clef and key signature', () => {
+  for (const clef of ['treble', 'alto', 'bass']) for (const lvl of [0, 1, 2]) for (const seed of ['a', 'b', 'c', 'd']) {
+    const ex = G.sightFor(seed, lvl, clef);
+    ex.bars.forEach(b => assert.equal(b.reduce((a, n) => a + n.d, 0), 4, `${clef} ${lvl} ${seed}`));
+    const last = ex.bars[ex.bars.length - 1]; assert.equal(last[last.length - 1].deg, 0);
+    ex.bars.flat().forEach(n => assert.ok(n.pos >= -6 && n.pos <= 12, `pos ${n.pos} in range (${clef} ${lvl})`));
+  }
+  assert.equal(G.sightFor('x', 0, 'treble').key, 'C major');
+  assert.equal(G.sightFor('x', 0, 'treble').bars[0][0].midi, 60); // C4 starts beginner treble
+  assert.equal(G.sightFor('x', 0, 'treble').bars[0][0].pos, -2);  // C4 sits on the first ledger line below
+  assert.equal(G.sightFor('x', 0, 'bass').bars[0][0].pos, 3);     // C3 in bass clef, second space from the top... from the bottom: space 3
+  assert.deepEqual([G.sightLevel('beginner'), G.sightLevel('grade 2'), G.sightLevel('grade 5')], [0, 1, 2]);
+  assert.deepEqual([G.sightClef('violin'), G.sightClef('Viola'), G.sightClef('cello')], ['treble', 'alto', 'bass']);
+  const g = Array.from({ length: 30 }, (_, i) => G.sightFor('s' + i, 1, 'treble')).find(e => e.key === 'G major');
+  assert.deepEqual(g.sig, [{ acc: '#', pos: 8 }]); // F sharp on the top line
 });
 
 test('readiness and levels', () => {

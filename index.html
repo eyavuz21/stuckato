@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Stuckato</title>
 <meta name="description" content="Short bursts. Real progress. Couch to 5K for practising an instrument, in a choir or in an orchestra. Your teacher sets the week; Stuckato gets you to practise every day.">
-<link rel="icon" type="image/svg+xml" href="icon-tile.svg?v=15"><link rel="apple-touch-icon" href="icon-192.png?v=15"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#F7F7F5">
+<link rel="icon" type="image/svg+xml" href="icon-tile.svg?v=16"><link rel="apple-touch-icon" href="icon-192.png?v=16"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#F7F7F5">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Outfit:wght@400;500;600;700;800&display=swap">
 <style>
@@ -210,11 +210,12 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
 .g-track{display:flex; justify-content:space-between; margin:0 0 16px; position:relative} .g-track::before{content:''; position:absolute; left:16px; right:16px; top:16px; height:2px; background:var(--line)}
 .g-track span{position:relative; display:flex; flex-direction:column; align-items:center; gap:4px; font-size:12px; font-weight:700; color:var(--muted)} .g-track i{font-style:normal; width:34px; height:34px; border-radius:50%; background:var(--card); border:2px solid var(--ink); display:grid; place-items:center; color:var(--ink); font-size:16px}
 .g-go{font-size:21px !important; padding:20px !important}
-.g-alt{display:flex; justify-content:center; gap:18px; margin-top:10px} .g-alt button{border:none; background:none; font-weight:700; font-size:14px; color:var(--muted); text-decoration:underline; text-underline-offset:3px}
+.g-alt{display:flex; flex-wrap:wrap; justify-content:center; gap:8px 18px; margin-top:10px} .g-alt button{border:none; background:none; font-weight:700; font-size:14px; color:var(--muted); text-decoration:underline; text-underline-offset:3px}
 .g-unlock{display:flex; align-items:center; gap:8px; font-size:14px; color:var(--muted); margin:0 2px 14px} .g-lock{flex:none; color:var(--ink)}
 .g-quest{display:flex; align-items:center; gap:10px; padding:8px 0; border-top:1px solid var(--line)} .g-quest:first-of-type{border-top:none} .g-quest i{flex:none; width:24px; height:24px; border-radius:50%; border:2px solid var(--ink); display:grid; place-items:center; font-style:normal; font-weight:800; font-size:14px} .g-quest.done i{background:var(--ink); color:#fff} .g-quest span{flex:1; font-weight:600} .g-quest.done span{color:var(--muted); text-decoration:line-through} .g-quest small{color:var(--muted); font-weight:700} #gQuestLadder{cursor:pointer}
 .g-rungs{display:flex; gap:6px; flex-wrap:wrap; justify-content:center} .g-rungs span{min-width:44px; padding:6px 8px; border-radius:999px; border:1.5px solid var(--line); font-weight:700; font-variant-numeric:tabular-nums} .g-rungs span.on{background:var(--ink); color:#fff; border-color:var(--ink)} .g-rungs span.now{border:2px solid var(--ink)}
 .g-ld{width:150px; height:150px; font-size:40px; display:grid; place-items:center}
+.g-sight{width:100%; overflow-x:auto; background:#FFFFFF; border:1.5px solid var(--line); border-radius:16px; padding:6px 8px; box-sizing:border-box} .g-sight svg{display:block; max-width:none; margin:0 auto}
 .g-take{width:100%; display:flex; flex-direction:column; gap:4px; text-align:left} .g-take audio{width:100%}
 .g-review{display:flex; flex-direction:column; align-items:center; gap:4px; border:2px solid var(--ink); border-radius:22px; padding:18px 22px; width:100%} .g-review b{font-family:var(--display); font-size:26px; line-height:1.1} .g-review small{color:var(--muted); font-weight:600}
 .g-skill{display:flex; flex-direction:column; align-items:center; gap:2px; border:2px solid var(--ink); border-radius:18px; padding:10px 16px} .g-skill span{font-size:12px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--muted)} .g-skill b{font-size:18px} .g-skill small{color:var(--muted); font-weight:600}
@@ -275,14 +276,14 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
 <div class="wrap">
   <div id="demoBar" hidden></div>
   <header class="top">
-    <div class="brand"><h1><img src="wordmark.svg?v=15" alt="Stuckato" style="height:30px;display:block"></h1></div>
+    <div class="brand"><h1><img src="wordmark.svg?v=16" alt="Stuckato" style="height:30px;display:block"></h1></div>
     <div class="auth" id="auth"></div>
   </header>
 
   <!-- LANDING -->
   <section class="view on" id="v-landing">
     <p class="slogan">Short bursts. Real progress.</p>
-    <div class="land-hero"><svg class="bob" width="62" height="72" viewBox="0 0 48 56" aria-hidden="true"><rect x="33" y="4" width="3.6" height="30" rx="1.4" fill="#0A0A0A"/><path d="M36.6 4 C 43 8 50 14 46 28 C 44 21 41 18 36.6 17 Z" fill="#0A0A0A"/><circle cx="20" cy="37" r="16" fill="#0A0A0A"/><circle cx="14" cy="33" r="4" fill="#fff"/><circle cx="26" cy="33" r="4" fill="#fff"/><circle cx="15" cy="34" r="2" fill="#111"/><circle cx="27" cy="34" r="2" fill="#111"/><path d="M12 41 Q20 49 28 41" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round"/></svg>
+    <div class="land-hero"><svg class="bob" width="62" height="72" viewBox="0 0 48 56" aria-hidden="true"><rect x="33" y="4" width="3.6" height="30" rx="1.4" fill="#0A0A0A"/><circle cx="20" cy="37" r="16" fill="#0A0A0A"/><circle cx="14" cy="33" r="4" fill="#fff"/><circle cx="26" cy="33" r="4" fill="#fff"/><circle cx="15" cy="34" r="2" fill="#111"/><circle cx="27" cy="34" r="2" fill="#111"/><path d="M12 41 Q20 49 28 41" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round"/></svg>
       <div><h2 class="land-h">Practise every day. Your teacher sees it.</h2><p class="land-p">Short sessions in your teacher's words, with games and a mystery tune.</p></div></div>
     <button class="btn block" id="landSignin">Sign in</button>
     <div class="land-two"><button class="btn quiet" id="landDemo">See how it works</button><button class="btn quiet" id="landLocal">Try it here</button></div>
@@ -355,6 +356,7 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
   <section class="view" id="v-review"></section>
   <section class="view" id="v-ladder"></section>
   <section class="view" id="v-listen"></section>
+  <section class="view" id="v-sight"></section>
   <section class="view" id="v-reward"></section>
   <section class="view" id="v-treat"></section>
   <section class="view" id="v-quiz"></section>
@@ -1362,7 +1364,7 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
   function quizDue(w, d){ if(!quizReady(w, d)) return false; return w.nextLesson?today()>=addDays(w.nextLesson,-1):nextIndex(w)<0; }
   function factsOf(d){ const f=((d||doc()).profile||{}).facts; if(!f||!(f.cards||[]).length) return null; const since=f.approvedAt||'';
     const got=((d||doc()).weeks||[]).reduce((a,w)=>a+(w.done||[]).filter(x=>evidenced(x)&&(x.at||'')>=since).length,0); return {f, unlocked:Math.min(f.cards.length, got)}; }
-  function mascotSVG(px, grin){ return `<svg class="bob" width="${px}" height="${Math.round(px*56/48)}" viewBox="0 0 48 56" aria-hidden="true"><rect x="33" y="4" width="3.6" height="30" rx="1.4" fill="#0A0A0A"/><path d="M36.6 4 C 43 8 50 14 46 28 C 44 21 41 18 36.6 17 Z" fill="#0A0A0A"/><circle cx="20" cy="37" r="16" fill="#0A0A0A"/><circle cx="14" cy="33" r="4" fill="#fff"/><circle cx="26" cy="33" r="4" fill="#fff"/><circle cx="15" cy="34" r="2" fill="#111"/><circle cx="27" cy="34" r="2" fill="#111"/><path d="${grin?'M12 41 Q20 49 28 41':'M14 42 Q20 46 26 42'}" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round"/></svg>`; }
+  function mascotSVG(px, grin){ return `<svg class="bob" width="${px}" height="${Math.round(px*56/48)}" viewBox="0 0 48 56" aria-hidden="true"><rect x="33" y="4" width="3.6" height="30" rx="1.4" fill="#0A0A0A"/><circle cx="20" cy="37" r="16" fill="#0A0A0A"/><circle cx="14" cy="33" r="4" fill="#fff"/><circle cx="26" cy="33" r="4" fill="#fff"/><circle cx="15" cy="34" r="2" fill="#111"/><circle cx="27" cy="34" r="2" fill="#111"/><path d="${grin?'M12 41 Q20 49 28 41':'M14 42 Q20 46 26 42'}" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round"/></svg>`; }
   function gCtx(){ try{ const C=window.AudioContext||window.webkitAudioContext; if(!C) return null; if(!gAc||gAc.state==='closed') gAc=new C(); if(gAc.resume) gAc.resume(); return gAc; }catch(e){ return null; } }
   function gTone(m, dur, at, type, vol){ const ac=gCtx(); if(!ac) return; const t=ac.currentTime+(at||0)+0.02; const o=ac.createOscillator(), g=ac.createGain(); o.type=type||'triangle'; o.frequency.value=440*Math.pow(2,(m-69)/12);
     g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(vol||0.22,t+0.015); g.gain.exponentialRampToValueAtTime(0.0001,t+dur); o.connect(g); g.connect(ac.destination); o.start(t); o.stop(t+dur+0.05); }
@@ -1397,8 +1399,8 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
     const hook=m.revealed?'Press today’s record and open a treat.':`Unlock note ${Math.min(7,m.shown+1)} of the mystery tune and a treat box.`;
     const todayG=s&&!doneToday?`<div class="card g-today"><div class="g-today-top"><span>Day ${i+1}</span><span>${planMinutes(s)} min</span></div><h2 class="g-title">${h(s.title)}</h2><p class="g-hook">${hook}</p>
         <div class="g-track">${steps.map(([ic,l])=>`<span><i>${ic}</i>${l}</span>`).join('')}</div>
-        <button class="btn block g-go" id="start">Let's go</button><div class="g-alt"><button type="button" id="ownStart">My own way</button><button type="button" id="gLadder">Tempo ladder</button><button type="button" id="gListen">Listen back</button>${u.has('beat')||u.has('echo')?'<button type="button" id="startNoWarm">Skip warm-ups</button>':''}</div></div>`
-      : s&&doneToday?`<div class="card g-today"><div class="g-today-top"><span>Today</span><span>Done ✓</span></div><h2 class="g-title">Done for today.</h2><p class="g-hook">${m.revealed?'The mystery tune is complete. Guess how you did?':`Come back tomorrow for note ${Math.min(7,m.shown+1)} of the mystery tune.`}</p><div class="g-alt"><button type="button" id="ownStart">Practise again anyway</button><button type="button" id="gLadder">Tempo ladder</button><button type="button" id="gListen">Listen back</button></div></div>`
+        <button class="btn block g-go" id="start">Let's go</button><div class="g-alt"><button type="button" id="ownStart">My own way</button><button type="button" id="gLadder">Tempo ladder</button><button type="button" id="gListen">Listen back</button>${u.has('sight')?'<button type="button" id="gSight">Sight-reading</button>':''}${u.has('beat')||u.has('echo')?'<button type="button" id="startNoWarm">Skip warm-ups</button>':''}</div></div>`
+      : s&&doneToday?`<div class="card g-today"><div class="g-today-top"><span>Today</span><span>Done ✓</span></div><h2 class="g-title">Done for today.</h2><p class="g-hook">${m.revealed?'The mystery tune is complete. Guess how you did?':`Come back tomorrow for note ${Math.min(7,m.shown+1)} of the mystery tune.`}</p><div class="g-alt"><button type="button" id="ownStart">Practise again anyway</button><button type="button" id="gLadder">Tempo ladder</button><button type="button" id="gListen">Listen back</button>${u.has('sight')?'<button type="button" id="gSight">Sight-reading</button>':''}</div></div>`
       : fallbackToday;
     const nx=u.next?`<div class="g-unlock"><svg class="g-lock" width="16" height="18" viewBox="0 0 16 18" aria-hidden="true"><rect x="1.5" y="8" width="13" height="9" rx="2" fill="currentColor"/><path d="M4.5 8V5.5a3.5 3.5 0 0 1 7 0V8" stroke="currentColor" stroke-width="2" fill="none"/></svg><span>Unlocks in ${u.next.left} ${u.next.left===1?'practice':'practices'}: <b>${h(u.next.name)}</b></span></div>`:'';
     return hero+(todayG||'')+tune+questsHTML(w)+nx; }
@@ -1436,7 +1438,7 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
       $('#ldHome').onclick=()=>renderJourney(true); show('ladder'); }
     setup(); }
   function wireGameHome(w, i){
-    const gl=$('#gLadder'); if(gl) gl.onclick=renderLadder; const gls=$('#gListen'); if(gls) gls.onclick=renderListen; const ql=$('#gQuestLadder'); if(ql){ ql.onclick=renderLadder; ql.onkeydown=e=>{ if(e.key==='Enter') renderLadder(); }; }
+    const gl=$('#gLadder'); if(gl) gl.onclick=renderLadder; const gls=$('#gListen'); if(gls) gls.onclick=renderListen; const gsr=$('#gSight'); if(gsr) gsr.onclick=renderSight; const ql=$('#gQuestLadder'); if(ql){ ql.onclick=renderLadder; ql.onkeydown=e=>{ if(e.key==='Enter') renderLadder(); }; }
     const nw=$('#startNoWarm'); if(nw) nw.onclick=()=>{ gamePre=null; ready(()=>startSession(i)); };
     const st=$('#gStave'); if(st) st.onclick=()=>{ const m=mysteryOf(w); gPlay(m.tune.notes.slice(0,m.revealed?7:Math.max(1,m.shown)),0.45); };
     const tp=$('#gTunePlay'); if(tp) tp.onclick=()=>gPlay(mysteryOf(w).tune.notes,0.45);
@@ -1585,6 +1587,9 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
       <div class="note" style="margin:4px 0 0">${p.unlockAll?'Everything is open.':u.next?`Features unlock as ${h(name)} practises. Next: ${h(u.next.name)}, in ${u.next.left} ${u.next.left===1?'practice':'practices'}.`:'Everything has unlocked.'}</div>
       ${w?`<div class="label" style="margin-top:14px">This week</div><div class="note" style="margin:0">${played.length} warm-ups played${ech.length?` · echoes spot on: ${ech.reduce((a,x)=>a+x.warm.echo.right,0)} of ${ech.length*3}`:''}${w.quiz?` · quiz: ${h(w.quiz.medal)} (${w.quiz.right}/${w.quiz.of})`:''}${(w.ladders||[]).length?` · tempo ladder: ${h(w.ladders.slice(-1)[0].bit)} clean at ${w.ladders.slice(-1)[0].top}`:''}${m&&m.guess?` · mystery tune guess: ${h(m.guess)}${m.revealed?(m.right?' (right)':' (not this time)'):''}`:''}</div>
         ${takes.length?`<div class="label" style="margin-top:10px">Echoes Stuckato couldn't hear clearly</div>${takes.map(t=>`<div class="daybox"><p style="margin:0">${h(fmt(t.at.slice(0,10)))} ${h(timeOf(t.at))} · ${h(t.mode==='play'?'played':'sung')} · the tune was ${h(t.target.map(x=>NOTE_NAMES[x%12]).join(' '))}</p><div class="row" style="margin-top:6px"><button class="btn sm quiet" data-eh="${h(t.id)}">Listen</button>${t.heard?'<span class="note" style="margin:0">Heard</span>':''}</div></div>`).join('')}`:''}`:''}
+      <label class="switch" style="font-size:15px;color:var(--ink);margin-top:10px"><input type="checkbox" id="gSightT" ${p.sightTakes?'checked':''}> Record sight-reading tries</label>
+      <div class="note" style="margin:4px 0 0">Only if the family agreed to sound recordings. A grown-up confirms for pupils under 13. Off: ${h(name)} plays it and tells you how it went.</div>
+      ${w&&(w.sight||[]).length?`<div class="label" style="margin-top:12px">Sight-reading this week</div>${w.sight.map(sg=>`<div class="daybox"><p style="margin:0">${h(fmt(sg.at.slice(0,10)))} · ${h(sg.key)} · ${h({smooth:'smooth',stops:'a few stops',tricky:'tricky'}[sg.rating]||'')}${sg.note?' · you replied':''}</p><div class="g-sight">${sightSVG(Games.sightFor(sg.seed, sg.level, sg.clef))}</div><div class="row" style="margin-top:6px">${sg.rec?`<button class="btn sm quiet" data-sgl="${h(sg.id)}">Listen</button>`:''}<input data-sgn="${h(sg.id)}" placeholder="One line back, e.g. Lovely steady pulse!" value="${h(sg.note||'')}" style="flex:1"><button class="btn sm" data-sgs="${h(sg.id)}">Send</button></div></div>`).join('')}`:''}
       <div class="label" style="margin-top:14px">Fact cards about the piece</div>
       ${f&&(f.cards||[]).length?`<div class="note" style="margin:0 0 6px">${h(f.piece)}${f.composer?' · '+h(f.composer):''}: ${f.cards.length} cards and ${(f.quiz||[]).length} quiz questions approved. One card turns over each day ${h(name)} practises.</div>`:''}
       <div class="grid2"><div><label class="l" for="fxPiece">Piece</label><input id="fxPiece" value="${h(f?.piece||'')}" placeholder="e.g. Minuet in G"></div><div><label class="l" for="fxComp">Composer</label><input id="fxComp" value="${h(f?.composer||'')}" placeholder="e.g. Petzold"></div></div>
@@ -1596,6 +1601,9 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
       <div class="note" style="margin:4px 0 0">Light, true things about you. One can turn up in the treat box; ${h(name)} is told to ask you about it.</div></div>`;
     $('#gOnT').onchange=e=>{ p.games=e.target.checked; saveCurrent(); toast(p.games?'Games are on.':'Games are off.'); };
     $('#gAllT').onchange=e=>{ p.unlockAll=e.target.checked; saveCurrent(); renderTeacherGames(); };
+    $('#gSightT').onchange=e=>{ p.sightTakes=e.target.checked; saveCurrent(); toast(p.sightTakes?'Sight-reading tries will be recorded.':'Sight-reading is not recorded.'); };
+    $$('[data-sgl]').forEach(b=>b.onclick=async()=>{ const sg=(w.sight||[]).find(x=>x.id===b.dataset.sgl); const blob=sg&&await bkBlob(sg.rec); if(!blob){ toast('Could not open it.'); return; } new Audio(URL.createObjectURL(blob)).play().catch(()=>{}); });
+    $$('[data-sgs]').forEach(b=>b.onclick=()=>{ const sg=(w.sight||[]).find(x=>x.id===b.dataset.sgs); const t=$(`[data-sgn="${b.dataset.sgs}"]`).value.trim(); if(!sg||!t) return; sg.note=t; d.extras=d.extras||[]; d.extras.push({id:uid(), text:'About your sight-reading: '+t, at:new Date().toISOString(), done:false, by:me?.name||''}); saveCurrent(); toast('Sent to '+name+'.'); renderTeacherGames(); });
     $('#gEchoT').onchange=e=>{ p.echoTakes=e.target.checked; saveCurrent(); toast(p.echoTakes?'Unclear echoes will come to you.':'Echoes are never saved.'); };
     $('#scSave').onclick=()=>{ p.secrets=$('#scT').value.split('\n').map(x=>x.trim()).filter(Boolean).slice(0,30); saveCurrent(); toast('Secret cards saved.'); };
     $$('[data-eh]').forEach(b=>b.onclick=async()=>{ const t=takes.find(x=>x.id===b.dataset.eh); const blob=await bkBlob(t); if(!blob){ toast('Could not open it.'); return; } const a=new Audio(URL.createObjectURL(blob)); a.play().catch(()=>{}); t.heard=true; saveCurrent(); });
@@ -1658,6 +1666,44 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
         $('#tgOut').innerHTML=ideasHTML(I); wireCopy(I); st.textContent=''; $('#tgOut').scrollIntoView({behavior:'smooth',block:'start'}); }
       catch(e){ st.textContent=e.message||'Could not get ideas.'; } finally{ $('#tgGo').disabled=false; } };
     show('together'); }
+
+  // ------------------------------------------------------------ sight-reading (23 Nov 2026): a short excerpt at the pupil's level and clef
+  // (games.js sightFor), thirty seconds to look as in graded exams, one try. Recorded only if the teacher switches it on (the family
+  // agreed to sound recordings; a grown-up confirms for under-13s); otherwise the pupil rates it. The teacher hears it and replies.
+  function sightSVG(ex){ let out=''; for(let r=0;r<ex.bars.length;r+=2) out+=sightRow(ex, ex.bars.slice(r,r+2), r===0, r+2>=ex.bars.length); return out; }
+  function sightRow(ex, B, first, isEnd){ const bw=28, x0=ex.sig.length*12+(first?92:64), W=x0+B.reduce((a,b)=>a+4*bw+14,0)+12, top=34, sp=10, y=pos=>top+40-pos*sp/2, ink='#0A0A0A';
+    const ledger=cx=>p2=>`<line x1="${cx-10}" x2="${cx+10}" y1="${y(p2)}" y2="${y(p2)}" stroke="${ink}" stroke-width="1"/>`;
+    let g=''; for(let k=0;k<5;k++) g+=`<line x1="4" x2="${W-4}" y1="${top+k*sp}" y2="${top+k*sp}" stroke="${ink}" stroke-width="1"/>`;
+    g+=ex.clef==='treble'?`<text x="6" y="${top+38}" font-size="52" font-family="serif" fill="${ink}">𝄞</text>`:ex.clef==='bass'?`<text x="8" y="${top+27}" font-size="36" font-family="serif" fill="${ink}">𝄢</text>`:`<text x="8" y="${top+31}" font-size="38" font-family="serif" fill="${ink}">𝄡</text>`;
+    ex.sig.forEach((sg,k)=>{ g+=`<text x="${50+k*12}" y="${y(sg.pos)+(sg.acc==='b'?3:6)}" font-size="20" font-family="serif" fill="${ink}">${sg.acc==='b'?'♭':'♯'}</text>`; });
+    if(first) g+=`<text x="${x0-26}" y="${top+19}" font-size="21" font-weight="800" font-family="serif" fill="${ink}">4</text><text x="${x0-26}" y="${top+39}" font-size="21" font-weight="800" font-family="serif" fill="${ink}">4</text>`;
+    let x=x0; B.forEach((bar,bi)=>{ bar.forEach(n=>{ const cx=x+8, cy=y(n.pos), up=n.pos<4, L=ledger(cx);
+        for(let lp=-2; lp>=n.pos; lp-=2) g+=L(lp); for(let lp=10; lp<=n.pos; lp+=2) g+=L(lp);
+        g+=`<ellipse cx="${cx}" cy="${cy}" rx="6.2" ry="4.6" transform="rotate(-20 ${cx} ${cy})" fill="${n.d>=2?'#FFFFFF':ink}" stroke="${ink}" stroke-width="1.6"/>`;
+        if(n.d<4){ const sx=up?cx+5.6:cx-5.6, y2=up?cy-32:cy+32; g+=`<line x1="${sx}" x2="${sx}" y1="${cy}" y2="${y2}" stroke="${ink}" stroke-width="1.4"/>`;
+          if(n.d===0.5) g+=`<path d="M${sx} ${y2} q8 ${up?6:-6} 7 ${up?16:-16}" stroke="${ink}" stroke-width="1.8" fill="none"/>`; }
+        if(n.d===1.5) g+=`<circle cx="${cx+11}" cy="${cy-(n.pos%2===0?5:0)}" r="1.8" fill="${ink}"/>`;
+        x+=n.d*bw; });
+      x+=14; g+=isEnd&&bi===B.length-1?`<line x1="${x-10}" x2="${x-10}" y1="${top}" y2="${top+40}" stroke="${ink}"/><rect x="${x-7}" y="${top}" width="4" height="40" fill="${ink}"/>`:`<line x1="${x-8}" x2="${x-8}" y1="${top}" y2="${top+40}" stroke="${ink}"/>`; });
+    return `<svg width="${W}" height="120" viewBox="0 0 ${W} 120" role="img" aria-label="Sight-reading in ${h(ex.key)}, ${ex.clef} clef">${g}</svg>`; }
+  function renderSight(){ const d=doc(), p=d.profile, tn=d.teacherName||'your teacher', w=week(); if(!w) return;
+    const lvl=Games.sightLevel(p.level), clef=Games.sightClef(p.instrument), seed=weekKey(w)+':'+today()+':'+(w.sight||[]).length, ex=Games.sightFor(seed, lvl, clef);
+    const canRec=!!p.sightTakes&&!!window.BackingAudio; const v=$('#v-sight'); let left=30, tmr=null, live=null, blob=null;
+    const stopT=()=>{ if(tmr){ clearInterval(tmr); tmr=null; } };
+    const rateHTML=()=>`<div class="chips" style="justify-content:center;margin:0">${[['smooth','Smooth'],['stops','A few stops'],['tricky','Tricky']].map(([k,l])=>`<button type="button" class="chip" data-sg="${k}">${l}</button>`).join('')}</div>`;
+    function wireRate(){ $$('[data-sg]').forEach(b=>b.onclick=async()=>{ $$('[data-sg]').forEach(x2=>x2.disabled=true); let where=null;
+        if(blob&&grownUpOk(d)){ try{ where=await bkStore(blob, `sight-${uid()}.wav`); }catch(e){ toast('Could not send the recording; your answer is saved.'); } }
+        w.sight=[...(w.sight||[]), {id:uid(), at:new Date().toISOString(), seed, level:lvl, clef, key:ex.key, rating:b.dataset.sg, ...(where?{rec:where}:{})}]; saveCurrent(); gFanfare(); confetti();
+        v.innerHTML=`<div class="g-screen"><div class="eyebrow">Sight-reading</div><h2 class="big">Done!</h2><p style="margin:0">${where?h(tn)+' will listen and go through it with you at the lesson.':'Tell '+h(tn)+' how it went at the lesson. It is saved for you both.'}</p><button class="btn block" id="sgHome">Back home</button></div>`; $('#sgHome').onclick=()=>renderJourney(true); }); }
+    function play(){ stopT(); v.innerHTML=`<div class="g-screen"><div class="eyebrow">Sight-reading · ${h(ex.key)}</div><h2 class="big">Play it once.</h2><div class="g-sight">${sightSVG(ex)}</div>
+        ${canRec?`<button class="btn block" id="sgRec">Record my try</button><p class="note" style="margin:0" id="sgSt">One go, like in the exam. Keep going if you slip.</p><div id="sgAfter" style="width:100%"></div>`:`<p style="margin:0">One go, like in the exam. Keep going if you slip. How did it go?</p>${rateHTML()}`}</div>`;
+      if(canRec){ $('#sgRec').onclick=async()=>{ const b=$('#sgRec'); if(live){ const r=live.stop(); live=null; blob=BackingAudio.toWav(r.pcm, r.sr); b.hidden=true; $('#sgSt').textContent='Recorded. How did it go?'; $('#sgAfter').innerHTML=rateHTML(); wireRate(); return; }
+          try{ live=await BackingAudio.recordAlone({maxSec:60, onCap:()=>{ const bb=$('#sgRec'); if(bb&&live) bb.click(); }}); b.textContent='Stop'; $('#sgSt').textContent='Recording… up to a minute.'; }
+          catch(e){ b.hidden=true; $('#sgSt').textContent='The microphone is not available. Play it anyway: how did it go?'; $('#sgAfter').innerHTML=rateHTML(); wireRate(); } }; }
+      else wireRate(); show('sight'); }
+    v.innerHTML=`<div class="g-screen"><div class="eyebrow">Sight-reading · ${h(ex.key)}</div><h2 class="big">Look first.</h2><div class="g-sight">${sightSVG(ex)}</div><p style="margin:0">Thirty seconds to study it: the key, the rhythm, any jumps. Clap the rhythm if you like.</p><div class="g-fb" id="sgT">0:30</div><button class="btn block" id="sgGo">I'm ready</button></div>`;
+    tmr=setInterval(()=>{ left--; const t=$('#sgT'); if(!t){ stopT(); return; } t.textContent='0:'+String(Math.max(0,left)).padStart(2,'0'); if(left<=0) play(); },1000);
+    $('#sgGo').onclick=play; show('sight'); }
 
   // ------------------------------------------------------------ after the competitor check (23 Nov 2026), three more, done our way
   // 1. The teacher's voice note (what Tonic Notes, Lami, Arco and CLARA do by recording the whole lesson): up to a minute, recorded
@@ -1873,7 +1919,7 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
     $('#dlBtn').onclick=()=>{ const c=$('#cardc'); c.toBlob(blob=>{ const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='stuckato-week.png'; a.click(); },'image/png'); };
     if(showIt!==false) show('share');
   }
-  const WM_IMG=new Image(); WM_IMG.src='wordmark.svg?v=15'; // the wordmark on the shared card
+  const WM_IMG=new Image(); WM_IMG.src='wordmark.svg?v=16'; // the wordmark on the shared card
   function drawCard(c){
     const ctx=c.getContext('2d'); const W=c.width; const p=doc().profile; const w=week(); const tn=doc().teacherName||'your teacher';
     const n=w?doneCount(w):0, tot=w?w.sessions.length:7; const mins=w?(w.done||[]).reduce((a,d)=>a+(w.sessions[d.i]?w.sessions[d.i].steps.reduce((x,y)=>x+(+y.minutes||0),0):0),0):0;
