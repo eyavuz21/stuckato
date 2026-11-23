@@ -14,6 +14,14 @@ Stuckato has two sides. The **teacher** writes a thirty-second note after each l
 
 **Why not Yousician?** Yousician is for people without a teacher: it listens through the phone, lights each note green or red against its own library, and covers guitar, piano, bass, ukulele and voice. Stuckato is for the six days between lessons, run by the teacher. The week is her note, in her voice, for the actual piece; the teacher sees what happened; violin, cello, wind, brass and choirs are in; the point is turning up on Wednesday, not scoring notes. Where Stuckato does listen (the week's passage, below), it compares the pupil to the teacher's own playing, points at the bars that differ, and leaves the judgement to her. Nobody else has the teacher in the loop.
 
+## What's in v0.15 (23 November 2026): ideas from competitors, done our way
+
+- **Quick review** (Better Practice's spaced repetition): after the warm-ups, one item worked on in an earlier week comes back for a minute; the pupil rates it easy, OK or tricky (gaps of 2, 5 then 10 days, longer after easy, shorter after tricky). `games.js reviewPick`.
+- **Weekly summary email** (Better Practice): the daily job (`api/reminders.js composeSummary`) emails the account holder on lesson day; once per week; switch under Goal.
+- **Weekly quests** (Tonic's challenges, without leagues): practise on 3 days, climb the tempo ladder, a spot-on echo (or two-star beat), guess the mystery tune; +30 notes each. `games.js questsFor`.
+- **Tempo ladder** (slow practice, as in Modacity, Flowkey and Yousician): the tricky bit with a click from slow to target speed, rung by rung, self-rated. `games.js ladderRungs`; kept on the week as `w.ladders`.
+- After the pilot: listen-back recording (Modacity), a teacher's voice note after the lesson (Tonic Notes, Lami, Arco, CLARA), a reusable task library (Sweetnote, Practice Space). Not for us: marking every note; rooms or leagues with strangers. The full list is in the workshop's `docs/Stuckato-Competitor-Features.md`.
+
 ## Also in v0.14: the teacher's three sections
 
 The teacher's home now has **Practise** (the pupil list, as before), **Create** (free play and games, pupil by pupil, with a one-tap free-play switch) and **Collaborate**: the teacher describes a group in general terms (how many, instruments, levels, ages, length, what to focus on, what they are working towards; it can fill these in from one of their groups, using only instrument, level and age band) and `api/ideas.js` suggests 3 to 5 pieces (real, well-known, mostly out of copyright, with how to share the parts out; never an invented edition), 3 to 5 ensemble games, 2 to 4 activities (at least one creative) and a running order. No names are sent. The last result is kept on that device and can be copied as text.
