@@ -16,7 +16,7 @@ Stuckato has two sides. The **teacher** writes a thirty-second note after each l
 
 ## Also in v0.14: the teacher's three sections
 
-The teacher's home now has **Practise** (the pupil list, as before), **Create** (free play and games, pupil by pupil, with a one-tap free-play switch) and **Play together**: the teacher describes a group in general terms (how many, instruments, levels, ages, length, what to focus on, what they are working towards; it can fill these in from one of their groups, using only instrument, level and age band) and `api/ideas.js` suggests 3 to 5 pieces (real, well-known, mostly out of copyright, with how to share the parts out; never an invented edition), 3 to 5 ensemble games, 2 to 4 activities (at least one creative) and a running order. No names are sent. The last result is kept on that device and can be copied as text.
+The teacher's home now has **Practise** (the pupil list, as before), **Create** (free play and games, pupil by pupil, with a one-tap free-play switch) and **Collaborate**: the teacher describes a group in general terms (how many, instruments, levels, ages, length, what to focus on, what they are working towards; it can fill these in from one of their groups, using only instrument, level and age band) and `api/ideas.js` suggests 3 to 5 pieces (real, well-known, mostly out of copyright, with how to share the parts out; never an invented edition), 3 to 5 ensemble games, 2 to 4 activities (at least one creative) and a running order. No names are sent. The last result is kept on that device and can be copied as text.
 
 ## What's in v0.14 (23 November 2026): games, in black and white
 

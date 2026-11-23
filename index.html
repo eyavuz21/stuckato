@@ -1555,12 +1555,12 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
         const quiz=out.quiz.filter((q,k)=>$(`[data-qc="${k}"]`).checked&&map.has(q.card)).map(q=>({...q, card:map.get(q.card)}));
         p.facts={piece, composer, cards:keep.map(x=>x.text), quiz, approvedAt:new Date().toISOString(), by:me?.name||''}; saveCurrent(); toast('Approved. One card turns over each day '+name+' practises.'); renderTeacherGames(); }; }; }
 
-  // ------------------------------------------------------------ the teacher's three sections (23 Nov 2026): Practise, Create, Play together
-  // Practise is the pupil list as before. Create gathers the making-it-up side per pupil (free play, games). Play together is the
+  // ------------------------------------------------------------ the teacher's three sections (23 Nov 2026): Practise, Create, Collaborate
+  // Practise is the pupil list as before. Create gathers the making-it-up side per pupil (free play, games). Collaborate is the
   // group idea deviser: the teacher describes a group in general terms (instruments, levels, ages, length, focus; never names)
   // and api/ideas.js suggests pieces, ensemble games and activities with a running order. The last result is kept on this device.
   const FOCI=['Playing in time together','Listening and tuning','Ear training','Improvising','Composing','Sight-reading','Performing','Rhythm','Just for fun'];
-  function secNav(a){ return `<div class="seg3" role="tablist" aria-label="Sections">${[['practise','Practise'],['create','Create'],['together','Play together']].map(([k,l])=>`<button type="button" role="tab" data-sec="${k}" aria-selected="${a===k}" class="${a===k?'on':''}">${l}</button>`).join('')}</div>`; }
+  function secNav(a){ return `<div class="seg3" role="tablist" aria-label="Sections">${[['practise','Practise'],['create','Create'],['together','Collaborate']].map(([k,l])=>`<button type="button" role="tab" data-sec="${k}" aria-selected="${a===k}" class="${a===k?'on':''}">${l}</button>`).join('')}</div>`; }
   document.addEventListener('click', e=>{ const b=e.target.closest&&e.target.closest('[data-sec]'); if(!b) return; const k=b.dataset.sec; if(k==='practise'){ renderTeacher(); show('teacher'); } else if(k==='create') renderCreate(); else renderTogether(); });
   function groupSummary(g){ const ms=students.filter(s=>g==='*'||groupsOf(s.data).includes(g)).map(s=>s.data.profile||{}); const inst={};
     ms.forEach(p=>{ const k=String(p.instrument||'instrument').toLowerCase().trim(); inst[k]=(inst[k]||0)+1; });
@@ -1580,7 +1580,7 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
     <div class="card"><h3>Running order</h3><ol style="margin:0;padding-left:20px">${(I.plan||[]).map(x=>`<li><b>${h(x.minutes)} min</b> · ${h(x.what)}</li>`).join('')}</ol><div class="row" style="margin-top:10px"><button class="btn sm quiet" id="tgCopy">Copy as text</button></div></div>`; }
   const ideasText=I=>['PIECES',...(I.pieces||[]).map(p=>`- ${p.title} (${p.composer}): ${p.why} ${p.parts}`),'','GAMES',...(I.games||[]).map(g=>`- ${g.name}, ${g.minutes} min (${g.skill}): ${g.how}`),'','ACTIVITIES',...(I.activities||[]).map(a=>`- ${a.name}, ${a.minutes} min: ${a.how}`),'','RUNNING ORDER',...(I.plan||[]).map(x=>`- ${x.minutes} min: ${x.what}`)].join('\n');
   function renderTogether(){ const v=$('#v-together'); const groups=allGroups(); let saved=null; try{ saved=JSON.parse(localStorage.getItem('stuckato.together.last')||'null'); }catch(e){} const f=(saved&&saved.form)||{};
-    v.innerHTML=`${secNav('together')}<div class="eyebrow" style="margin-top:10px">Play together</div><h2 class="big">Plan a group session in a minute.</h2>
+    v.innerHTML=`${secNav('together')}<div class="eyebrow" style="margin-top:10px">Collaborate</div><h2 class="big">Plan a group session in a minute.</h2>
       <p class="g-lede">Pieces, ensemble games and a running order, made for your group.</p>
       <div class="card"><p class="note" style="margin:0 0 4px">Instruments, levels and ages are enough. No names.</p>
         ${students.length?`<label class="l" for="tgFrom">Start from one of your groups (optional)</label><select id="tgFrom"><option value="">Choose…</option><option value="*">All my pupils</option>${groups.map(g=>`<option value="${h(g)}">${h(g)}</option>`).join('')}</select>`:''}
