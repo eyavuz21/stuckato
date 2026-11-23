@@ -215,6 +215,7 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
 .g-quest{display:flex; align-items:center; gap:10px; padding:8px 0; border-top:1px solid var(--line)} .g-quest:first-of-type{border-top:none} .g-quest i{flex:none; width:24px; height:24px; border-radius:50%; border:2px solid var(--ink); display:grid; place-items:center; font-style:normal; font-weight:800; font-size:14px} .g-quest.done i{background:var(--ink); color:#fff} .g-quest span{flex:1; font-weight:600} .g-quest.done span{color:var(--muted); text-decoration:line-through} .g-quest small{color:var(--muted); font-weight:700} #gQuestLadder{cursor:pointer}
 .g-rungs{display:flex; gap:6px; flex-wrap:wrap; justify-content:center} .g-rungs span{min-width:44px; padding:6px 8px; border-radius:999px; border:1.5px solid var(--line); font-weight:700; font-variant-numeric:tabular-nums} .g-rungs span.on{background:var(--ink); color:#fff; border-color:var(--ink)} .g-rungs span.now{border:2px solid var(--ink)}
 .g-ld{width:150px; height:150px; font-size:40px; display:grid; place-items:center}
+.g-take{width:100%; display:flex; flex-direction:column; gap:4px; text-align:left} .g-take audio{width:100%}
 .g-review{display:flex; flex-direction:column; align-items:center; gap:4px; border:2px solid var(--ink); border-radius:22px; padding:18px 22px; width:100%} .g-review b{font-family:var(--display); font-size:26px; line-height:1.1} .g-review small{color:var(--muted); font-weight:600}
 .g-skill{display:flex; flex-direction:column; align-items:center; gap:2px; border:2px solid var(--ink); border-radius:18px; padding:10px 16px} .g-skill span{font-size:12px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--muted)} .g-skill b{font-size:18px} .g-skill small{color:var(--muted); font-weight:600}
 .g-lede{font-size:18px; font-weight:600; margin:-6px 0 16px; color:var(--sage)}
@@ -353,6 +354,7 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
   <section class="view" id="v-echo"></section>
   <section class="view" id="v-review"></section>
   <section class="view" id="v-ladder"></section>
+  <section class="view" id="v-listen"></section>
   <section class="view" id="v-reward"></section>
   <section class="view" id="v-treat"></section>
   <section class="view" id="v-quiz"></section>
@@ -448,7 +450,7 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
   }
 
   // ------------------------------------------------------------ routing
-  function show(v){ if(v!=='free'&&typeof fpHalt==='function') fpHalt(); if(v!=='warm') beatStop(); if(v!=='ladder') ladderStop(); $$('.view').forEach(x=>x.classList.toggle('on', x.id==='v-'+v)); $$('#tabs button').forEach(b=>b.classList.toggle('on', b.dataset.v===v||(v==='trail'&&b.dataset.v==='today'))); const bar=$('#startbar'); bar.hidden=!(v==='trail'&&bar.innerHTML); window.scrollTo({top:0}); }
+  function show(v){ if(v!=='free'&&typeof fpHalt==='function') fpHalt(); if(v!=='warm') beatStop(); if(v!=='ladder') ladderStop(); if(v!=='listen') listenStop(); $$('.view').forEach(x=>x.classList.toggle('on', x.id==='v-'+v)); $$('#tabs button').forEach(b=>b.classList.toggle('on', b.dataset.v===v||(v==='trail'&&b.dataset.v==='today'))); const bar=$('#startbar'); bar.hidden=!(v==='trail'&&bar.innerHTML); window.scrollTo({top:0}); }
   function setTabs(role){
     const t=$('#tabs');
     if(!role){ t.hidden=true; t.innerHTML=''; return; }
@@ -1395,12 +1397,13 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
     const hook=m.revealed?'Press today’s record and open a treat.':`Unlock note ${Math.min(7,m.shown+1)} of the mystery tune and a treat box.`;
     const todayG=s&&!doneToday?`<div class="card g-today"><div class="g-today-top"><span>Day ${i+1}</span><span>${planMinutes(s)} min</span></div><h2 class="g-title">${h(s.title)}</h2><p class="g-hook">${hook}</p>
         <div class="g-track">${steps.map(([ic,l])=>`<span><i>${ic}</i>${l}</span>`).join('')}</div>
-        <button class="btn block g-go" id="start">Let's go</button><div class="g-alt"><button type="button" id="ownStart">My own way</button><button type="button" id="gLadder">Tempo ladder</button>${u.has('beat')||u.has('echo')?'<button type="button" id="startNoWarm">Skip warm-ups</button>':''}</div></div>`
-      : s&&doneToday?`<div class="card g-today"><div class="g-today-top"><span>Today</span><span>Done ✓</span></div><h2 class="g-title">Done for today.</h2><p class="g-hook">${m.revealed?'The mystery tune is complete. Guess how you did?':`Come back tomorrow for note ${Math.min(7,m.shown+1)} of the mystery tune.`}</p><div class="g-alt"><button type="button" id="ownStart">Practise again anyway</button><button type="button" id="gLadder">Tempo ladder</button></div></div>`
+        <button class="btn block g-go" id="start">Let's go</button><div class="g-alt"><button type="button" id="ownStart">My own way</button><button type="button" id="gLadder">Tempo ladder</button><button type="button" id="gListen">Listen back</button>${u.has('beat')||u.has('echo')?'<button type="button" id="startNoWarm">Skip warm-ups</button>':''}</div></div>`
+      : s&&doneToday?`<div class="card g-today"><div class="g-today-top"><span>Today</span><span>Done ✓</span></div><h2 class="g-title">Done for today.</h2><p class="g-hook">${m.revealed?'The mystery tune is complete. Guess how you did?':`Come back tomorrow for note ${Math.min(7,m.shown+1)} of the mystery tune.`}</p><div class="g-alt"><button type="button" id="ownStart">Practise again anyway</button><button type="button" id="gLadder">Tempo ladder</button><button type="button" id="gListen">Listen back</button></div></div>`
       : fallbackToday;
     const nx=u.next?`<div class="g-unlock"><svg class="g-lock" width="16" height="18" viewBox="0 0 16 18" aria-hidden="true"><rect x="1.5" y="8" width="13" height="9" rx="2" fill="currentColor"/><path d="M4.5 8V5.5a3.5 3.5 0 0 1 7 0V8" stroke="currentColor" stroke-width="2" fill="none"/></svg><span>Unlocks in ${u.next.left} ${u.next.left===1?'practice':'practices'}: <b>${h(u.next.name)}</b></span></div>`:'';
     return hero+(todayG||'')+tune+questsHTML(w)+nx; }
   function bubbleItems(w){ const d=doc(), tn=d.teacherName||'Your teacher'; const L=[];
+    if(w.voiceNote) L.push({t:`${tn} left you a voice message${w.voiceNote.seconds?' ('+w.voiceNote.seconds+' s)':''}.`, voice:true});
     if(w.line||w.encouragement) L.push({t:`${tn}: “${w.line||w.encouragement}”`});
     if((w.checklist||[]).length) L.push({t:`For the lesson: ${w.checklist[0]}${w.checklist.length>1?` (+${w.checklist.length-1} more)`:''}`});
     openExtras().forEach(x=>L.push({t:`News from ${tn}: ${x.text}`, x:x.id}));
@@ -1433,7 +1436,7 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
       $('#ldHome').onclick=()=>renderJourney(true); show('ladder'); }
     setup(); }
   function wireGameHome(w, i){
-    const gl=$('#gLadder'); if(gl) gl.onclick=renderLadder; const ql=$('#gQuestLadder'); if(ql){ ql.onclick=renderLadder; ql.onkeydown=e=>{ if(e.key==='Enter') renderLadder(); }; }
+    const gl=$('#gLadder'); if(gl) gl.onclick=renderLadder; const gls=$('#gListen'); if(gls) gls.onclick=renderListen; const ql=$('#gQuestLadder'); if(ql){ ql.onclick=renderLadder; ql.onkeydown=e=>{ if(e.key==='Enter') renderLadder(); }; }
     const nw=$('#startNoWarm'); if(nw) nw.onclick=()=>{ gamePre=null; ready(()=>startSession(i)); };
     const st=$('#gStave'); if(st) st.onclick=()=>{ const m=mysteryOf(w); gPlay(m.tune.notes.slice(0,m.revealed?7:Math.max(1,m.shown)),0.45); };
     const tp=$('#gTunePlay'); if(tp) tp.onclick=()=>gPlay(mysteryOf(w).tune.notes,0.45);
@@ -1444,8 +1447,9 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
     // the quaver speaks: the teacher's line, what to work on, any news; tap for the next one
     const b=$('#gBubble'); const items=bubbleItems(w); let k=0;
     const paint=()=>{ if(!b) return; if(!items.length){ b.hidden=true; return; } const it=items[k%items.length];
-      b.innerHTML=`<span>${h(it.t)}</span><span class="g-bub-act">${it.x?`<button type="button" data-bdone="${h(it.x)}">Done</button>`:''}${items.length>1?`<button type="button" id="gBubNext" aria-label="Next message">${k%items.length+1}/${items.length} ›</button>`:''}</span>`;
+      b.innerHTML=`<span>${h(it.t)}</span><span class="g-bub-act">${it.voice?'<button type="button" id="gVoicePlay">▶ Play it</button>':''}${it.x?`<button type="button" data-bdone="${h(it.x)}">Done</button>`:''}${items.length>1?`<button type="button" id="gBubNext" aria-label="Next message">${k%items.length+1}/${items.length} ›</button>`:''}</span>`;
       const nx=$('#gBubNext'); if(nx) nx.onclick=()=>{ k++; paint(); };
+      const vp=$('#gVoicePlay'); if(vp) vp.onclick=async()=>{ vp.textContent='Loading…'; const blob=await bkBlob(w.voiceNote); if(!blob){ vp.textContent='▶ Play it'; toast('Could not open the message.'); return; } const a=new Audio(URL.createObjectURL(blob)); a.play().catch(()=>{}); vp.textContent='Playing…'; a.onended=()=>{ vp.textContent='▶ Play again'; }; if(!w.voiceNote.heard){ w.voiceNote.heard=new Date().toISOString(); saveCurrent(); } };
       const dn=b.querySelector('[data-bdone]'); if(dn) dn.onclick=()=>{ const e=extras().find(y=>y.id===dn.dataset.bdone); if(e){ e.done=true; e.doneAt=new Date().toISOString(); } saveCurrent(); toast('Done. Nice.'); renderTrail(false); }; };
     paint(); }
   function startWithGames(i){ gamePre={}; const u=unl(); if(u.has('beat')) renderBeat(i); else if(u.has('echo')) renderEcho(i); else afterWarm(i); }
@@ -1654,6 +1658,46 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
         $('#tgOut').innerHTML=ideasHTML(I); wireCopy(I); st.textContent=''; $('#tgOut').scrollIntoView({behavior:'smooth',block:'start'}); }
       catch(e){ st.textContent=e.message||'Could not get ideas.'; } finally{ $('#tgGo').disabled=false; } };
     show('together'); }
+
+  // ------------------------------------------------------------ after the competitor check (23 Nov 2026), three more, done our way
+  // 1. The teacher's voice note (what Tonic Notes, Lami, Arco and CLARA do by recording the whole lesson): up to a minute, recorded
+  //    after the lesson, stored privately in the studio's teacher folder, played by the quaver on the pupil's home.
+  function renderTeacherVoice(){ const box=$('#tVoice'); if(!box||!current||!window.BackingAudio) return; const d=current.data, p=d.profile, name=p.name||'this pupil'; const w=d.weeks.length?d.weeks[d.weeks.length-1]:null;
+    let live=null, blob=null, secs=0, t0=0;
+    box.innerHTML=`<div class="card"><h3>A voice note for ${h(name)}</h3><p class="note" style="margin:0 0 8px">Up to a minute, after the lesson. The quaver plays it on ${h(name)}'s home.${w&&w.voiceNote?` Current note: ${h(fmt(w.voiceNote.at.slice(0,10)))}, ${w.voiceNote.seconds} s${w.voiceNote.heard?', heard':', not heard yet'}.`:''}</p>
+      ${w?`<div class="row"><button class="btn sm" id="vnRec">Record</button><button class="btn sm quiet" id="vnPlay" hidden>Listen</button><button class="btn sm" id="vnSave" hidden>Send to ${h(name)}</button>${w.voiceNote?'<button class="btn sm quiet" id="vnDel">Remove the current note</button>':''}</div><p class="note" id="vnSt" style="margin:6px 0 0"></p>`:'<p class="note" style="margin:0">Write this week first, then add a voice note.</p>'}</div>`;
+    if(!w) return; const st=$('#vnSt');
+    $('#vnRec').onclick=async()=>{ const b=$('#vnRec'); if(live){ const r=live.stop(); live=null; secs=Math.max(1,Math.round(r.pcm.length/r.sr)); blob=BackingAudio.toWav(r.pcm, r.sr); b.textContent='Record again'; $('#vnPlay').hidden=false; $('#vnSave').hidden=false; st.textContent=secs+' seconds. Listen, then send.'; return; }
+      try{ live=await BackingAudio.recordAlone({maxSec:60, onCap:()=>{ if(live) $('#vnRec').click(); }}); t0=Date.now(); b.textContent='Stop'; st.textContent='Recording… up to a minute.'; }catch(e){ st.textContent='The microphone is not available: '+(e.message||e); } };
+    $('#vnPlay').onclick=()=>{ if(blob){ new Audio(URL.createObjectURL(blob)).play().catch(()=>{}); } };
+    $('#vnSave').onclick=async()=>{ if(!blob) return; st.textContent='Sending…'; try{ const id=uid(); const where=await bkStore(blob, `voice-${id}.wav`, 'teacher'); w.voiceNote={id, at:new Date().toISOString(), seconds:secs, mime:'audio/wav', ...where}; saveCurrent(); toast('Sent. The quaver will play it.'); renderTeacherVoice(); }catch(e){ st.textContent='Could not send it: '+(e.message||e); } };
+    const dl=$('#vnDel'); if(dl) dl.onclick=async()=>{ await bkRemove(w.voiceNote); delete w.voiceNote; saveCurrent(); renderTeacherVoice(); }; }
+  // 2. Record and listen back (Modacity), our way: two takes of the tricky bit, played back side by side on this device and then thrown
+  //    away. Nothing is uploaded or kept; only the pupil's own choice of which take sounded better is saved.
+  var lbLive=null, lbUrls=[];
+  function listenStop(){ if(lbLive){ try{ lbLive.stop(); }catch(e){} lbLive=null; } lbUrls.forEach(u=>{ try{ URL.revokeObjectURL(u); }catch(e){} }); lbUrls=[]; }
+  function renderListen(){ const w=week(); if(!w||!window.BackingAudio) return; listenStop(); const v=$('#v-listen'); const takes=[];
+    function paint(msg){ v.innerHTML=`<div class="g-screen"><div class="eyebrow">Listen back</div><h2 class="big">${takes.length<2?'Record it, then hear it.':'Which one sounded better?'}</h2>
+        <p class="note" style="margin:0">${takes.length===0?'Play the tricky bit once while Stuckato records. Then play it again. Nothing is saved or sent: the recordings stay on this phone until you leave.':takes.length===1?'Now play it again, changing one thing.':'Listen to both. Trust your ears.'}</p>
+        ${takes.map((u,k)=>`<div class="g-take"><b>Take ${k+1}</b><audio controls src="${u}"></audio></div>`).join('')}
+        ${takes.length<2?`<button class="btn block" id="lbRec">${lbLive?'Stop':'Record take '+(takes.length+1)}</button>`:`<div class="chips" style="justify-content:center;margin:0">${[['first','Take 1'],['second','Take 2'],['same','Same']].map(([k2,l])=>`<button type="button" class="chip" data-lb="${k2}">${l}</button>`).join('')}</div>`}
+        <p class="note" style="margin:0">${h(msg||'')}</p><button class="btn sm quiet" id="lbHome">Back home</button></div>`;
+      const r=$('#lbRec'); if(r) r.onclick=async()=>{ if(lbLive){ const x=lbLive.stop(); lbLive=null; const u=URL.createObjectURL(BackingAudio.toWav(x.pcm, x.sr)); lbUrls.push(u); takes.push(u); paint(); return; }
+        try{ lbLive=await BackingAudio.recordAlone({maxSec:30, onCap:()=>{ const b=$('#lbRec'); if(b&&lbLive) b.click(); }}); paint('Recording… up to 30 seconds.'); }catch(e){ paint('The microphone is not available.'); } };
+      $$('[data-lb]').forEach(b=>b.onclick=()=>{ w.listens=[...(w.listens||[]), {at:new Date().toISOString(), better:b.dataset.lb}]; saveCurrent(); gTone(84,0.15); paint(b.dataset.lb==='second'?'Better the second time: that is practice working.':b.dataset.lb==='first'?'Good ears. Try what you did the first time again tomorrow.':'Steady. Pick one thing to change next time.'); });
+      $('#lbHome').onclick=()=>{ listenStop(); renderJourney(true); }; show('listen'); }
+    paint(); }
+  // 3. The teacher's task library (Sweetnote and Practice Space): save "for next lesson" lines once, tap them into any pupil's week.
+  //    Kept on the teacher's own device (there is no teacher record on the server yet), so it follows the phone, not the account.
+  const LIB_KEY='stuckato.library.v1';
+  const libGet=()=>{ try{ return JSON.parse(localStorage.getItem(LIB_KEY)||'[]')||[]; }catch(e){ return []; } };
+  const libSet=a=>{ try{ localStorage.setItem(LIB_KEY, JSON.stringify(a.slice(0,200))); }catch(e){} };
+  function renderLibrary(){ const box=$('#libBox'); if(!box) return; const lib=libGet();
+    box.innerHTML=`<div class="lib">${lib.length?`<div class="label" style="margin:8px 0 4px">From your library · tap to add</div><div class="chips" style="margin:0">${lib.map((t,k)=>`<button type="button" class="chip" data-lib="${k}">${h(t)}</button>`).join('')}</div>`:''}
+      <div class="row" style="margin-top:6px"><button type="button" class="btn sm quiet" id="libSave">Save these lines to my library</button>${lib.length?'<button type="button" class="btn sm quiet" id="libEdit">Tidy the library</button>':''}</div></div>`;
+    $$('[data-lib]').forEach(b=>b.onclick=()=>{ const ta=$('#nNextL'); const t=lib[+b.dataset.lib]; const lines=ta.value.split('\n').map(x=>x.trim()).filter(Boolean); if(!lines.includes(t)) lines.push(t); ta.value=lines.join('\n'); toast('Added.'); });
+    $('#libSave').onclick=()=>{ const lines=$('#nNextL').value.split('\n').map(x=>x.trim()).filter(Boolean); if(!lines.length){ toast('Write some lines first.'); return; } libSet([...new Set([...lib, ...lines])]); toast('Saved to your library.'); renderLibrary(); };
+    const le=$('#libEdit'); if(le) le.onclick=()=>{ modal({label:'Your library', title:'Tidy the library', text:'Tap a task to remove it.', buttons:[...lib.map((t,k)=>({label:'✕ '+t, cls:'quiet', onClick:()=>{ const a=libGet(); a.splice(k,1); libSet(a); renderLibrary(); }})), {label:'Done', onClick:()=>{}}]}); }; }
 
   // teacher: the switch and the settings on the pupil's page, and this week's free play underneath
   function renderTeacherFree(){ const box=$('#tFree'); if(!box||!current||!window.BackingAudio) return; const d=current.data, p=d.profile, name=p.name||'this pupil'; const s=fpSet(d);
@@ -2127,6 +2171,7 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
       <div id="tBack"></div>
       <div id="tFree"></div>
       <div id="tGames"></div>
+      <div id="tVoice"></div>
       <div class="card"><h3>Add a task this week</h3>
         <div class="row"><input id="xText" placeholder="e.g. Listen to the Bach three times before Thursday" style="flex:1"><button type="button" class="btn quiet mic" data-dictate="xText">Dictate</button><button class="btn sm" id="xAdd">Add</button></div>
         ${(d.extras||[]).filter(x=>!x.done).length?`<div style="margin-top:8px">${(d.extras||[]).filter(x=>!x.done).map(x=>`<div class="flag"><span>${h(x.text)} <span class="note" style="margin:0">· ${h(fmt(x.at.slice(0,10)))}</span></span><button class="btn sm quiet" data-xrm="${x.id}">Remove</button></div>`).join('')}</div>`:''}
@@ -2137,7 +2182,7 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
           <div></div><div><label class="l">Prepared for today? 1 to 5</label>${scale('nPrep')}</div><div><label class="l">Progress since last lesson, 1 to 5</label>${scale('nProg')}</div></div>`:''}
         <div class="grid2"><div><label class="l" for="nDate">Lesson date</label><input type="date" id="nDate" value="${today()}"></div><div><label class="l" for="nNext">Next lesson</label><input type="date" id="nNext" value="${addDays(today(),7)}"></div></div>
         <label class="l" for="nWorked">What we worked on <button type="button" class="btn quiet mic" data-dictate="nWorked">Dictate</button></label><textarea id="nWorked" placeholder="D major scale, bow contact point near the bridge, first phrase of Twinkle variation A. Tone is opening up; rushes the scale."></textarea>
-        <label class="l" for="nNextL">For next lesson, one per line <button type="button" class="btn quiet mic" data-dictate="nNextL">Dictate</button></label><textarea id="nNextL" placeholder="Scale from memory, two octaves&#10;First phrase in tune&#10;Bow nearer the bridge on long notes"></textarea>
+        <label class="l" for="nNextL">For next lesson, one per line <button type="button" class="btn quiet mic" data-dictate="nNextL">Dictate</button></label><textarea id="nNextL" placeholder="Scale from memory, two octaves&#10;First phrase in tune&#10;Bow nearer the bridge on long notes"></textarea><div id="libBox"></div>
         <label class="l" for="nLine">One line for the week <button type="button" class="btn quiet mic" data-dictate="nLine">Dictate</button></label><input id="nLine" placeholder="Lovely tone today. Don't rush the scale.">
         <div class="row" style="margin-top:10px"><button class="btn" id="gen">Write this week's sessions</button><span class="status" id="genStatus" style="margin:0"></span></div>
         <div class="note">Thirty seconds here becomes ${h(p.sessionsPerWeek||7)} daily sessions, a work list the pupil ticks off each day, and a checklist for the lesson. You review before it goes to them.</div></div>
@@ -2159,7 +2204,7 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
     $('#gen').onclick=generateWeek; wireScales();
     $$('[data-dictate]').forEach(b=>b.onclick=()=>dictate(b.dataset.dictate,b));
     if(w) wirePassageTeacher(w, d, p);
-    renderTeacherAud(); renderTeacherBacking(); renderTeacherFree(); renderTeacherGames();
+    renderTeacherAud(); renderTeacherBacking(); renderTeacherFree(); renderTeacherGames(); renderTeacherVoice(); renderLibrary();
     if(preview) renderPreview();
   }
   async function generateWeek(){

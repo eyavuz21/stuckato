@@ -20,7 +20,9 @@ Stuckato has two sides. The **teacher** writes a thirty-second note after each l
 - **Weekly summary email** (Better Practice): the daily job (`api/reminders.js composeSummary`) emails the account holder on lesson day; once per week; switch under Goal.
 - **Weekly quests** (Tonic's challenges, without leagues): practise on 3 days, climb the tempo ladder, a spot-on echo (or two-star beat), guess the mystery tune; +30 notes each. `games.js questsFor`.
 - **Tempo ladder** (slow practice, as in Modacity, Flowkey and Yousician): the tricky bit with a click from slow to target speed, rung by rung, self-rated. `games.js ladderRungs`; kept on the week as `w.ladders`.
-- After the pilot: listen-back recording (Modacity), a teacher's voice note after the lesson (Tonic Notes, Lami, Arco, CLARA), a reusable task library (Sweetnote, Practice Space). Not for us: marking every note; rooms or leagues with strangers. The full list is in the workshop's `docs/Stuckato-Competitor-Features.md`.
+- **Teacher voice note** (Tonic Notes, Lami, Arco, CLARA record the whole lesson): up to a minute after the lesson, stored in the studio's private teacher folder (`w.voiceNote`), played from the quaver's speech bubble; the teacher sees "heard".
+- **Listen back** (Modacity): two takes of the tricky bit, played side by side on the device and discarded; only the pupil's pick is kept (`w.listens`).
+- **Task library** (Sweetnote, Practice Space): save "for next lesson" lines and tap them into any pupil's week. Kept in the teacher's browser (`localStorage stuckato.library.v1`) until there is a teacher record on the server. Not for us: marking every note; rooms or leagues with strangers. The full list is in the workshop's `docs/Stuckato-Competitor-Features.md`.
 
 ## Also in v0.14: the teacher's three sections
 
