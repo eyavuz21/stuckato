@@ -1770,11 +1770,11 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
   function renderJourney(showIt){ renderTrail(showIt); }
   function renderShare(showIt){
     if(!current) return; const v=$('#v-share'); const w=week(); const p=doc().profile; const tn=doc().teacherName||'your teacher';
-    v.innerHTML=`<button class="btn sm quiet" id="backS">← Back to the trail</button><div class="eyebrow" style="margin-top:10px">Share</div><h2 class="big">Your week, as a card.</h2>
+    v.innerHTML=`<button class="btn sm quiet" id="backS">← Back home</button><h2 class="big" style="margin-top:12px">Your week, as a card.</h2><p class="g-lede">Send it to someone who'd love to see it.</p>
       <canvas class="cardc" id="cardc" width="840" height="900" aria-label="Your week card"></canvas>
       <div class="row" style="justify-content:center"><button class="btn" id="shareBtn">Share the card</button><button class="btn quiet" id="dlBtn">Save the image</button></div>
       <p class="note" style="text-align:center">${w?'':'There is no week to show yet, so the card is a preview.'}</p>`;
-    drawCard($('#cardc')); $('#backS').onclick=()=>renderTrail(true);
+    drawCard($('#cardc')); try{ document.fonts&&document.fonts.ready.then(()=>{ const cv=$('#cardc'); if(cv) drawCard(cv); }); }catch(e){} $('#backS').onclick=()=>renderTrail(true);
     $('#shareBtn').onclick=async()=>{ const c=$('#cardc'); c.toBlob(async blob=>{ const file=new File([blob],'stuckato-week.png',{type:'image/png'}); if(navigator.canShare&&navigator.canShare({files:[file]})){ try{ await navigator.share({files:[file], title:'My practice week', text:'My week on Stuckato'}); }catch(e){} } else { const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='stuckato-week.png'; a.click(); toast('Saved. Share it from your photos.'); } },'image/png'); };
     $('#dlBtn').onclick=()=>{ const c=$('#cardc'); c.toBlob(blob=>{ const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='stuckato-week.png'; a.click(); },'image/png'); };
     if(showIt!==false) show('share');
@@ -1783,47 +1783,46 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
   function drawCard(c){
     const ctx=c.getContext('2d'); const W=c.width; const p=doc().profile; const w=week(); const tn=doc().teacherName||'your teacher';
     const n=w?doneCount(w):0, tot=w?w.sessions.length:7; const mins=w?(w.done||[]).reduce((a,d)=>a+(w.sessions[d.i]?w.sessions[d.i].steps.reduce((x,y)=>x+(+y.minutes||0),0):0),0):0;
-    const F=(wt,px)=>`${wt} ${px}px "Outfit", system-ui, sans-serif`;
+    const F=(wt,px)=>`${wt} ${px}px "Outfit", system-ui, sans-serif`; const FD=(px)=>`800 ${px}px "Bricolage Grotesque", "Outfit", system-ui, sans-serif`;
     const lines=(t,mw,font)=>{ ctx.font=font; const words=String(t).split(' '); const out=[]; let line=''; for(const wd of words){ const test=line?line+' '+wd:wd; if(ctx.measureText(test).width>mw&&line){ out.push(line); line=wd; } else line=test; } if(line) out.push(line); return out; };
     const wrap=(t,x,y,mw,lh,font,col)=>{ const ls=lines(t,mw,font); ctx.font=font; ctx.fillStyle=col; ls.forEach((l,i)=>ctx.fillText(l,x,y+i*lh)); return y+ls.length*lh; };
-    const box=(y,hh)=>{ ctx.fillStyle='#F5E4CA'; ctx.strokeStyle='#D4BF9E'; ctx.lineWidth=2; ctx.beginPath(); ctx.roundRect(40,y,W-80,hh,26); ctx.fill(); ctx.stroke(); };
-    const label=(t,y)=>{ ctx.fillStyle='#6F6350'; ctx.font=F(800,18); ctx.fillText(t.toUpperCase(),70,y); };
+    const box=(y,hh)=>{ ctx.fillStyle='#FFFFFF'; ctx.strokeStyle='#E2E2DE'; ctx.lineWidth=2; ctx.beginPath(); ctx.roundRect(40,y,W-80,hh,26); ctx.fill(); ctx.stroke(); };
+    const label=(t,y)=>{ ctx.fillStyle='#5A5A5A'; ctx.font=F(800,18); ctx.fillText(t.toUpperCase(),70,y); };
     const tks=w?takesOff(w).slice().sort((a,b)=>(a.at||'').localeCompare(b.at||'')):[]; const pgLine=tks.length?(()=>{ const L=tks[tks.length-1], F=tks[0]; const tot=(w.takes||[]).find(t=>t.i===L.i)?.diff?.total||''; const dn=dayName; return `The passage: ${tot-L.off} of ${tot} notes matched ${tn}'s on ${dn(L.at)}`+(tks.length>1?`, up from ${tot-F.off} on ${dn(F.at)}.`:'.'); })():'';
-    const nBk=w?(w.backings||[]).length:0; const cardLine=[pgLine, nBk?`Made ${nBk} ${nBk===1?'track':'tracks'} with a backing this week.`:''].filter(Boolean).join(' ');
+    const nBk=w?(w.backings||[]).length:0; const mt=w&&gamesOn()?mysteryOf(w):null; const mtLine=mt?(mt.revealed?`The mystery tune was ${mt.tune.name}.`:`Mystery tune: ${mt.shown} of 7 notes${mt.guess?`, my guess is ${mt.guess}`:''}.`):''; const cardLine=[PASSAGE_ON?pgLine:'', mtLine, nBk?`Made ${nBk} ${nBk===1?'track':'tracks'} with a backing this week.`:''].filter(Boolean).join(' ');
     const pgLines=cardLine?lines(cardLine,W-140,F(600,20)):[]; const pgExtra=pgLines.length?14+pgLines.length*26:0;
     const top=490+pgExtra; const fb=w&&(w.line||w.encouragement); const list=w&&w.checklist?w.checklist.slice(0,4):[];
     let hh=42; if(fb) hh+=36+lines(fb,W-140,F(700,28)).length*38+40; if(list.length){ hh+=36; list.forEach(t=>hh+=lines(t,W-180,F(600,24)).length*30+8); } if(!fb&&!list.length) hh+=40; hh+=18;
     const goal=p.goalDate&&doc().weeks.length?{label:p.goalLabel||'Goal', date:p.goalDate, start:(doc().weeks[0].lessonDate||doc().weeks[0].createdAt)}:null;
     const H=top+hh+40+(goal?200:0); if(c.height!==H) c.height=H;
-    const gl=goalLight(); const WASH={g:['#E2F0E5','#C3DCCA','#2E6B44'],a:['#F7EAD0','#E7D2A6','#8A5A12'],r:['#F8E0DA','#EFC5BB','#A8372A']}[gl?gl.k:'']||['#000000','#E6D2B2','#6F6350'];
+    const gl=goalLight(); const WASH=['#F7F7F5','#F7F7F5','#0A0A0A']; // black and white: the status is a black pill, the background plain
     ctx.fillStyle=WASH[0]; ctx.fillRect(0,0,W,H);
-    ctx.strokeStyle=WASH[1]; ctx.lineWidth=2; for(let y=40;y<H;y+=42){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
-    ctx.fillStyle='#6F6350'; ctx.font=F(600,18); ctx.fillText('Short bursts. Real progress.',70,H-14);
+    ctx.fillStyle='#5A5A5A'; ctx.font=F(600,18); ctx.fillText('Short bursts. Real progress.',70,H-14);
     // box 1: the dates
     const from=w?fmt(w.lessonDate||w.createdAt):fmt(today()); const to=w&&w.nextLesson?fmt(w.nextLesson):null;
     box(40,120); ctx.fillStyle='#000000'; if(WM_IMG.complete&&WM_IMG.naturalWidth){ const wh=44, ww=wh*WM_IMG.naturalWidth/WM_IMG.naturalHeight; ctx.drawImage(WM_IMG,70,52,ww,wh); } else { ctx.font=F(800,34); ctx.fillText('Stuckato.',70,92); } ctx.font=F(700,26); ctx.fillText('From '+from+(to?' to '+to:''),70,136);
-    if(gl){ ctx.font=F(800,22); const tw=ctx.measureText(gl.word).width+36; ctx.fillStyle=WASH[2]; ctx.beginPath(); ctx.roundRect(W-70-tw,68,tw,40,20); ctx.fill(); ctx.fillStyle='#F5E4CA'; ctx.fillText(gl.word,W-70-tw+18,96); }
+    if(gl){ ctx.font=F(800,22); const tw=ctx.measureText(gl.word).width+36; ctx.fillStyle=WASH[2]; ctx.beginPath(); ctx.roundRect(W-70-tw,68,tw,40,20); ctx.fill(); ctx.fillStyle='#FFFFFF'; ctx.fillText(gl.word,W-70-tw+18,96); }
     // box 2: the pupil's week
     let y=190; box(y,270+pgExtra); label((p.name||'My')+"'s week",y+42);
-    ctx.fillStyle='#000000'; ctx.font=F(800,52); ctx.fillText(w&&n===tot?'Week complete.':(n+' of '+tot+' days done.'),70,y+106);
+    ctx.fillStyle='#0A0A0A'; ctx.font=FD(54); ctx.fillText(w&&n===tot?'Week complete.':(n+' of '+tot+' days done.'),70,y+106);
     const stats=[[String(n)+'/'+tot,'days practised'],[String(mins),'minutes practised'],[String(tokensView().avail),'points earned']];
-    stats.forEach((st,i)=>{ const x=70+i*236; ctx.fillStyle='#EDDCBE'; ctx.beginPath(); ctx.roundRect(x,y+132,216,108,18); ctx.fill(); ctx.fillStyle='#000000'; ctx.font=F(800,44); ctx.fillText(st[0],x+20,y+188); ctx.fillStyle='#6F6350'; ctx.font=F(600,18); ctx.fillText(st[1],x+20,y+222); });
-    if(pgLines.length){ ctx.fillStyle='#6F6350'; ctx.font=F(600,20); pgLines.forEach((l,k)=>ctx.fillText(l,70,y+280+k*26)); }
+    stats.forEach((st,i)=>{ const x=70+i*236; ctx.fillStyle='#EFEFEC'; ctx.beginPath(); ctx.roundRect(x,y+132,216,108,18); ctx.fill(); ctx.fillStyle='#0A0A0A'; ctx.font=FD(44); ctx.fillText(st[0],x+20,y+188); ctx.fillStyle='#5A5A5A'; ctx.font=F(600,18); ctx.fillText(st[1],x+20,y+222); });
+    if(pgLines.length){ ctx.fillStyle='#3D3D3D'; ctx.font=F(600,20); pgLines.forEach((l,k)=>ctx.fillText(l,70,y+280+k*26)); }
     // box 3: feedback from the last lesson, and what is wanted for the next one
     box(top,hh); y=top+42;
-    if(fb){ label('Feedback from the last lesson',y); y=wrap(fb,70,y+36,W-140,38,F(700,28),'#000000'); ctx.fillStyle='#6F6350'; ctx.font=F(600,19); ctx.fillText(tn,70,y-4); y+=40; }
-    if(list.length){ label('For next lesson:',y); y+=36; list.forEach((t,k)=>{ const on=(w.ticks||[]).includes(k); ctx.fillStyle=on?'#000000':'#F5E4CA'; ctx.strokeStyle=on?'#000000':'#D4BF9E'; ctx.lineWidth=2; ctx.beginPath(); ctx.roundRect(70,y-20,24,24,6); ctx.fill(); ctx.stroke(); y=wrap(t,108,y,W-180,30,F(600,24),on?'#6F6350':'#000000')+8; }); }
-    if(!fb&&!list.length){ ctx.fillStyle='#6F6350'; ctx.font=F(600,22); ctx.fillText('Feedback appears here after the next lesson.',70,y+2); }
+    if(fb){ label('Feedback from the last lesson',y); y=wrap(fb,70,y+36,W-140,38,FD(28),'#0A0A0A'); ctx.fillStyle='#5A5A5A'; ctx.font=F(600,19); ctx.fillText(tn,70,y-4); y+=40; }
+    if(list.length){ label('For next lesson:',y); y+=36; list.forEach((t,k)=>{ const on=(w.ticks||[]).includes(k); ctx.fillStyle=on?'#0A0A0A':'#FFFFFF'; ctx.strokeStyle=on?'#0A0A0A':'#C8C8C4'; ctx.lineWidth=2; ctx.beginPath(); ctx.roundRect(70,y-20,24,24,6); ctx.fill(); ctx.stroke(); y=wrap(t,108,y,W-180,30,F(600,24),on?'#5A5A5A':'#0A0A0A')+8; }); }
+    if(!fb&&!list.length){ ctx.fillStyle='#5A5A5A'; ctx.font=F(600,22); ctx.fillText('Feedback appears here after the next lesson.',70,y+2); }
     if(goal){ // box 4: the goal as the end of a piece: a note a week, filled when practised, the double bar line on the day
       const gy=top+hh+30; box(gy,170); label(goal.label+' · '+fmtL(goal.date),gy+42);
       const gw=goalWeeks(doc().weeks, goal.date); const N=gw.length; const X0=70, X1=W-70; const dx=Math.min(30,(X1-X0-30)/N); const sy=gy+70;
-      ctx.strokeStyle='#D4BF9E'; ctx.lineWidth=1.5; for(let k=0;k<5;k++){ ctx.beginPath(); ctx.moveTo(X0,sy+k*10); ctx.lineTo(X1,sy+k*10); ctx.stroke(); }
+      ctx.strokeStyle='#C8C8C4'; ctx.lineWidth=1.5; for(let k=0;k<5;k++){ ctx.beginPath(); ctx.moveTo(X0,sy+k*10); ctx.lineTo(X1,sy+k*10); ctx.stroke(); }
       for(let k=4;k<N;k+=4){ const x=X0+k*dx; ctx.beginPath(); ctx.moveTo(x,sy); ctx.lineTo(x,sy+40); ctx.stroke(); }
       const xe=X0+N*dx+6; ctx.strokeStyle='#000000'; ctx.lineWidth=1.5; ctx.beginPath(); ctx.moveTo(xe,sy); ctx.lineTo(xe,sy+40); ctx.stroke(); ctx.lineWidth=4; ctx.beginPath(); ctx.moveTo(xe+6,sy); ctx.lineTo(xe+6,sy+40); ctx.stroke();
       const sc=dx<16?0.6:0.85;
       gw.forEach((g,k)=>{ const x=X0+k*dx+dx/2, yy=sy+30-((k*7)%5)*5; ctx.save(); ctx.translate(x,yy); ctx.scale(sc,sc);
         if(g.now){ ctx.strokeStyle='#000000'; ctx.lineWidth=2.5; ctx.beginPath(); ctx.arc(0,0,15,0,7); ctx.stroke(); }
-        ctx.rotate(-22*Math.PI/180); ctx.beginPath(); ctx.ellipse(0,0,9,6.5,0,0,7); ctx.fillStyle=g.practised?'#000000':'#F5E4CA'; ctx.fill(); ctx.strokeStyle='#000000'; ctx.lineWidth=2; ctx.stroke(); ctx.rotate(22*Math.PI/180);
+        ctx.rotate(-22*Math.PI/180); ctx.beginPath(); ctx.ellipse(0,0,9,6.5,0,0,7); ctx.fillStyle=g.practised?'#0A0A0A':'#FFFFFF'; ctx.fill(); ctx.strokeStyle='#000000'; ctx.lineWidth=2; ctx.stroke(); ctx.rotate(22*Math.PI/180);
         ctx.fillStyle='#000000'; ctx.fillRect(7,-34,2.2,34); ctx.restore(); });
       ctx.fillStyle='#6F6350'; ctx.font=F(600,15); ctx.fillText(fmtS(goal.start),X0,sy+62); ctx.textAlign='right'; ctx.fillStyle='#000000'; ctx.font=F(800,15); ctx.fillText(fmtS(goal.date),X1,sy+62); ctx.textAlign='left';
       const wk=doc().weeks, practised=wk.filter(x=>doneCount(x)>0).length, complete=wk.filter(x=>x.sessions&&doneCount(x)===x.sessions.length).length;
