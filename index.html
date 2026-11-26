@@ -1216,7 +1216,7 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
       const play=t=>takeSrc(t)?`<audio controls src="${h(takeSrc(t))}" style="width:100%;margin-top:6px"></audio>`:'';
       const tn=doc().teacherName||'your teacher', nd=n=>n===1?'1 note':n+' notes';
       return `<div class="card joy"><div class="label">Then and now</div><p class="joy-big">${l===0?`${h(dayName(L.at))}: every note matched ${h(tn)}'s. Lovely.`:`${h(dayName(F.at))}: ${nd(f)} differed from ${h(tn)}'s. ${h(dayName(L.at))}: ${l}.${better?' You\'re getting there.':' Same again tomorrow and it moves.'}`}</p>
-        <div class="grid2"><div><div class="note" style="margin:0">${h(dayName(F.at))}</div>${play(F)}</div><div><div class="note" style="margin:0">${h(dayName(L.at))}</div>${play(L)}</div></div></div>`; }
+        ${takeSrc(F)||takeSrc(L)?`<div class="grid2">${[F,L].map(t=>takeSrc(t)?`<div><div class="note" style="margin:0">Hear ${h(dayName(t.at))}'s take</div>${play(t)}</div>`:'').join('')}</div>`:''}</div>`; }
     const past=(doc().weeks||[]).filter(x=>x!==w); const prev=past.length?weekMinutes(past[past.length-1]):0; const now=weekMinutes(w);
     if(prev>0) return `<div class="card joy"><div class="label">Then and now</div><p class="joy-big">${now} minutes this week${now>=prev?`, already past last week's ${prev}.`:`. Last week was ${prev}: ${prev-now} to go.`}</p></div>`;
     return ''; }
