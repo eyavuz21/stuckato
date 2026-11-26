@@ -119,3 +119,12 @@ test('goal ideas: specific, from the week, at most three', () => {
   assert.equal(G.goalIdeas({}).length, 1);
   assert.ok(G.isEvening(19)); assert.ok(!G.isEvening(10));
 });
+test('surprise bonus: stable for a seed, sizes from the table, likelier after a drought, tools never big', () => {
+  assert.deepEqual(G.bonusFor('w1:0', 2), G.bonusFor('w1:0', 2));
+  let hits0 = 0, hits6 = 0, big = 0, toolBig = 0;
+  for (let k = 0; k < 2000; k++) { const a = G.bonusFor('s' + k, 0), b = G.bonusFor('s' + k, 6), t = G.bonusFor('t' + k, 6, 'tool');
+    if (a) hits0++; if (b) { hits6++; assert.equal(b.notes, G.BONUS[b.size]); if (b.size === 'big') big++; } if (t && t.size === 'big') toolBig++; }
+  assert.ok(hits0 > 300 && hits0 < 500, 'about 20% with no drought: ' + hits0);
+  assert.ok(hits6 > 1350, 'about 75% after a long drought: ' + hits6);
+  assert.ok(big > 50); assert.equal(toolBig, 0);
+});

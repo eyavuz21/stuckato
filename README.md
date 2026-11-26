@@ -18,14 +18,15 @@ Stuckato has two sides. The **teacher** writes a thirty-second note after each l
 
 Each one comes from the research check in the workshop's `docs/Stuckato-Science-Check (26 Nov 2026).md`. All self-rated: nothing listens or marks.
 
-- **Tricky spots.** The teacher's note has a new optional field, *Tricky spots, one per line* (`w.tricky`); the week-writer gives every session a step on them and ends the wind-down on one. Pupils can add their own (*+ Another tricky bit*, `w.myTricky`). Starred at the top of every "Which bit?" list.
+- **Tricky spots.** The teacher's note has a new optional field, *Tricky spots, one per line* (`w.tricky`); the week-writer receives them as part of the teacher's note. Pupils can add their own (*+ Another tricky bit*, `w.myTricky`). Starred at the top of every "Which bit?" list.
 - **Fix-it loop** (Duke, Simmons and Cash 2009): the tricky bit with a click at about 60% of the target; three clean in a row and the click goes up a step; a slip restarts the count. `games.js fixitStart/fixitNext`; kept as `w.fixits`.
 - **Mix it up** (interleaving; Shea and Morgan 1979, Abushanab and Bishara 2013): opens once two things are learned (3 sessions, or full speed in the ladder or fix-it loop); two or three items in short timed turns, never the same twice running. `games.js mixPlan`; `w.mixes`.
 - **In your head** (mental practice; Pascual-Leone et al. 1995): one minute in three prompts, attention on the sound. `w.heads`.
 - **From memory** (retrieval practice): look for 20 seconds, close the music, play, check; all / most / not yet. `w.memory`.
 - **Today's goal** (goal setting): before every session, one specific goal (suggestions from the tricky spots, the last ladder or fix-it tempo and the checklist, or their own words); shown during the session; "Hit it / Nearly / Not yet" on the Done screen. `done.warm.goal`. The teacher sees it on the day line.
 - **Bedtime rule** (Allen 2012): after 5pm the Done screen and the tools say to finish on the tricky bit and start nothing new after it.
-- **Sound, not body.** The week-writer now points "how to practise" captions at the sound and the phrase, not the body, unless the teacher's note is about the body; one session late in the week mixes two things and one plays a phrase from memory.
+- **Surprise bonus.** Notes that turn up at random times and in three sizes (10, 25 or 60), after a practice or, more rarely, after a practice tool; the chance grows the longer it has been since the last one. Never costs anything, never taken away. `games.js bonusFor`; kept as `done.bonus` or on the tool record.
+- **The week-writer only uses the teacher's words.** It now also receives the teacher's tricky spots; nothing else was added to its instructions.
 - **Teacher:** *Practice tools this week* on the pupil page lists every fix-it loop, mix, in-your-head minute, from-memory try and self-marked tricky spot.
 - The teacher's first tab is now **Continue practice** (the three Cs).
 

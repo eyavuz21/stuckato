@@ -1366,9 +1366,13 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
   const unl=d=>{ d=d||doc(); return Games.unlocks(practisedAll(d), !!(d.profile||{}).unlockAll); };
   function mysteryOf(w){ const t=Games.tuneFor(weekKey(w)); const shown=Math.min(7, evCount(w)); const g=w.mystery||null; const rv=Games.revealed(shown, w.nextLesson, today());
     return {tune:t, shown, guess:g&&g.guess, pays:g?Games.payoutFor(g.shown):0, revealed:rv, right:!!(g&&g.guess===t.name), options:Games.optionsFor(weekKey(w))}; }
+  // surprise bonus (26 Nov 2026): games.js bonusFor; kept on the session (done.bonus) or the tool record, so the points can be worked out again
+  const TOOL_KEYS=['fixits','mixes','heads','memory'];
+  function bonusSince(D, skip){ const ev=[]; for(const w of (D.weeks||[])){ for(const x of (w.done||[])) if(x!==skip&&evidenced(x)) ev.push({at:x.at||'', b:!!x.bonus, s:1}); for(const k of TOOL_KEYS) for(const t of (w[k]||[])) if(t.bonus) ev.push({at:t.at||'', b:true, s:0}); }
+    ev.sort((a,b)=>a.at.localeCompare(b.at)); let n=0; for(const e of ev){ if(e.b) n=0; else n+=e.s; } return n; }
   function pointsOf(d){ const P=Games.POINTS; let n=0;
-    for(const w of (d.weeks||[])){ for(const x of (w.done||[])){ if(evidenced(x)) n+=P.session; const g=x.warm||{}; if(g.beat) n+=g.beat.perfect*P.perfect+g.beat.good*P.good; if(g.echo) n+=g.echo.right*P.echo; }
-      if(w.quiz) n+=w.quiz.right*P.quiz; const m=mysteryOf(w); if(m.revealed&&m.right) n+=P.mystery*m.pays; n+=Games.questsFor(questStats(w,d)).filter(q=>q.done).length*Games.QUEST_NOTES; }
+    for(const w of (d.weeks||[])){ for(const x of (w.done||[])){ if(evidenced(x)) n+=P.session; if(x.bonus) n+=x.bonus.notes; const g=x.warm||{}; if(g.beat) n+=g.beat.perfect*P.perfect+g.beat.good*P.good; if(g.echo) n+=g.echo.right*P.echo; }
+      for(const k of TOOL_KEYS) for(const t of (w[k]||[])) if(t.bonus) n+=t.bonus.notes; if(w.quiz) n+=w.quiz.right*P.quiz; const m=mysteryOf(w); if(m.revealed&&m.right) n+=P.mystery*m.pays; n+=Games.questsFor(questStats(w,d)).filter(q=>q.done).length*Games.QUEST_NOTES; }
     return n; }
   function quizReady(w, d){ d=d||doc(); const fx=factsOf(d); return !!fx&&!!w&&!w.quiz&&unl(d).has('quiz')&&(fx.f.quiz||[]).some(q=>q.card<fx.unlocked); }
   function quizDue(w, d){ if(!quizReady(w, d)) return false; return w.nextLesson?today()>=addDays(w.nextLesson,-1):nextIndex(w)<0; }
@@ -1456,7 +1460,8 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
   function bitSelect(id, w){ const t=trickyItems(w); const rest=[...new Set([...(w.checklist||[]), ...(w.work||[])])].filter(x=>!t.includes(x)); const opts=[...t, ...rest];
     return `<label class="l" for="${id}">Which bit?</label><select id="${id}">${(opts.length?opts:['The tricky bit']).map(x=>`<option value="${h(x)}">${t.includes(x)?'★ ':''}${h(x)}</option>`).join('')}<option value="__new">+ Another tricky bit…</option></select>${t.length?`<p class="note" style="margin:4px 0 0">★ = a tricky spot from ${h(doc().teacherName||'your teacher')} or from you.</p>`:''}`; }
   function pickedBit(id, w){ const v=$('#'+id).value; if(v!=='__new') return v; const t=(prompt('Which bit is tricky? For example: bars 9 to 12')||'').trim().slice(0,80); if(!t) return null; w.myTricky=[...(w.myTricky||[]), t]; saveCurrent(); return t; }
-  function logTool(w, key, rec){ w[key]=[...(w[key]||[]), {...rec, at:new Date().toISOString()}]; saveCurrent(); }
+  function logTool(w, key, rec){ const b=Games.bonusFor(weekKey(w)+':'+key+':'+(w[key]||[]).length, bonusSince(doc()), 'tool');
+    w[key]=[...(w[key]||[]), {...rec, at:new Date().toISOString(), ...(b?{bonus:b}:{})}]; saveCurrent(); if(b){ setTimeout(()=>{ gFanfare(); toast(`🎁 Surprise bonus! +${b.notes} notes`); }, 300); } }
   function countdown(sec, el, done){ toolStop(); let left=sec; const paint=()=>{ const e=$(el); if(e) e.textContent=left>=60?Math.floor(left/60)+':'+String(left%60).padStart(2,'0'):String(left); }; paint();
     toolIv=setInterval(()=>{ left--; paint(); if(left<=0){ toolStop(); gTone(84,0.15); done&&done(); } },1000); }
   function toolEnd(v, view, title, text){ const tb=Games.isEvening(new Date().getHours());
@@ -1626,13 +1631,13 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
       b.disabled=false; b.textContent='Stop'; b.onclick=stop; }
     paint(); }
   function renderReward(){ const w=week(); const d=(w.done||[]).find(x=>x.i===si); if(!d){ renderJourney(true); return; }
-    const D=doc(); const m=mysteryOf(w); const fx=factsOf(D); const first=!d.pressed; d.pressed=true; saveCurrent();
+    const D=doc(); const m=mysteryOf(w); const fx=factsOf(D); const first=!d.pressed; d.pressed=true; if(d.bonus===undefined&&evidenced(d)) d.bonus=Games.bonusFor(weekKey(w)+':'+d.i, bonusSince(D, d), 'session'); saveCurrent();
     const nn=NOTE_NAMES[m.tune.notes[Math.min(6,Math.max(0,m.shown-1))]%12]; const card=fx&&fx.unlocked>0?fx.f.cards[fx.unlocked-1]:'';
     const worked=(d.worked||[]).map(x=>String(x).trim().toLowerCase()); const sk=skillsList().filter(x=>worked.includes(x.name.toLowerCase())).sort((a,b)=>b.n-a.n)[0];
     const skLvl=sk?(sk.shown?'shown at a lesson':sk.n>=7?'strong':sk.n>=3?'getting there':'started'):'';
     const nextCard=fx&&fx.unlocked<fx.f.cards.length?fx.f.cards[fx.unlocked].split(/\s+/).slice(0,4).join(' '):'';
     $('#v-reward').innerHTML=`<div class="g-screen"><div class="eyebrow">Press your record</div><div class="g-record spin"><div>DAY ${si+1}<br>NOTE ${h(nn)}</div></div><h2 class="big">Day ${si+1}, pressed!</h2>
-      <div class="chips" style="justify-content:center"><span class="chip on">+${Games.POINTS.session} notes</span>${d.earned?'<span class="chip on">+1 token</span>':''}<span class="chip">Note ${Math.min(m.shown,7)} of 7</span></div>
+      <div class="chips" style="justify-content:center"><span class="chip on">+${Games.POINTS.session} notes</span>${d.bonus?`<span class="chip on">🎁 Surprise bonus! +${d.bonus.notes} notes</span>`:''}${d.earned?'<span class="chip on">+1 token</span>':''}<span class="chip">Note ${Math.min(m.shown,7)} of 7</span></div>
       <p class="note" style="margin:0">${m.revealed?'The mystery tune is complete.':'The mystery tune has a new note. Does it sound familiar yet?'}</p>
       <button class="btn quiet" id="rPlay">▶ Play the tune so far</button>
       ${card?`<button class="g-fact" id="rFact" type="button"><span class="label">Today's fact card · tap to turn it over</span><span class="g-fact-t" hidden>${h(card)}</span></button>`:''}

@@ -157,6 +157,15 @@
   const sightClef = inst => /cello|double ?bass|bassoon|trombone|tuba|euphonium/i.test(inst || '') ? 'bass' : /viola/i.test(inst || '') ? 'alto' : 'treble';
 
 
+  // Surprise bonus (26 Nov 2026): variable timing and size keep rewards novel. Never costs anything, never taken away.
+  // since = practised sessions since the last bonus: the chance grows the longer it has been (no long droughts), capped at 75%.
+  // where = 'session' (after a practice) or 'tool' (after a fix-it loop, mix, in-your-head or from-memory: rarer, never the big one).
+  // Fixed by the seed, so the same practice always gives the same answer on reload.
+  const BONUS = { small: 10, medium: 25, big: 60 };
+  function bonusFor(seed, since, where) { const r = rng('bonus:' + seed); const tool = where === 'tool';
+    let p = Math.min(0.75, 0.2 + 0.12 * Math.max(0, since || 0)); if (tool) p *= 0.4;
+    if (r() >= p) return null; const x = r(); const size = tool ? (x < 0.75 ? 'small' : 'medium') : x < 0.6 ? 'small' : x < 0.9 ? 'medium' : 'big';
+    return { size, notes: BONUS[size] }; }
   // ------------------------------------------------------------ practice science (26 Nov 2026): see workshop docs/Stuckato-Science-Check
   // The fix-it loop (after Duke, Simmons and Cash 2009: the best pianists slowed down, fixed the error and played it right several
   // times before speeding up). Start at about 60% of the target; three clean in a row moves the click up one step; a slip resets the count.
@@ -182,5 +191,5 @@
   // Sleep consolidates what was practised last (Allen 2012): evening sessions get the bedtime rule.
   const isEvening = hour => hour >= 17 || hour < 4;
 
-  return { FIXIT_CLEAN, fixitStart, fixitNext, mixPlan, goalIdeas, isEvening, UNLOCKS, unlocks, reviewPick, reviewGap, questsFor, QUEST_NOTES, ladderRungs, sightFor, sightLevel, sightClef, TUNES, staffNote, tuneFor, optionsFor, payoutFor, revealed, PHRASES, phraseFor, markEcho, rateTap, beatStars, readiness, POINTS, levelOf, hash };
+  return { BONUS, bonusFor, FIXIT_CLEAN, fixitStart, fixitNext, mixPlan, goalIdeas, isEvening, UNLOCKS, unlocks, reviewPick, reviewGap, questsFor, QUEST_NOTES, ladderRungs, sightFor, sightLevel, sightClef, TUNES, staffNote, tuneFor, optionsFor, payoutFor, revealed, PHRASES, phraseFor, markEcho, rateTap, beatStars, readiness, POINTS, levelOf, hash };
 });
