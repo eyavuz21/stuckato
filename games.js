@@ -156,5 +156,31 @@
   const sightLevel = lvl => { const m = String(lvl || '').match(/(\d+)/); const g = m ? +m[1] : 0; return g >= 3 ? 2 : g >= 1 ? 1 : 0; };
   const sightClef = inst => /cello|double ?bass|bassoon|trombone|tuba|euphonium/i.test(inst || '') ? 'bass' : /viola/i.test(inst || '') ? 'alto' : 'treble';
 
-  return { UNLOCKS, unlocks, reviewPick, reviewGap, questsFor, QUEST_NOTES, ladderRungs, sightFor, sightLevel, sightClef, TUNES, staffNote, tuneFor, optionsFor, payoutFor, revealed, PHRASES, phraseFor, markEcho, rateTap, beatStars, readiness, POINTS, levelOf, hash };
+
+  // ------------------------------------------------------------ practice science (26 Nov 2026): see workshop docs/Stuckato-Science-Check
+  // The fix-it loop (after Duke, Simmons and Cash 2009: the best pianists slowed down, fixed the error and played it right several
+  // times before speeding up). Start at about 60% of the target; three clean in a row moves the click up one step; a slip resets the count.
+  const FIXIT_CLEAN = 3;
+  const fixitStart = target => Math.max(40, Math.round(Math.max(60, Math.min(200, target || 100)) * 0.6));
+  function fixitNext(bpm, target, start) { target = Math.max(60, Math.min(200, Math.round(target || 100))); start = start || fixitStart(target);
+    const step = Math.max(4, Math.round((target - start) / 4)); return Math.min(target, Math.round(bpm) + step); }
+  // Interleaving (Shea and Morgan 1979; Abushanab and Bishara 2013, piano): once pieces are learned, short turns in a mixed order
+  // beat finishing one before the next. The order is fixed by the seed and never repeats the same item twice running.
+  function mixPlan(names, turns, seed) { const list = [...new Set((names || []).filter(Boolean))]; if (list.length < 2) return [];
+    turns = Math.max(list.length, Math.min(12, turns || list.length * 2)); const r = rng(String(seed || 'mix') + list.join('|')); const out = [];
+    let pool = []; while (out.length < turns) { if (!pool.length) { pool = list.slice(); for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [pool[i], pool[j]] = [pool[j], pool[i]]; } if (out.length && pool[0] === out[out.length - 1]) pool.push(pool.shift()); }
+      out.push(pool.shift()); }
+    return out; }
+  // One specific goal per session (goal-setting research, Locke and Latham): up to three suggestions from what the week holds.
+  // s: {tricky:[...], ladderTop:{bit, top, target}|null, checklist:[...]}
+  function goalIdeas(s) { s = s || {}; const out = []; const t = (s.tricky || [])[0];
+    if (t) out.push(t + ' three times clean in a row');
+    if (s.ladderTop && s.ladderTop.bit) out.push(s.ladderTop.bit + ' at ' + Math.min(s.ladderTop.target || 200, (s.ladderTop.top || 60) + 4) + ' with no stops');
+    const c = (s.checklist || []).find(x => x && x !== t); if (c) out.push(c + ', ready to show');
+    if (!out.length) out.push('Play the hardest bar slowly, with no stops');
+    return [...new Set(out)].slice(0, 3); }
+  // Sleep consolidates what was practised last (Allen 2012): evening sessions get the bedtime rule.
+  const isEvening = hour => hour >= 17 || hour < 4;
+
+  return { FIXIT_CLEAN, fixitStart, fixitNext, mixPlan, goalIdeas, isEvening, UNLOCKS, unlocks, reviewPick, reviewGap, questsFor, QUEST_NOTES, ladderRungs, sightFor, sightLevel, sightClef, TUNES, staffNote, tuneFor, optionsFor, payoutFor, revealed, PHRASES, phraseFor, markEcho, rateTap, beatStars, readiness, POINTS, levelOf, hash };
 });

@@ -14,6 +14,21 @@ Stuckato has two sides. The **teacher** writes a thirty-second note after each l
 
 **Why not Yousician?** Yousician is for people without a teacher: it listens through the phone, lights each note green or red against its own library, and covers guitar, piano, bass, ukulele and voice. Stuckato is for the six days between lessons, run by the teacher. The week is her note, in her voice, for the actual piece; the teacher sees what happened; violin, cello, wind, brass and choirs are in; the point is turning up on Wednesday, not scoring notes. Where Stuckato does listen (the week's passage, below), it compares the pupil to the teacher's own playing, points at the bars that differ, and leaves the judgement to her. Nobody else has the teacher in the loop.
 
+## What's in v0.16 (26 November 2026): practice science
+
+Each one comes from the research check in the workshop's `docs/Stuckato-Science-Check (26 Nov 2026).md`. All self-rated: nothing listens or marks.
+
+- **Tricky spots.** The teacher's note has a new optional field, *Tricky spots, one per line* (`w.tricky`); the week-writer gives every session a step on them and ends the wind-down on one. Pupils can add their own (*+ Another tricky bit*, `w.myTricky`). Starred at the top of every "Which bit?" list.
+- **Fix-it loop** (Duke, Simmons and Cash 2009): the tricky bit with a click at about 60% of the target; three clean in a row and the click goes up a step; a slip restarts the count. `games.js fixitStart/fixitNext`; kept as `w.fixits`.
+- **Mix it up** (interleaving; Shea and Morgan 1979, Abushanab and Bishara 2013): opens once two things are learned (3 sessions, or full speed in the ladder or fix-it loop); two or three items in short timed turns, never the same twice running. `games.js mixPlan`; `w.mixes`.
+- **In your head** (mental practice; Pascual-Leone et al. 1995): one minute in three prompts, attention on the sound. `w.heads`.
+- **From memory** (retrieval practice): look for 20 seconds, close the music, play, check; all / most / not yet. `w.memory`.
+- **Today's goal** (goal setting): before every session, one specific goal (suggestions from the tricky spots, the last ladder or fix-it tempo and the checklist, or their own words); shown during the session; "Hit it / Nearly / Not yet" on the Done screen. `done.warm.goal`. The teacher sees it on the day line.
+- **Bedtime rule** (Allen 2012): after 5pm the Done screen and the tools say to finish on the tricky bit and start nothing new after it.
+- **Sound, not body.** The week-writer now points "how to practise" captions at the sound and the phrase, not the body, unless the teacher's note is about the body; one session late in the week mixes two things and one plays a phrase from memory.
+- **Teacher:** *Practice tools this week* on the pupil page lists every fix-it loop, mix, in-your-head minute, from-memory try and self-marked tricky spot.
+- The teacher's first tab is now **Continue practice** (the three Cs).
+
 ## What's in v0.15 (23 November 2026): ideas from competitors, done our way
 
 - **Quick review** (Better Practice's spaced repetition): after the warm-ups, one item worked on in an earlier week comes back for a minute; the pupil rates it easy, OK or tricky (gaps of 2, 5 then 10 days, longer after easy, shorter after tricky). `games.js reviewPick`.
@@ -28,7 +43,7 @@ Stuckato has two sides. The **teacher** writes a thirty-second note after each l
 
 ## Also in v0.14: the teacher's three sections
 
-The teacher's home now has the three Cs: **Continue** (continue practice: the pupil list, as before), **Create** (free play and games, pupil by pupil, with a one-tap free-play switch) and **Collaborate**: the teacher describes a group in general terms (how many, instruments, levels, ages, length, what to focus on, what they are working towards; it can fill these in from one of their groups, using only instrument, level and age band) and `api/ideas.js` suggests 3 to 5 pieces (real, well-known, mostly out of copyright, with how to share the parts out; never an invented edition), 3 to 5 ensemble games, 2 to 4 activities (at least one creative) and a running order. No names are sent. The last result is kept on that device and can be copied as text.
+The teacher's home now has the three Cs: **Continue practice** (the pupil list, as before), **Create** (free play and games, pupil by pupil, with a one-tap free-play switch) and **Collaborate**: the teacher describes a group in general terms (how many, instruments, levels, ages, length, what to focus on, what they are working towards; it can fill these in from one of their groups, using only instrument, level and age band) and `api/ideas.js` suggests 3 to 5 pieces (real, well-known, mostly out of copyright, with how to share the parts out; never an invented edition), 3 to 5 ensemble games, 2 to 4 activities (at least one creative) and a running order. No names are sent. The last result is kept on that device and can be copied as text.
 
 ## What's in v0.14 (23 November 2026): games, in black and white
 

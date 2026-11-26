@@ -100,3 +100,22 @@ test('readiness and levels', () => {
   assert.equal(G.readiness(3, 7, 60, 140), 43); assert.equal(G.readiness(7, 7, 200, 140), 100);
   assert.deepEqual(G.levelOf(340), { level: 3, into: 40, of: 150 });
 });
+
+test('fix-it loop: starts slow, climbs in steps, stops at the target', () => {
+  assert.equal(G.fixitStart(100), 60); assert.equal(G.fixitStart(50), 40);
+  assert.equal(G.fixitNext(60, 100, 60), 70); assert.equal(G.fixitNext(96, 100, 60), 100); assert.equal(G.fixitNext(100, 100, 60), 100);
+  let b = G.fixitStart(120), n = 0; while (b < 120 && n < 20) { b = G.fixitNext(b, 120); n++; } assert.equal(b, 120); assert.ok(n <= 5);
+});
+test('mix it up: interleaves, never the same item twice running, needs two items', () => {
+  assert.deepEqual(G.mixPlan(['Scale'], 4, 's'), []);
+  const p = G.mixPlan(['Scale', 'Twinkle', 'Long notes'], 6, 'seed');
+  assert.equal(p.length, 6); for (let i = 1; i < p.length; i++) assert.notEqual(p[i], p[i - 1]);
+  assert.deepEqual(new Set(p), new Set(['Scale', 'Twinkle', 'Long notes']));
+  assert.deepEqual(G.mixPlan(['A', 'B', 'C'], 6, 'x'), G.mixPlan(['A', 'B', 'C'], 6, 'x'));
+});
+test('goal ideas: specific, from the week, at most three', () => {
+  const g = G.goalIdeas({ tricky: ['Bar 9'], ladderTop: { bit: 'Scale', top: 80, target: 100 }, checklist: ['Bar 9', 'Scale from memory'] });
+  assert.deepEqual(g, ['Bar 9 three times clean in a row', 'Scale at 84 with no stops', 'Scale from memory, ready to show']);
+  assert.equal(G.goalIdeas({}).length, 1);
+  assert.ok(G.isEvening(19)); assert.ok(!G.isEvening(10));
+});
