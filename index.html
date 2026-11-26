@@ -1617,12 +1617,12 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
         const quiz=out.quiz.filter((q,k)=>$(`[data-qc="${k}"]`).checked&&map.has(q.card)).map(q=>({...q, card:map.get(q.card)}));
         p.facts={piece, composer, cards:keep.map(x=>x.text), quiz, approvedAt:new Date().toISOString(), by:me?.name||''}; saveCurrent(); toast('Approved. One card turns over each day '+name+' practises.'); renderTeacherGames(); }; }; }
 
-  // ------------------------------------------------------------ the teacher's three sections (23 Nov 2026): Practise, Create, Collaborate
-  // Practise is the pupil list as before. Create gathers the making-it-up side per pupil (free play, games). Collaborate is the
+  // ------------------------------------------------------------ the teacher's three sections, the three Cs (26 Nov 2026): Continue, Create, Collaborate
+  // Continue (practice) is the pupil list as before. Create gathers the making-it-up side per pupil (free play, games). Collaborate is the
   // group idea deviser: the teacher describes a group in general terms (instruments, levels, ages, length, focus; never names)
   // and api/ideas.js suggests pieces, ensemble games and activities with a running order. The last result is kept on this device.
   const FOCI=['Playing in time together','Listening and tuning','Ear training','Improvising','Composing','Sight-reading','Performing','Rhythm','Just for fun'];
-  function secNav(a){ return `<div class="seg3" role="tablist" aria-label="Sections">${[['practise','Practise'],['create','Create'],['together','Collaborate']].map(([k,l])=>`<button type="button" role="tab" data-sec="${k}" aria-selected="${a===k}" class="${a===k?'on':''}">${l}</button>`).join('')}</div>`; }
+  function secNav(a){ return `<div class="seg3" role="tablist" aria-label="Sections">${[['practise','Continue'],['create','Create'],['together','Collaborate']].map(([k,l])=>`<button type="button" role="tab" data-sec="${k}" aria-selected="${a===k}" class="${a===k?'on':''}">${l}</button>`).join('')}</div>`; }
   document.addEventListener('click', e=>{ const b=e.target.closest&&e.target.closest('[data-sec]'); if(!b) return; const k=b.dataset.sec; if(k==='practise'){ renderTeacher(); show('teacher'); } else if(k==='create') renderCreate(); else renderTogether(); });
   function groupSummary(g){ const ms=students.filter(s=>g==='*'||groupsOf(s.data).includes(g)).map(s=>s.data.profile||{}); const inst={};
     ms.forEach(p=>{ const k=String(p.instrument||'instrument').toLowerCase().trim(); inst[k]=(inst[k]||0)+1; });
@@ -2132,7 +2132,7 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
         <div class="row" id="bkTo2" style="margin-top:8px"><label class="switch"><input type="checkbox" value="*" checked> Everyone</label>${groups.map(g=>`<label class="switch"><input type="checkbox" value="group:${h(g)}"> ${h(g)}</label>`).join('')}</div>
         <div class="row" style="margin-top:10px"><button class="btn sm" id="bkSet">Set the break</button><span class="status" id="bkStatus" style="margin:0"></span></div>
         <div class="note">Any gap of two weeks or more counts as a break by itself.</div></div>`:'';
-    v.innerHTML=`${secNav('practise')}<h2 class="big">${students.length?'Your pupils.':'No pupils yet.'}</h2>${students.length?'<p class="g-lede">Who practised, who\'s stuck, who needs a nudge.</p>':''}${unplacedCard}
+    v.innerHTML=`${secNav('practise')}<div class="eyebrow" style="margin-top:10px">Continue practice</div><h2 class="big">${students.length?'Your pupils.':'No pupils yet.'}</h2>${students.length?'<p class="g-lede">Who practised, who\'s stuck, who needs a nudge.</p>':''}${unplacedCard}
       <div class="grid2" style="align-items:start">
         <div>
           ${me?.code?`<div class="card"><div class="label">Code to give pupils</div><div class="quote" style="letter-spacing:.2em">${h(me.code)}</div><div class="note">Pupils type it once and they're in.</div></div>`:''}
