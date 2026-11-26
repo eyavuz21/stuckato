@@ -1357,7 +1357,7 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
   // Catch the beat, then Echo it (sing, play or tap back; aural practice). After the sentence: the record is pressed, today's fact
   // card turns over and a treat box opens, with a guess at the mystery tune. Features unlock as the pupil practises (games.js).
   // Nothing marks a note wrong: an echo is spot on, close, or unsure (unsure takes from 13+ go to the teacher). On for every pupil
-  // unless the teacher switches games off (profile.games===false). Points ("notes") are derived from the data, never stored.
+  // unless the teacher switches games off (profile.games===false). Points ("claps"; called "notes" before 26 Nov 2026) are derived from the data, never stored.
   var gamePre=null, beatIv=null, gAc=null;
   function beatStop(){ if(beatIv){ clearInterval(beatIv); beatIv=null; } }
   function gamesOn(d){ return !!window.Games&&(((d||doc()).profile)||{}).games!==false; }
@@ -1428,7 +1428,7 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
   function questStats(w, d){ d=d||doc(); const ev=(w.done||[]).filter(evidenced); return {days:new Set(ev.map(x=>(x.at||'').slice(0,10))).size, guessed:!!w.mystery, ladderTop:(w.ladders||[]).length,
       echoBest:Math.max(0,...(w.done||[]).map(x=>x.warm&&x.warm.echo?x.warm.echo.right:0)), beatBest:Math.max(0,...(w.done||[]).map(x=>x.warm&&x.warm.beat?x.warm.beat.stars:0)), hasEcho:unl(d).has('echo')}; }
   function questsHTML(w){ const q=Games.questsFor(questStats(w)); const n=q.filter(x=>x.done).length;
-    return `<div class="card g-quests"><div class="row" style="justify-content:space-between;align-items:center"><b>This week's quests</b><span class="note" style="margin:0">${n} of ${q.length} · +${Games.QUEST_NOTES} notes each</span></div>
+    return `<div class="card g-quests"><div class="row" style="justify-content:space-between;align-items:center"><b>This week's quests</b><span class="note" style="margin:0">${n} of ${q.length} · +${Games.QUEST_NOTES} claps each</span></div>
       ${q.map(x=>`<div class="g-quest ${x.done?'done':''}"${x.id==='ladder'&&!x.done?' role="button" tabindex="0" id="gQuestLadder"':''}><i>${x.done?'✓':''}</i><span>${h(x.name)}</span><small>${x.done?'done':x.need>1?x.have+'/'+x.need:''}</small></div>`).join('')}</div>`; }
   // the tempo ladder (23 Nov 2026, slow practice as in Modacity, Flowkey and Yousician, done our way: the pupil judges each rung)
   var ladIv=null; function ladderStop(){ if(ladIv){ clearInterval(ladIv); ladIv=null; } }
@@ -1461,7 +1461,7 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
     return `<label class="l" for="${id}">Which bit?</label><select id="${id}">${(opts.length?opts:['The tricky bit']).map(x=>`<option value="${h(x)}">${t.includes(x)?'★ ':''}${h(x)}</option>`).join('')}<option value="__new">+ Another tricky bit…</option></select>${t.length?`<p class="note" style="margin:4px 0 0">★ = a tricky spot from ${h(doc().teacherName||'your teacher')} or from you.</p>`:''}`; }
   function pickedBit(id, w){ const v=$('#'+id).value; if(v!=='__new') return v; const t=(prompt('Which bit is tricky? For example: bars 9 to 12')||'').trim().slice(0,80); if(!t) return null; w.myTricky=[...(w.myTricky||[]), t]; saveCurrent(); return t; }
   function logTool(w, key, rec){ const b=Games.bonusFor(weekKey(w)+':'+key+':'+(w[key]||[]).length, bonusSince(doc()), 'tool');
-    w[key]=[...(w[key]||[]), {...rec, at:new Date().toISOString(), ...(b?{bonus:b}:{})}]; saveCurrent(); if(b){ setTimeout(()=>{ gFanfare(); toast(`🎁 Surprise bonus! +${b.notes} notes`); }, 300); } }
+    w[key]=[...(w[key]||[]), {...rec, at:new Date().toISOString(), ...(b?{bonus:b}:{})}]; saveCurrent(); if(b){ setTimeout(()=>{ gFanfare(); toast(`🎁 Surprise! +${b.notes} claps`); }, 300); } }
   function countdown(sec, el, done){ toolStop(); let left=sec; const paint=()=>{ const e=$(el); if(e) e.textContent=left>=60?Math.floor(left/60)+':'+String(left%60).padStart(2,'0'):String(left); }; paint();
     toolIv=setInterval(()=>{ left--; paint(); if(left<=0){ toolStop(); gTone(84,0.15); done&&done(); } },1000); }
   function toolEnd(v, view, title, text){ const tb=Games.isEvening(new Date().getHours());
@@ -1637,8 +1637,8 @@ details.more{margin-top:14px} details.more>summary{cursor:pointer;list-style:non
     const skLvl=sk?(sk.shown?'shown at a lesson':sk.n>=7?'strong':sk.n>=3?'getting there':'started'):'';
     const nextCard=fx&&fx.unlocked<fx.f.cards.length?fx.f.cards[fx.unlocked].split(/\s+/).slice(0,4).join(' '):'';
     $('#v-reward').innerHTML=`<div class="g-screen"><div class="eyebrow">Press your record</div><div class="g-record spin"><div>DAY ${si+1}<br>NOTE ${h(nn)}</div></div><h2 class="big">Day ${si+1}, pressed!</h2>
-      <div class="chips" style="justify-content:center"><span class="chip on">+${Games.POINTS.session} notes</span>${d.bonus?`<span class="chip on">🎁 Surprise bonus! +${d.bonus.notes} notes</span>`:''}${d.earned?'<span class="chip on">+1 token</span>':''}<span class="chip">Note ${Math.min(m.shown,7)} of 7</span></div>
-      <p class="note" style="margin:0">${m.revealed?'The mystery tune is complete.':'The mystery tune has a new note. Does it sound familiar yet?'}</p>
+      <div class="chips" style="justify-content:center"><span class="chip on">+${Games.POINTS.session} claps</span>${d.bonus?`<span class="chip on">🎁 Surprise! +${d.bonus.notes} claps</span>`:''}${d.earned?'<span class="chip on">+1 token</span>':''}</div>
+      <div class="g-skill"><span>Mystery tune</span><b>${m.revealed?'All 7 notes revealed':Math.min(m.shown,7)+' of 7 notes revealed'}</b><small>${m.revealed?'The tune is complete.':'Does it sound familiar yet?'}</small></div>
       <button class="btn quiet" id="rPlay">▶ Play the tune so far</button>
       ${card?`<button class="g-fact" id="rFact" type="button"><span class="label">Today's fact card · tap to turn it over</span><span class="g-fact-t" hidden>${h(card)}</span></button>`:''}
       ${sk?`<div class="g-skill"><span>Skill up</span><b>${h(sk.name)}</b><small>${h(skLvl)} · ${sk.n} ${sk.n===1?'session':'sessions'}</small></div>`:''}
